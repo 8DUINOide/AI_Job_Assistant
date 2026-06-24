@@ -62,6 +62,45 @@ def log_application(job_title, company, date_applied, status, job_link):
         print(f"Error logging to spreadsheet: {e}")
         return False
 
+def log_applications_batch(rows):
+    """Appends multiple rows to the Job Hunting spreadsheet in a single batch."""
+    try:
+        service = get_sheets_service()
+        
+        values = []
+        for row in rows:
+            company = row.get('company', '')
+            job_title = row.get('job_title', '')
+            tech_stack = row.get('tech_stack', '')
+            status = row.get('status', 'Applied')
+            date_applied = row.get('date_applied', '')
+            job_link = row.get('job_link', '')
+            
+            # Columns: Company Name, Role Title, Tech Stack, Status, Application Date, Job Post Link, Contact Person, Salary / Package, Location
+            values.append([company, job_title, tech_stack, status, date_applied, job_link, "", "", ""])
+            
+        if not values:
+            return True
+            
+        body = {
+            'values': values
+        }
+        
+        result = service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range=RANGE_NAME,
+            valueInputOption='USER_ENTERED',
+            insertDataOption='INSERT_ROWS',
+            body=body
+        ).execute()
+
+        print(f"Successfully logged {len(values)} applications to spreadsheet!")
+        return True
+    
+    except Exception as e:
+        print(f"Error batch logging to spreadsheet: {e}")
+        return False
+
 def get_recent_logs(limit=10):
     """Fetches the most recent logs from the Job Hunting spreadsheet."""
     try:

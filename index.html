@@ -185,8 +185,16 @@
 
         <!-- Right Column -->
         <div class="glass-card">
-            <h2>📊 Application Logs</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">History of jobs processed and logged to Google Sheets.</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <h2 style="margin-bottom: 0;">📊 Application Logs</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">History of jobs processed and logged to Google Sheets.</p>
+                </div>
+                <div>
+                    <input type="file" id="excelUpload" accept=".xlsx, .csv" style="display: none;">
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; border-color: var(--border); color: var(--text); background: rgba(255,255,255,0.05); cursor: pointer;" onclick="document.getElementById('excelUpload').click()">+ Upload Excel</button>
+                </div>
+            </div>
             
             <div style="overflow-x: auto;">
                 <table class="logs-table">
@@ -270,6 +278,32 @@
                 logsBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">Error loading logs. Make sure Google Sheets credentials are set up.</td></tr>';
             }
         }
+        
+        const excelUpload = document.getElementById('excelUpload');
+        excelUpload.addEventListener('change', async (e) => {
+            if (!e.target.files.length) return;
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/upload-logs`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`Successfully logged ${data.count} applications!`);
+                    fetchLogs();
+                } else {
+                    alert(`Upload failed: ${data.error}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred during upload.');
+            }
+            e.target.value = ''; // reset
+        });
 
         triggerBtn.addEventListener('click', async () => {
             triggerBtn.disabled = true;

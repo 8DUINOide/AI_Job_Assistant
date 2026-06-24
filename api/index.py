@@ -10,8 +10,11 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import PyPDF2
+import csv
+import io
+import openpyxl
 
-from tracker import log_application, get_recent_logs
+from tracker import log_application, get_recent_logs, log_applications_batch
 from scraper import load_profile, scrape_linkedin_jobs, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
 
@@ -182,6 +185,63 @@ def log_job():
     if success:
         return jsonify({"success": True})
     return jsonify({"success": False}), 500
+
+@app.route('/api/upload-logs', methods=['POST'])
+def upload_logs():
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "No file part"}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "error": "No selected file"}), 400
+        
+    rows_to_insert = []
+    
+    try:
+        if file.filename.endswith('.csv'):
+            stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_input = csv.reader(stream)
+            headers = next(csv_input, None)
+            for row in csv_input:
+                if not row or not row[0].strip(): continue
+                rows_to_insert.append({
+                    'company': row[0] if len(row) > 0 else '',
+                    'job_title': row[1] if len(row) > 1 else '',
+                    'tech_stack': row[2] if len(row) > 2 else '',
+                    'status': row[3] if len(row) > 3 else 'Applied',
+                    'date_applied': row[4] if len(row) > 4 else '',
+                    'job_link': row[5] if len(row) > 5 else ''
+                })
+        elif file.filename.endswith('.xlsx'):
+            wb = openpyxl.load_workbook(file)
+            ws = wb.active
+            is_header = True
+            for row in ws.iter_rows(values_only=True):
+                if is_header:
+                    is_header = False
+                    continue
+                if not row or not row[0]: continue
+                
+                rows_to_insert.append({
+                    'company': str(row[0]) if len(row) > 0 and row[0] else '',
+                    'job_title': str(row[1]) if len(row) > 1 and row[1] else '',
+                    'tech_stack': str(row[2]) if len(row) > 2 and row[2] else '',
+                    'status': str(row[3]) if len(row) > 3 and row[3] else 'Applied',
+                    'date_applied': str(row[4]) if len(row) > 4 and row[4] else '',
+                    'job_link': str(row[5]) if len(row) > 5 and row[5] else ''
+                })
+        else:
+            return jsonify({"success": False, "error": "Invalid file type. Please upload .xlsx or .csv"}), 400
+            
+        success = log_applications_batch(rows_to_insert)
+        if success:
+            return jsonify({"success": True, "count": len(rows_to_insert)})
+        else:
+            return jsonify({"success": False, "error": "Failed to log to Google Sheets. Check your credentials.json!"}), 500
+            
+    except Exception as e:
+        print("Upload Error:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # -----------------
 # 3. BACKGROUND CRON
