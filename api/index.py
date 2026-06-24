@@ -12,7 +12,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import PyPDF2
 
-from tracker import log_application
+from tracker import log_application, get_recent_logs
 from scraper import load_profile, scrape_linkedin_jobs, evaluate_job
 from emailer import send_job_digest
 
@@ -33,70 +33,40 @@ def home():
     # Vercel sets the CWD to the project root
     return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'index.html'))
 
-@app.route('/api/upload-resume', methods=['POST'])
-def upload_resume():
-    """Parses PDF and fetches raw jobs to bypass Vercel timeout."""
-    if 'resume' not in request.files:
-        return jsonify({"success": False, "error": "No resume uploaded"}), 400
-        
-    file = request.files['resume']
-    
+@app.route('/api/profile', methods=['GET'])
+def get_profile():
     try:
-        # Extract text from PDF in memory
-        reader = PyPDF2.PdfReader(file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() + "\n"
-            
-        # Ask Gemini to quickly extract the core role and skills
-        prompt = f"""
-        Analyze this resume text. Extract the candidate's core job title (e.g. "Frontend Developer", "Data Scientist") and a list of their top 5 skills.
-        Return ONLY a JSON object like this:
-        {{"job_title": "Backend Engineer", "skills": ["Python", "Flask", "SQL", "Git", "Docker"]}}
-        
-        Resume text:
-        {text[:5000]}
-        """
-        
-        try:
-            response = model.generate_content(prompt)
-            res_text = response.text.strip()
-            if res_text.startswith("```json"): res_text = res_text[7:]
-            if res_text.startswith("```"): res_text = res_text[3:]
-            if res_text.endswith("```"): res_text = res_text[:-3]
-            
-            profile_data = json.loads(res_text)
-        except Exception as api_err:
-            print(f"Gemini API failed ({api_err}). Using Fallback Keyword Extractor...")
-            text_lower = text.lower()
-            common_skills = ["javascript", "python", "java", "react", "node", "sql", "aws", "docker", "html", "css", "typescript", "c++", "c#", "go", "ruby", "php", "backend", "frontend", "api"]
-            found_skills = [s for s in common_skills if s in text_lower][:5]
-            if not found_skills:
-                found_skills = ["Software Development", "Communication", "Problem Solving", "Teamwork"]
-                
-            profile_data = {
-                "job_title": "Software Engineer" if "software" in text_lower or "developer" in text_lower else "Professional",
-                "skills": found_skills
-            }
-        
-        # We need a quick mock profile for evaluate_job later
-        full_profile = {
-            "skills": profile_data['skills'],
-            "experience": "See extracted skills.",
-            "job_preferences": {"desired_roles": [profile_data['job_title']]}
-        }
+        profile = load_profile()
+        return jsonify({"success": True, "profile": profile})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/logs', methods=['GET'])
+def get_logs():
+    try:
+        logs = get_recent_logs(limit=10)
+        return jsonify({"success": True, "logs": logs})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/run-agent-manually', methods=['POST'])
+def run_agent_manually():
+    """Fetches raw jobs based on master profile to bypass Vercel timeout."""
+    try:
+        profile = load_profile()
+        roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
+        search_keyword = roles[0] if roles else "Software Engineer"
         
         # Scrape raw jobs from LinkedIn
-        raw_jobs = scrape_linkedin_jobs(profile_data['job_title'])
+        raw_jobs = scrape_linkedin_jobs(search_keyword)
         
         return jsonify({
             "success": True, 
-            "profile": full_profile,
+            "profile": profile,
             "jobs": raw_jobs
         })
-        
     except Exception as e:
-        print("Error parsing resume:", e)
+        print("Error running agent manually:", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/evaluate-job', methods=['POST'])

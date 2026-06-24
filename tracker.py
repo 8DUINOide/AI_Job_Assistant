@@ -9,7 +9,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # This is a placeholder. We will need the actual Spreadsheet ID from your "Job Hunting" sheet's URL.
 # Example: https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/edit
 SPREADSHEET_ID = '1-9st_OvzdkFf8qFAek5fCKnm1ta1UqRXpejAXW0IJdY'
-RANGE_NAME = 'Sheet1!A:E'  # Adjust based on your sheet name and columns
+RANGE_NAME = 'Sheet1!A:I'  # Adjusted to fetch all 9 columns
 
 def get_sheets_service():
     """Authenticates and returns the Google Sheets API service."""
@@ -38,9 +38,10 @@ def log_application(job_title, company, date_applied, status, job_link):
     try:
         service = get_sheets_service()
         
-        # The data to insert
+        # The data to insert (Aligned with user's columns)
+        # Columns: Company Name, Role Title, Tech Stack, Status, Application Date, Job Post Link, Contact Person, Salary / Package, Location
         values = [
-            [job_title, company, date_applied, status, job_link]
+            [company, job_title, "", status, date_applied, job_link, "", "", ""]
         ]
         body = {
             'values': values
@@ -60,6 +61,42 @@ def log_application(job_title, company, date_applied, status, job_link):
     except Exception as e:
         print(f"Error logging to spreadsheet: {e}")
         return False
+
+def get_recent_logs(limit=10):
+    """Fetches the most recent logs from the Job Hunting spreadsheet."""
+    try:
+        service = get_sheets_service()
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range=RANGE_NAME
+        ).execute()
+        
+        values = result.get('values', [])
+        if not values:
+            return []
+            
+        recent = values[::-1]
+        
+        logs = []
+        for row in recent[:limit]:
+            while len(row) < 9:
+                row.append('')
+            # Skip header if it exists
+            if row[0].lower() == 'company name' or row[1].lower() == 'role title':
+                continue
+            logs.append({
+                'company': row[0],
+                'job_title': row[1],
+                'tech_stack': row[2],
+                'status': row[3],
+                'date_applied': row[4],
+                'job_link': row[5],
+            })
+            
+        return logs
+    except Exception as e:
+        print(f"Error fetching logs from spreadsheet: {e}")
+        return []
 
 if __name__ == '__main__':
     # A simple test function to run when you execute `python tracker.py`
