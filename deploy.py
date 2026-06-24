@@ -11,8 +11,8 @@ def run_command(command, stdin_input=None):
     return out
 
 print("1. Creating and linking the Vercel project...")
-run_command(["npx", "vercel", "link", "--yes", "--scope", "8duinoide"])
-run_command(["npx", "vercel", "--yes", "--scope", "8duinoide"])
+run_command(["npx", "vercel", "link", "--yes"])
+run_command(["npx", "vercel", "--yes"])
 
 print("2. Adding Environment Variables...")
 
@@ -22,17 +22,19 @@ if os.path.exists('.env'):
         for line in f:
             if '=' in line:
                 key, value = line.strip().split('=', 1)
-                print(f"Adding {key}...")
-                run_command(["npx", "vercel", "env", "add", key, "production", "--scope", "8duinoide"], stdin_input=value + "\n")
+                print(f"Updating {key}...")
+                run_command(["npx", "vercel", "env", "rm", key, "production", "--yes"])
+                run_command(["npx", "vercel", "env", "add", key, "production"], stdin_input=value + "\n")
 
 # Add GOOGLE_CREDENTIALS from credentials.json
 if os.path.exists('credentials.json'):
     with open('credentials.json', 'r') as f:
         creds = f.read()
-        print("Adding GOOGLE_CREDENTIALS...")
-        run_command(["npx", "vercel", "env", "add", "GOOGLE_CREDENTIALS", "production", "--scope", "8duinoide"], stdin_input=creds + "\n")
+        print("Updating GOOGLE_CREDENTIALS...")
+        run_command(["npx", "vercel", "env", "rm", "GOOGLE_CREDENTIALS", "production", "--yes"])
+        run_command(["npx", "vercel", "env", "add", "GOOGLE_CREDENTIALS", "production"], stdin_input=creds + "\n")
 
 print("3. Deploying to Production...")
-out = run_command(["npx", "vercel", "--prod", "--yes", "--scope", "8duinoide"])
+out = run_command(["npx", "vercel", "--prod", "--yes"])
 
 print("Deployment Complete! Look for your production URL in the output above.")
