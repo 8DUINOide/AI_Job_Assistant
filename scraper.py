@@ -3,113 +3,52 @@ import json
 import time
 import requests
 from bs4 import BeautifulSoup
-import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
-
-os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None) # Fix for Google Auth intercepting Gemini API keys
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
 
 def load_profile():
     with open('master_profile.json', 'r') as f:
         return json.load(f)
 
-def fallback_evaluate_job(job_description, profile):
-    desc_lower = job_description.lower()
-    skills = [s.lower() for s in profile.get('skills', [])]
-    if not skills:
-        return 50, "Average match (Fallback Algorithm)"
-        
-    matched = [s for s in skills if s in desc_lower]
-    score = int((len(matched) / len(skills)) * 100) if skills else 50
+def evaluate_job(job, profile):
+    desc_lower = job.get('description', '').lower()
+    title_lower = job.get('title', '').lower()
     
+    skills = [s.lower() for s in profile.get('skills', [])]
     roles = [r.lower() for r in profile.get('job_preferences', {}).get('desired_roles', [])]
+    
+    score = 20 # Base score
+    
+    # 1. Role Match (+30 points)
+    role_matched = False
     for r in roles:
-        if r in desc_lower:
-            score = min(100, score + 20)
+        if r in title_lower or r in desc_lower:
+            score += 30
+            role_matched = True
             break
             
-    reason = f"Fallback AI Algorithm: Matched {len(matched)} skills ({', '.join(matched[:3])})."
+    # 2. Skills Match (+10 points per skill, max 50 points)
+    matched_skills = [s for s in skills if s in desc_lower or s in title_lower]
+    matched_skills = list(set(matched_skills)) # Remove duplicates
+    
+    skill_points = min(50, len(matched_skills) * 10)
+    score += skill_points
+    score = min(100, score)
+    
+    reason = "NLP Matcher: "
+    if role_matched:
+        reason += "Role matched. "
+    reason += f"Found {len(matched_skills)} skills ({', '.join(matched_skills[:4])})."
+    
     return score, reason
 
-def evaluate_job(job_description, profile):
-    prompt = f"""
-    You are an expert AI job recruiter. Review the following job description and compare it to the candidate's profile.
-    Give a match score out of 100 based on skills, experience, and role.
-    Provide a very brief 1-sentence reason for the score.
-    
-    Candidate Profile (JSON):
-    {json.dumps(profile.get('skills', []))}
-    {json.dumps(profile.get('experience', []))}
-    
-    Job Description:
-    {job_description[:3000]}
-    
-    Format your response EXACTLY like this:
-    SCORE: [number]
-    REASON: [reason]
-    """
-    try:
-        response = model.generate_content(prompt)
-        text = response.text
-        lines = text.strip().split('\n')
-        score = int(lines[0].split(':')[1].strip())
-        reason = lines[1].split(':')[1].strip()
-        return score, reason
-    except Exception as e:
-        print(f"Gemini API failed ({e}). Switching to Fallback NLP Algorithm...")
-        return fallback_evaluate_job(job_description, profile)
-
-def fallback_evaluate_jobs_batch(jobs, profile):
+def evaluate_jobs_batch(jobs, profile):
     results = []
     for job in jobs:
-        score, reason = fallback_evaluate_job(job['description'], profile)
+        score, reason = evaluate_job(job, profile)
         results.append({"score": score, "reason": reason})
     return results
-
-def evaluate_jobs_batch(jobs, profile):
-    if not jobs:
-        return []
-        
-    prompt = f"""
-    You are an expert AI job recruiter. Review the following list of jobs and compare them to the candidate's profile.
-    Give a match score out of 100 for each job based on skills, experience, and role.
-    Provide a very brief 1-sentence reason for each score.
-    
-    Candidate Profile (JSON):
-    Skills: {json.dumps(profile.get('skills', []))}
-    Experience: {json.dumps(profile.get('experience', []))}
-    
-    Jobs to Evaluate:
-    """
-    for i, job in enumerate(jobs):
-        prompt += f"Job {i}:\nTitle: {job['title']}\nCompany: {job['company']}\nDescription: {job['description'][:1000]}\n\n"
-        
-    prompt += """
-    Return ONLY a valid JSON array of objects. EXACTLY one object per job, in the same order as provided.
-    Format exactly like this:
-    [
-      {"score": 85, "reason": "Matches Python and Spring Boot skills perfectly."},
-      {"score": 40, "reason": "Requires 5 years experience, candidate is a fresh graduate."}
-    ]
-    """
-    try:
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        if text.startswith("```json"): text = text[7:]
-        if text.startswith("```"): text = text[3:]
-        if text.endswith("```"): text = text[:-3]
-        
-        results = json.loads(text)
-        
-        while len(results) < len(jobs):
-            results.append({"score": 50, "reason": "Parsing mismatch in batch evaluation."})
-        return results[:len(jobs)]
-    except Exception as e:
-        print(f"Gemini API failed during batch evaluation ({e}). Switching to Fallback NLP Algorithm...")
-        return fallback_evaluate_jobs_batch(jobs, profile)
 
 def scrape_linkedin_jobs(keywords, location="Remote"):
     print(f"Searching for '{keywords}' in '{location}' (Easy Apply Only, Serverless Mode)...")
@@ -179,7 +118,7 @@ if __name__ == "__main__":
     
     print("\n--- JOB MATCH RESULTS ---")
     for job in found_jobs:
-        score, reason = evaluate_job(job['description'], profile)
+        score, reason = evaluate_job(job, profile)
         print(f"\nRole: {job['title']} @ {job['company']}")
         print(f"Link: {job['link']}")
         print(f"Match Score: {score}/100")

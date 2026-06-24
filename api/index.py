@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import google.generativeai as genai
 from dotenv import load_dotenv
 import PyPDF2
 
@@ -17,9 +16,6 @@ from scraper import load_profile, scrape_linkedin_jobs, evaluate_job, evaluate_j
 from emailer import send_job_digest
 
 load_dotenv()
-os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None) # Fix for Google Auth intercepting Gemini API keys
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
 
 app = Flask(__name__)
 CORS(app)
@@ -139,36 +135,35 @@ def fill_form():
     fields = data.get('fields', [])
     profile = load_profile()
     
-    prompt = f"""
-    You are an AI assistant helping a user fill out a job application form.
-    Here is the user's master profile:
-    {json.dumps(profile, indent=2)}
+    answers = {}
+    personal = profile.get('personal_info', {})
     
-    Here is a list of input fields extracted from the job application webpage:
-    {json.dumps(fields, indent=2)}
-    
-    Determine the best answer for each field based on the user's profile.
-    If a field asks for a file upload (like resume), ignore it.
-    If you don't know the answer, leave it blank.
-    
-    Return a JSON object where the keys are the input 'id' (or 'name' if 'id' is missing), 
-    and the values are the strings to type into those fields.
-    Example: {{"first_name_input": "John", "years_exp": "5"}}
-    Return ONLY the valid JSON object.
-    """
-    
-    try:
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        if text.startswith("```json"): text = text[7:]
-        if text.startswith("```"): text = text[3:]
-        if text.endswith("```"): text = text[:-3]
+    for field in fields:
+        field_id = field.get('id', '').lower()
+        field_name = field.get('name', '').lower()
+        label = field.get('label', '').lower()
+        combined = f"{field_id} {field_name} {label}"
+        
+        target_key = field.get('id') or field.get('name')
+        if not target_key:
+            continue
             
-        answers = json.loads(text)
-        return jsonify({"answers": answers})
-    except Exception as e:
-        print("Error generating answers:", e)
-        return jsonify({"answers": {}}), 500
+        if 'first' in combined and 'name' in combined:
+            answers[target_key] = personal.get('first_name', '')
+        elif 'last' in combined and 'name' in combined:
+            answers[target_key] = personal.get('last_name', '')
+        elif 'email' in combined:
+            answers[target_key] = personal.get('email', '')
+        elif 'phone' in combined:
+            answers[target_key] = personal.get('phone', '')
+        elif 'location' in combined or 'city' in combined:
+            answers[target_key] = personal.get('location', '')
+        elif 'linkedin' in combined:
+            answers[target_key] = personal.get('linkedin_url', '')
+        elif 'portfolio' in combined or 'website' in combined:
+            answers[target_key] = personal.get('portfolio_url', '')
+            
+    return jsonify({"answers": answers})
 
 @app.route('/api/log-job', methods=['POST'])
 def log_job():
