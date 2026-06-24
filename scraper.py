@@ -6,6 +6,8 @@ import re
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from tracker import get_applied_job_ids
+import pandas as pd
+from jobspy import scrape_jobs
 
 load_dotenv()
 
@@ -61,48 +63,51 @@ def evaluate_jobs_batch(jobs, profile):
         results.append({"score": score, "reason": reason})
     return results
 
-def scrape_linkedin_jobs(keywords, location="Remote"):
-    print(f"Searching for '{keywords}' in '{location}' (Easy Apply Only, Serverless Mode)...")
+def scrape_jobs_multisite(keywords, location="Remote"):
+    print(f"Searching for '{keywords}' in '{location}' across multiple sites...")
     
-    # LinkedIn's public guest API for job search
-    search_url = f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={keywords.replace(' ', '%20')}&location={location}&f_TPR=r86400&f_AL=true&start=0"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-    }
-    
-    response = requests.get(search_url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
+    try:
+        jobs_df = scrape_jobs(
+            site_name=["linkedin", "indeed"],
+            search_term=keywords,
+            location=location,
+            results_wanted=15,
+            country_indeed='USA' # Required to bypass some region blocks
+        )
+    except Exception as e:
+        print(f"Error during jobspy scraping: {e}")
+        return []
+        
     applied_data = get_applied_job_ids()
     applied_job_ids = applied_data.get('ids', set())
     applied_signatures = applied_data.get('signatures', set())
     
     jobs = []
-    job_cards = soup.find_all('li')[:15] # Search more to find enough non-duplicates
     
-    print(f"Found {len(job_cards)} jobs. Analyzing...")
+    if jobs_df is None or jobs_df.empty:
+        print("No jobs found by jobspy.")
+        return jobs
+        
+    print(f"Found {len(jobs_df)} jobs. Analyzing...")
     
-    for card in job_cards:
+    for idx, row in jobs_df.iterrows():
         if len(jobs) >= 5:
             break
             
         try:
-            title_elem = card.find('h3', class_='base-search-card__title')
-            company_elem = card.find('h4', class_='base-search-card__subtitle')
-            link_elem = card.find('a', class_='base-card__full-link')
-            loc_elem = card.find('span', class_='job-search-card__location')
+            title = str(row.get('title', 'Unknown'))
+            company = str(row.get('company', 'Unknown'))
+            location_text = str(row.get('location', 'Unknown'))
+            link = str(row.get('job_url', ''))
+            description = str(row.get('description', 'No description'))
             
-            if not link_elem:
-                continue
+            if pd.isna(row.get('description')):
+                description = "No description"
                 
-            title = title_elem.text.strip() if title_elem else "Unknown"
-            company = company_elem.text.strip() if company_elem else "Unknown"
-            location_text = loc_elem.text.strip() if loc_elem else "Unknown"
-            link = link_elem['href'].split('?')[0]
-            
-            job_id_match = re.search(r'(\d{9,10})/?$', link)
-            job_id = job_id_match.group(1) if job_id_match else None
+            job_id = None
+            if 'linkedin.com' in link:
+                job_id_match = re.search(r'(\d{9,10})/?$', link.split('?')[0])
+                job_id = job_id_match.group(1) if job_id_match else None
             
             signature = f"{company.lower()}|{title.lower()}"
             
@@ -110,14 +115,6 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
                 print(f"Skipping already applied job: {title} @ {company}")
                 continue
                 
-            # Fetch the actual job description HTML
-            desc_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
-            desc_resp = requests.get(desc_url, headers=headers)
-            desc_soup = BeautifulSoup(desc_resp.text, 'html.parser')
-            
-            desc_elem = desc_soup.find('div', class_='show-more-less-html__markup')
-            description = desc_elem.text.strip() if desc_elem else "No description"
-            
             jobs.append({
                 "title": title,
                 "company": company,
@@ -126,11 +123,8 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
                 "description": description
             })
             
-            # Sleep briefly to avoid rate limiting, but keep under Vercel 10s limit
-            time.sleep(0.5)
-            
         except Exception as e:
-            print(f"Error parsing a job card: {e}")
+            print(f"Error parsing a job row: {e}")
             
     return jobs
 
@@ -141,7 +135,7 @@ if __name__ == "__main__":
     roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
     search_keyword = roles[0] if roles else "Software Engineer"
     
-    found_jobs = scrape_linkedin_jobs(search_keyword)
+    found_jobs = scrape_jobs_multisite(search_keyword)
     
     high_match_jobs = []
     
