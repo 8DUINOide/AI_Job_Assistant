@@ -115,7 +115,45 @@
             margin: 0 auto 1rem auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .status-text { color: var(--text-muted); font-size: 0.95rem; }
+        
+        /* Progress Steps */
+        .progress-steps {
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            transition: opacity 0.3s ease;
+        }
+        .step .icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        .live-eval-box {
+            margin-top: 1.5rem;
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+        .live-eval-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
 
         /* Results */
         #results { margin-top: 2rem; display: none; }
@@ -183,9 +221,30 @@
         </div>
 
         <div class="glass-card loader-container" id="loaderCard">
-            <div class="spinner"></div>
-            <h3 style="margin-bottom: 0.5rem;">AI is working...</h3>
-            <p class="status-text" id="statusText">Extracting your skills from the PDF...</p>
+            <div class="spinner" id="mainSpinner"></div>
+            <h3 style="margin-bottom: 1.5rem;">AI is working...</h3>
+            
+            <div class="progress-steps" id="progressSteps">
+                <div class="step" id="step1">
+                    <span class="icon">⏳</span> 
+                    <span class="text">Parsing resume & searching LinkedIn...</span>
+                </div>
+                <div class="step" id="step2" style="opacity: 0.4;">
+                    <span class="icon">⏳</span> 
+                    <span class="text">Evaluating job matches</span>
+                </div>
+                <div class="step" id="step3" style="opacity: 0.4; display: none;">
+                    <span class="icon">⏳</span> 
+                    <span class="text">Sending digest to email...</span>
+                </div>
+            </div>
+
+            <div class="live-eval-box" id="liveEvaluation">
+                <div class="live-eval-title">Live Evaluation</div>
+                <div id="currentJobEval" style="font-size: 0.95rem; color: #fff;">
+                    Initializing...
+                </div>
+            </div>
         </div>
 
         <div id="results">
@@ -200,8 +259,13 @@
         const fileNameDisplay = document.getElementById('fileName');
         const uploadCard = document.getElementById('uploadCard');
         const loaderCard = document.getElementById('loaderCard');
-        const statusText = document.getElementById('statusText');
         const resultsContainer = document.getElementById('results');
+
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const liveEvalBox = document.getElementById('liveEvaluation');
+        const currentJobEval = document.getElementById('currentJobEval');
 
         let selectedFile = null;
 
@@ -223,13 +287,22 @@
             resultsContainer.innerHTML = '';
             resultsContainer.style.display = 'block';
 
+            // Reset UI
+            document.getElementById('mainSpinner').style.display = 'block';
+            document.querySelector('#loaderCard h3').textContent = 'AI is working...';
+            step1.innerHTML = '<span class="icon">⏳</span> <span class="text">Parsing resume & searching LinkedIn...</span>';
+            step2.innerHTML = '<span class="icon">⏳</span> <span class="text">Evaluating job matches</span>';
+            step2.style.opacity = '0.4';
+            step3.style.display = 'none';
+            step3.style.opacity = '0.4';
+            liveEvalBox.style.display = 'none';
+
             try {
                 // Support running from file:// or Live Server
                 const API_BASE = window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
                     && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
 
                 // Step 1: Upload PDF, parse skills, and fetch raw jobs
-                statusText.textContent = "Parsing resume & searching LinkedIn...";
                 const formData = new FormData();
                 formData.append('resume', selectedFile);
 
@@ -238,12 +311,17 @@
 
                 if (!uploadData.success) throw new Error(uploadData.error);
 
+                step1.innerHTML = '<span class="icon" style="color: #10b981;">✅</span> <span class="text">Resume parsed & jobs found!</span>';
+                step2.style.opacity = '1';
+                liveEvalBox.style.display = 'block';
+
                 const { profile, jobs } = uploadData;
                 const highMatchJobs = [];
 
                 // Step 2: Evaluate jobs one by one to avoid Vercel 10s timeout
                 for (let i = 0; i < jobs.length; i++) {
-                    statusText.textContent = `Evaluating job ${i + 1} of ${jobs.length}: ${jobs[i].title}...`;
+                    step2.innerHTML = `<span class="icon">⏳</span> <span class="text">Evaluating job matches (${i + 1}/${jobs.length})</span>`;
+                    currentJobEval.innerHTML = `<strong>${jobs[i].title}</strong> at ${jobs[i].company}<br><span style="color: var(--text-muted); font-size: 0.85rem; display: inline-block; margin-top: 4px;">Analyzing fit...</span>`;
                     
                     const evalRes = await fetch(`${API_BASE}/api/evaluate-job`, {
                         method: 'POST',
@@ -256,6 +334,10 @@
                     if (evalData.success && evalData.job && evalData.job.score > 0) {
                         const job = evalData.job;
                         const isHighMatch = job.score >= 70;
+                        const color = job.score >= 70 ? '#10b981' : (job.score >= 40 ? '#f59e0b' : '#ef4444');
+                        
+                        currentJobEval.innerHTML = `<strong>${job.title}</strong> at ${job.company}<br><span style="color: ${color}; font-weight: 600; display: inline-block; margin-top: 4px;">Match Score: ${job.score}%</span>`;
+                        await new Promise(r => setTimeout(r, 600)); // allow user to read the live score
                         
                         if (isHighMatch) highMatchJobs.push(job);
                         
@@ -272,29 +354,40 @@
                             <div class="job-reason">${job.reason}</div>
                             <a href="${job.link}" target="_blank" class="apply-link">View Application &rarr;</a>
                         `;
-                        resultsContainer.appendChild(card);
+                        resultsContainer.prepend(card);
                     }
                 }
                 
+                step2.innerHTML = `<span class="icon" style="color: #10b981;">✅</span> <span class="text">Evaluated ${jobs.length} jobs</span>`;
+                liveEvalBox.style.display = 'none';
+                
                 // Step 3: Send email if requested
                 if (userEmail && highMatchJobs.length > 0) {
-                    statusText.textContent = "Sending matches to your email...";
+                    step3.style.display = 'flex';
+                    step3.style.opacity = '1';
+                    step3.innerHTML = `<span class="icon">⏳</span> <span class="text">Sending digest to email...</span>`;
                     await fetch(`${API_BASE}/api/send-digest`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: userEmail, jobs: highMatchJobs })
                     });
+                    step3.innerHTML = `<span class="icon" style="color: #10b981;">✅</span> <span class="text">Digest sent!</span>`;
                 }
                 
-                loaderCard.style.display = 'none';
+                document.getElementById('mainSpinner').style.display = 'none';
+                document.querySelector('#loaderCard h3').textContent = 'Analysis Complete!';
+                
+                setTimeout(() => {
+                    loaderCard.style.display = 'none';
+                }, 2000);
+
                 if (resultsContainer.children.length === 0) {
                     resultsContainer.innerHTML = '<div class="glass-card"><p style="text-align:center; color:#94a3b8;">No strong matches found. Try a different resume.</p></div>';
                 }
 
             } catch (err) {
-                statusText.textContent = "An error occurred: " + err.message;
-                statusText.style.color = '#ef4444';
-                document.querySelector('.spinner').style.display = 'none';
+                step1.innerHTML = `<span class="icon" style="color: #ef4444;">❌</span> <span class="text">An error occurred: ${err.message}</span>`;
+                document.getElementById('mainSpinner').style.display = 'none';
             }
         });
     </script>
