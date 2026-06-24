@@ -4,6 +4,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from tracker import get_applied_job_ids
 
 load_dotenv()
 
@@ -14,7 +15,16 @@ def load_profile():
 def evaluate_job(job, profile):
     desc_lower = job.get('description', '').lower()
     title_lower = job.get('title', '').lower()
+    loc_lower = job.get('location', '').lower()
     
+    # Enforce Location Rules
+    ph_locations = ['philippines', 'ncr', 'manila', 'makati', 'taguig', 'quezon', 'pasig', 'alabang', 'bicol', 'mandaluyong', 'ortigas']
+    is_ph = any(loc in loc_lower for loc in ph_locations)
+    is_remote = 'remote' in loc_lower or 'remote' in title_lower or 'remote' in desc_lower
+    
+    if not is_ph and not is_remote and loc_lower != "unknown":
+        return 0, f"Rejected: Outside Philippines and not Remote ({job.get('location', 'Unknown')})."
+        
     skills = [s.lower() for s in profile.get('skills', [])]
     roles = [r.lower() for r in profile.get('job_preferences', {}).get('desired_roles', [])]
     
@@ -63,25 +73,35 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
     response = requests.get(search_url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
+    applied_job_ids = get_applied_job_ids()
     jobs = []
-    job_cards = soup.find_all('li')[:5] # Limit to top 5 for now
+    job_cards = soup.find_all('li')[:15] # Search more to find enough non-duplicates
     
     print(f"Found {len(job_cards)} jobs. Analyzing...")
     
     for card in job_cards:
+        if len(jobs) >= 5:
+            break
+            
         try:
             title_elem = card.find('h3', class_='base-search-card__title')
             company_elem = card.find('h4', class_='base-search-card__subtitle')
             link_elem = card.find('a', class_='base-card__full-link')
+            loc_elem = card.find('span', class_='job-search-card__location')
             
             if not link_elem:
                 continue
                 
             title = title_elem.text.strip() if title_elem else "Unknown"
             company = company_elem.text.strip() if company_elem else "Unknown"
+            location_text = loc_elem.text.strip() if loc_elem else "Unknown"
             link = link_elem['href'].split('?')[0]
             job_id = link.split('-')[-1]
             
+            if job_id in applied_job_ids:
+                print(f"Skipping already applied job: {title} @ {company}")
+                continue
+                
             # Fetch the actual job description HTML
             desc_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
             desc_resp = requests.get(desc_url, headers=headers)
@@ -94,6 +114,7 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
                 "title": title,
                 "company": company,
                 "link": link,
+                "location": location_text,
                 "description": description
             })
             

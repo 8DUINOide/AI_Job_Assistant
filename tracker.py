@@ -98,6 +98,28 @@ def get_recent_logs(limit=10):
         print(f"Error fetching logs from spreadsheet: {e}")
         return []
 
+def get_applied_job_ids():
+    """Fetches all applied job IDs from the spreadsheet to prevent duplicates."""
+    try:
+        service = get_sheets_service()
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range=RANGE_NAME
+        ).execute()
+        
+        values = result.get('values', [])
+        job_ids = set()
+        for row in values:
+            if len(row) > 5 and row[5].strip():
+                link = row[5].strip().split('?')[0]
+                if '-' in link:
+                    job_id = link.split('-')[-1]
+                    job_ids.add(job_id)
+        return job_ids
+    except Exception as e:
+        print(f"Error fetching applied job IDs: {e}")
+        return set()
+
 if __name__ == '__main__':
     # A simple test function to run when you execute `python tracker.py`
     print("Testing Google Sheets Integration...")
