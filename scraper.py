@@ -62,6 +62,55 @@ def evaluate_job(job_description, profile):
         print(f"Gemini API failed ({e}). Switching to Fallback NLP Algorithm...")
         return fallback_evaluate_job(job_description, profile)
 
+def fallback_evaluate_jobs_batch(jobs, profile):
+    results = []
+    for job in jobs:
+        score, reason = fallback_evaluate_job(job['description'], profile)
+        results.append({"score": score, "reason": reason})
+    return results
+
+def evaluate_jobs_batch(jobs, profile):
+    if not jobs:
+        return []
+        
+    prompt = f"""
+    You are an expert AI job recruiter. Review the following list of jobs and compare them to the candidate's profile.
+    Give a match score out of 100 for each job based on skills, experience, and role.
+    Provide a very brief 1-sentence reason for each score.
+    
+    Candidate Profile (JSON):
+    Skills: {json.dumps(profile.get('skills', []))}
+    Experience: {json.dumps(profile.get('experience', []))}
+    
+    Jobs to Evaluate:
+    """
+    for i, job in enumerate(jobs):
+        prompt += f"Job {i}:\nTitle: {job['title']}\nCompany: {job['company']}\nDescription: {job['description'][:1000]}\n\n"
+        
+    prompt += """
+    Return ONLY a valid JSON array of objects. EXACTLY one object per job, in the same order as provided.
+    Format exactly like this:
+    [
+      {"score": 85, "reason": "Matches Python and Spring Boot skills perfectly."},
+      {"score": 40, "reason": "Requires 5 years experience, candidate is a fresh graduate."}
+    ]
+    """
+    try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        if text.startswith("```json"): text = text[7:]
+        if text.startswith("```"): text = text[3:]
+        if text.endswith("```"): text = text[:-3]
+        
+        results = json.loads(text)
+        
+        while len(results) < len(jobs):
+            results.append({"score": 50, "reason": "Parsing mismatch in batch evaluation."})
+        return results[:len(jobs)]
+    except Exception as e:
+        print(f"Gemini API failed during batch evaluation ({e}). Switching to Fallback NLP Algorithm...")
+        return fallback_evaluate_jobs_batch(jobs, profile)
+
 def scrape_linkedin_jobs(keywords, location="Remote"):
     print(f"Searching for '{keywords}' in '{location}' (Easy Apply Only, Serverless Mode)...")
     

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 import PyPDF2
 
 from tracker import log_application, get_recent_logs
-from scraper import load_profile, scrape_linkedin_jobs, evaluate_job
+from scraper import load_profile, scrape_linkedin_jobs, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
 
 load_dotenv()
@@ -68,6 +68,28 @@ def run_agent_manually():
     except Exception as e:
         print("Error running agent manually:", e)
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/evaluate-jobs', methods=['POST'])
+def evaluate_multiple_jobs():
+    """Evaluates multiple jobs in a single batch to bypass Gemini RPM limits and speed up execution."""
+    data = request.json
+    jobs = data.get('jobs', [])
+    profile = data.get('profile')
+    
+    if not jobs or not profile:
+        return jsonify({"success": False, "error": "Missing data"}), 400
+        
+    evaluated_results = evaluate_jobs_batch(jobs, profile)
+    
+    for i, job in enumerate(jobs):
+        if i < len(evaluated_results):
+            job['score'] = evaluated_results[i].get('score', 0)
+            job['reason'] = evaluated_results[i].get('reason', 'Evaluation failed')
+        else:
+            job['score'] = 50
+            job['reason'] = 'Evaluation parsing error'
+            
+    return jsonify({"success": True, "jobs": jobs})
 
 @app.route('/api/evaluate-job', methods=['POST'])
 def evaluate_single_job():
@@ -179,13 +201,15 @@ def run_scraper_cron():
     found_jobs = scrape_linkedin_jobs(search_keyword)
     high_match_jobs = []
     
-    for job in found_jobs:
-        score, reason = evaluate_job(job['description'], profile)
-        if score > 70:
-            job['score'] = score
-            job['reason'] = reason
-            high_match_jobs.append(job)
-        time.sleep(4) 
+    if found_jobs:
+        evaluated_results = evaluate_jobs_batch(found_jobs, profile)
+        for i, job in enumerate(found_jobs):
+            if i < len(evaluated_results):
+                score = evaluated_results[i].get('score', 0)
+                if score > 70:
+                    job['score'] = score
+                    job['reason'] = evaluated_results[i].get('reason', '')
+                    high_match_jobs.append(job)
             
     if high_match_jobs:
         send_job_digest(os.getenv("EMAIL_TARGET", "alfrancisbadillapaz10@gmail.com"), high_match_jobs)

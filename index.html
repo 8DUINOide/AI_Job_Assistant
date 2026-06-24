@@ -299,29 +299,30 @@
 
                 const highMatchJobs = [];
 
-                // Step 2: Evaluate each
-                for (let i = 0; i < jobs.length; i++) {
-                    printLog(`Evaluating: ${jobs[i].title} @ ${jobs[i].company}`);
+                // Step 2: Evaluate jobs in batch
+                if (jobs.length > 0) {
+                    printLog(`Evaluating ${jobs.length} jobs in a single batch to maximize speed...`, "warn");
                     
-                    const evalRes = await fetch(`${API_BASE}/api/evaluate-job`, {
+                    const evalRes = await fetch(`${API_BASE}/api/evaluate-jobs`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ job: jobs[i], profile: profile })
+                        body: JSON.stringify({ jobs: jobs, profile: profile })
                     });
                     
                     let evalData;
                     try { evalData = await evalRes.json(); } catch(e) { 
-                        printLog(`Failed to parse evaluation response for ${jobs[i].title}`, "error");
-                        continue; 
+                        printLog(`Failed to parse evaluation response`, "error");
                     }
                     
-                    if (evalData.success && evalData.job && evalData.job.score > 0) {
-                        const score = evalData.job.score;
-                        if (score >= 70) {
-                            printLog(`=> MATCH! Score: ${score}%`, "success");
-                            highMatchJobs.push(evalData.job);
-                        } else {
-                            printLog(`=> Pass. Score: ${score}%`, "warn");
+                    if (evalData && evalData.success && evalData.jobs) {
+                        for (let job of evalData.jobs) {
+                            const score = job.score || 0;
+                            if (score >= 70) {
+                                printLog(`=> MATCH! ${job.title} @ ${job.company} - Score: ${score}%`, "success");
+                                highMatchJobs.push(job);
+                            } else {
+                                printLog(`=> Pass. ${job.title} @ ${job.company} - Score: ${score}%`, "info");
+                            }
                         }
                     }
                 }
