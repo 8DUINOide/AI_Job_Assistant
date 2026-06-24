@@ -135,6 +135,9 @@ def get_recent_logs(limit=10):
         return logs
     except Exception as e:
         print(f"Error fetching logs from spreadsheet: {e}")
+        err_str = str(e).lower()
+        if "credentials.json" in err_str or "invalid_grant" in err_str or "invalid jwt" in err_str:
+            return {"auth_error": True}
         return []
 
 def get_applied_job_ids():

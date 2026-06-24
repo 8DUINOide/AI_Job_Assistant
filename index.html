@@ -196,7 +196,16 @@
                 </div>
             </div>
             
-            <div style="overflow-x: auto;">
+            <div id="authErrorContainer" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 1rem;">
+                <h3 style="color: var(--danger); margin-bottom: 8px;">Authentication Required</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
+                    Google Sheets is disconnected. Please upload your `credentials.json` Service Account key to reconnect.
+                </p>
+                <input type="file" id="credsUpload" accept=".json" style="display: none;">
+                <button class="btn" style="background: var(--danger);" onclick="document.getElementById('credsUpload').click()">Upload credentials.json</button>
+            </div>
+            
+            <div id="logsTableContainer" style="overflow-x: auto;">
                 <table class="logs-table">
                     <thead>
                         <tr>
@@ -256,6 +265,16 @@
             try {
                 const res = await fetch(`${API_BASE}/api/logs`);
                 const data = await res.json();
+                
+                if (data.auth_error || res.status === 401) {
+                    document.getElementById('authErrorContainer').style.display = 'block';
+                    document.getElementById('logsTableContainer').style.display = 'none';
+                    return;
+                } else {
+                    document.getElementById('authErrorContainer').style.display = 'none';
+                    document.getElementById('logsTableContainer').style.display = 'block';
+                }
+                
                 if (data.success && data.logs) {
                     if (data.logs.length === 0) {
                         logsBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No applications logged yet.</td></tr>';
@@ -301,6 +320,32 @@
             } catch (err) {
                 console.error(err);
                 alert('An error occurred during upload.');
+            }
+            e.target.value = ''; // reset
+        });
+
+        const credsUpload = document.getElementById('credsUpload');
+        credsUpload.addEventListener('change', async (e) => {
+            if (!e.target.files.length) return;
+            const file = e.target.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/upload-credentials`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Credentials updated successfully!');
+                    fetchLogs();
+                } else {
+                    alert(`Failed to upload credentials: ${data.error}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred uploading credentials.');
             }
             e.target.value = ''; // reset
         });

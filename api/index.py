@@ -43,7 +43,9 @@ def get_profile():
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
     try:
-        logs = get_recent_logs(limit=10)
+        logs = get_recent_logs(limit=20)
+        if isinstance(logs, dict) and logs.get("auth_error"):
+            return jsonify({"success": False, "auth_error": True, "error": "Google Sheets Authentication failed."}), 401
         return jsonify({"success": True, "logs": logs})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -241,6 +243,25 @@ def upload_logs():
             
     except Exception as e:
         print("Upload Error:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/upload-credentials', methods=['POST'])
+def upload_credentials():
+    if 'file' not in request.files:
+        return jsonify({"success": False, "error": "No file part"}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "error": "No selected file"}), 400
+        
+    if not file.filename.endswith('.json'):
+        return jsonify({"success": False, "error": "Must be a .json file"}), 400
+        
+    try:
+        # Save the file to the project root
+        file.save(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'credentials.json'))
+        return jsonify({"success": True})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 # -----------------
