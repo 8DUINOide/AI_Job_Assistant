@@ -1,0 +1,94 @@
+{
+  "personal_info": {
+    "first_name": "Al Francis",
+    "last_name": "Paz",
+    "email": "alfrancisbadillapaz10@gmail.com",
+    "phone": "09772153941",
+    "location": "Baao, Bicol Region, Philippines",
+    "linkedin_url": "www.linkedin.com/in/al-francis-paz-32424224a",
+    "portfolio_url": "8duinoide.github.io/portfolio/"
+  },
+  "job_preferences": {
+    "desired_roles": [
+      "Backend Developer",
+      "Software Engineer",
+      "Android Developer",
+      "IoT Engineer"
+    ],
+    "work_type": [
+      "Remote",
+      "Hybrid",
+      "On-site"
+    ],
+    "locations": [
+      "Philippines",
+      "Remote"
+    ],
+    "salary_expectation": "Open to discussion"
+  },
+  "summary": "Al Francis Paz is a passionate Computer Engineering Graduate (2026) with a strong foundation in both hardware and software development. He is a skilled Backend Developer proficient in Spring Boot, Java, and PostgreSQL, with experience in building RESTful APIs, implementing user management, budget operations, and integrating JWT-based authentication and Spring Security. His background also spans embedded systems, web, and mobile development, demonstrated through various projects and a thesis on IoT solutions. He is eager to contribute to innovative tech projects and advance as a developer.",
+  "experience": [
+    {
+      "title": "Backend Developer Intern",
+      "company": "REVLV Solutions, Inc.",
+      "start_date": "June 2025",
+      "end_date": "July 2025",
+      "description": "Developed ExpenSEEs-API, a RESTful backend for expense tracking using Spring Boot, Java, and PostgreSQL. Implemented user management, budget operations, expense tracking, and liquidation reports. Integrated JWT-based authentication and Spring Security for role-based access control. Configured and tested API endpoints using Postman and IntelliJ IDEA. Collaborated with frontend developers to integrate the API with an Admin Dashboard and mobile app. Deployed backend on a DigitalOcean server, ensuring CORS configuration for seamless frontend connectivity.",
+      "skills_used": [
+        "Spring Boot",
+        "Java",
+        "PostgreSQL",
+        "RESTful APIs",
+        "JWT",
+        "Spring Security",
+        "Postman",
+        "IntelliJ IDEA",
+        "DigitalOcean",
+        "CORS"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Computer Engineering",
+      "university": "Ateneo de Naga University",
+      "graduation_year": "2026"
+    }
+  ],
+  "skills": [
+    "Java",
+    "Python",
+    "JavaScript",
+    "Kotlin",
+    "C++",
+    "C",
+    "HTML5",
+    "CSS3",
+    "Spring Boot",
+    "Node.js",
+    "React Native",
+    "Android Development",
+    "Firebase",
+    "PostgreSQL",
+    "SQL",
+    "Internet of Things (IoT)",
+    "Embedded Systems",
+    "Arduino",
+    "RFID",
+    "ESP32",
+    "RESTful APIs",
+    "JWT Authentication",
+    "Spring Security",
+    "Git",
+    "Postman",
+    "Linux",
+    "DigitalOcean",
+    "IntelliJ IDEA",
+    "Cybersecurity",
+    "Data Analytics",
+    "Network Support",
+    "Hardware-Software Integration",
+    "CORS",
+    "CI/CD"
+  ]
+}

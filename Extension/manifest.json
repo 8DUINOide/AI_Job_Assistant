@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "AI Job Form Auto-Filler",
+  "version": "1.0",
+  "description": "Uses AI to automatically fill out job application forms based on your Master Profile.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
