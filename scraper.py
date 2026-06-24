@@ -109,8 +109,8 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
                 "description": description
             })
             
-            # Sleep to avoid rate limiting from LinkedIn
-            time.sleep(2)
+            # Sleep briefly to avoid rate limiting, but keep under Vercel 10s limit
+            time.sleep(0.5)
             
         except Exception as e:
             print(f"Error parsing a job card: {e}")

@@ -307,7 +307,14 @@
                 formData.append('resume', selectedFile);
 
                 const uploadRes = await fetch(`${API_BASE}/api/upload-resume`, { method: 'POST', body: formData });
-                const uploadData = await uploadRes.json();
+                
+                let uploadData;
+                try {
+                    uploadData = await uploadRes.json();
+                } catch (e) {
+                    const text = await uploadRes.text().catch(() => 'No text returned');
+                    throw new Error(`Server returned non-JSON response (possibly a timeout). Status: ${uploadRes.status}. Details: ${text.substring(0, 100)}`);
+                }
 
                 if (!uploadData.success) throw new Error(uploadData.error);
 
@@ -329,7 +336,16 @@
                         body: JSON.stringify({ job: jobs[i], profile: profile })
                     });
                     
-                    const evalData = await evalRes.json();
+                    let evalData;
+                    try {
+                        evalData = await evalRes.json();
+                    } catch (e) {
+                        const text = await evalRes.text().catch(() => 'No text returned');
+                        console.error(`Evaluation failed to return JSON. Status: ${evalRes.status}. Details: ${text.substring(0, 100)}`);
+                        currentJobEval.innerHTML = `<strong>${jobs[i].title}</strong> at ${jobs[i].company}<br><span style="color: #ef4444; font-weight: 600; display: inline-block; margin-top: 4px;">Error evaluating job. Skipped.</span>`;
+                        await new Promise(r => setTimeout(r, 600));
+                        continue;
+                    }
                     
                     if (evalData.success && evalData.job && evalData.job.score > 0) {
                         const job = evalData.job;
