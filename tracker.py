@@ -14,13 +14,21 @@ RANGE_NAME = 'Sheet1!A:E'  # Adjust based on your sheet name and columns
 def get_sheets_service():
     """Authenticates and returns the Google Sheets API service."""
     creds = None
-    creds_file = os.path.join(os.path.dirname(__file__), 'credentials.json')
     
-    if not os.path.exists(creds_file):
-        raise FileNotFoundError(f"Missing {creds_file}. Please download it from Google Cloud Console.")
-
-    creds = service_account.Credentials.from_service_account_file(
-        creds_file, scopes=SCOPES)
+    # 1. Try to load from Vercel Environment Variable first
+    google_creds_json = os.getenv('GOOGLE_CREDENTIALS')
+    if google_creds_json:
+        import json
+        creds_dict = json.loads(google_creds_json)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_dict, scopes=SCOPES)
+    else:
+        # 2. Fallback to local file for local testing
+        creds_file = os.path.join(os.path.dirname(__file__), 'credentials.json')
+        if not os.path.exists(creds_file):
+            raise FileNotFoundError("Missing Google Credentials. Set GOOGLE_CREDENTIALS env var or create credentials.json.")
+        creds = service_account.Credentials.from_service_account_file(
+            creds_file, scopes=SCOPES)
 
     service = build('sheets', 'v4', credentials=creds)
     return service
