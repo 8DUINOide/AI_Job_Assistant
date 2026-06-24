@@ -20,6 +20,12 @@ def evaluate_job(job, profile):
     title_lower = job.get('title', '').lower()
     loc_lower = job.get('location', '').lower()
     
+    # Enforce Seniority Rules (Filter out senior roles for fresh grad)
+    senior_keywords = ['senior', 'sr', 'lead', 'principal', 'manager', 'director', 'head', 'vp', 'supervisor', 'experienced', 'expert']
+    title_words = re.findall(r'\b[a-z]+\b', title_lower.replace('.', ''))
+    if any(word in senior_keywords for word in title_words):
+        return 0, "Rejected: Senior/Lead role not suitable for fresh graduate."
+    
     # Enforce Location Rules
     ph_locations = ['philippines', 'ncr', 'manila', 'makati', 'taguig', 'quezon', 'pasig', 'alabang', 'bicol', 'mandaluyong', 'ortigas']
     is_ph = any(loc in loc_lower for loc in ph_locations)
@@ -33,6 +39,11 @@ def evaluate_job(job, profile):
     
     score = 20 # Base score
     
+    # Fresh grad boost
+    junior_keywords = ['junior', 'jr', 'entry', 'fresh', 'associate', 'intern', 'trainee', 'graduate']
+    if any(word in junior_keywords for word in title_words):
+        score += 15
+        
     # 1. Role Match (+30 points)
     role_matched = False
     for r in roles:
