@@ -2,6 +2,7 @@ import os
 import json
 import time
 import requests
+import re
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from tracker import get_applied_job_ids
@@ -73,7 +74,10 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
     response = requests.get(search_url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
     
-    applied_job_ids = get_applied_job_ids()
+    applied_data = get_applied_job_ids()
+    applied_job_ids = applied_data.get('ids', set())
+    applied_signatures = applied_data.get('signatures', set())
+    
     jobs = []
     job_cards = soup.find_all('li')[:15] # Search more to find enough non-duplicates
     
@@ -96,9 +100,13 @@ def scrape_linkedin_jobs(keywords, location="Remote"):
             company = company_elem.text.strip() if company_elem else "Unknown"
             location_text = loc_elem.text.strip() if loc_elem else "Unknown"
             link = link_elem['href'].split('?')[0]
-            job_id = link.split('-')[-1]
             
-            if job_id in applied_job_ids:
+            job_id_match = re.search(r'(\d{9,10})/?$', link)
+            job_id = job_id_match.group(1) if job_id_match else None
+            
+            signature = f"{company.lower()}|{title.lower()}"
+            
+            if (job_id and job_id in applied_job_ids) or (signature in applied_signatures):
                 print(f"Skipping already applied job: {title} @ {company}")
                 continue
                 

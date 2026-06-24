@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -141,7 +142,7 @@ def get_recent_logs(limit=10):
         return []
 
 def get_applied_job_ids():
-    """Fetches all applied job IDs from the spreadsheet to prevent duplicates."""
+    """Fetches all applied job IDs and signatures from the spreadsheet to prevent duplicates."""
     try:
         service = get_sheets_service()
         result = service.spreadsheets().values().get(
@@ -150,17 +151,23 @@ def get_applied_job_ids():
         ).execute()
         
         values = result.get('values', [])
-        job_ids = set()
+        applied_jobs = {'ids': set(), 'signatures': set()}
         for row in values:
+            if len(row) > 1:
+                company = row[0].strip().lower()
+                title = row[1].strip().lower()
+                if company and title:
+                    applied_jobs['signatures'].add(f"{company}|{title}")
+                    
             if len(row) > 5 and row[5].strip():
                 link = row[5].strip().split('?')[0]
-                if '-' in link:
-                    job_id = link.split('-')[-1]
-                    job_ids.add(job_id)
-        return job_ids
+                match = re.search(r'(\d{9,10})/?$', link)
+                if match:
+                    applied_jobs['ids'].add(match.group(1))
+        return applied_jobs
     except Exception as e:
         print(f"Error fetching applied job IDs: {e}")
-        return set()
+        return {'ids': set(), 'signatures': set()}
 
 if __name__ == '__main__':
     # A simple test function to run when you execute `python tracker.py`
