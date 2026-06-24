@@ -15,7 +15,7 @@ import io
 import openpyxl
 
 from tracker import log_application, get_recent_logs, log_applications_batch
-from scraper import load_profile, scrape_linkedin_jobs, evaluate_job, evaluate_jobs_batch
+from scraper import load_profile, scrape_jobs_multisite, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
 
 load_dotenv()
@@ -58,8 +58,8 @@ def run_agent_manually():
         roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
         search_keyword = roles[0] if roles else "Software Engineer"
         
-        # Scrape raw jobs from LinkedIn
-        raw_jobs = scrape_linkedin_jobs(search_keyword)
+        # Scrape raw jobs from multiple platforms
+        raw_jobs = scrape_jobs_multisite(search_keyword)
         
         return jsonify({
             "success": True, 
@@ -274,7 +274,7 @@ def run_scraper_cron():
     roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
     search_keyword = roles[0] if roles else "Software Engineer"
     
-    found_jobs = scrape_linkedin_jobs(search_keyword)
+    found_jobs = scrape_jobs_multisite(search_keyword)
     high_match_jobs = []
     
     if found_jobs:
