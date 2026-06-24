@@ -178,6 +178,7 @@
                 <p id="fileName">Drag & drop your Resume (PDF) here or click to browse</p>
                 <input type="file" id="fileInput" accept=".pdf">
             </div>
+            <input type="email" id="emailInput" placeholder="Your email address (for the job matches)" style="width: 100%; padding: 12px; margin-top: 1.5rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; outline: none;">
             <button id="searchBtn" disabled>Find Matching Jobs</button>
         </div>
 
@@ -194,6 +195,7 @@
 
     <script>
         const fileInput = document.getElementById('fileInput');
+        const emailInput = document.getElementById('emailInput');
         const searchBtn = document.getElementById('searchBtn');
         const fileNameDisplay = document.getElementById('fileName');
         const uploadCard = document.getElementById('uploadCard');
@@ -215,6 +217,7 @@
         searchBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
+            const userEmail = emailInput.value.trim();
             uploadCard.classList.add('hidden');
             loaderCard.style.display = 'block';
             resultsContainer.innerHTML = '';
@@ -232,6 +235,7 @@
                 if (!uploadData.success) throw new Error(uploadData.error);
 
                 const { profile, jobs } = uploadData;
+                const highMatchJobs = [];
 
                 // Step 2: Evaluate jobs one by one to avoid Vercel 10s timeout
                 for (let i = 0; i < jobs.length; i++) {
@@ -249,6 +253,8 @@
                         const job = evalData.job;
                         const isHighMatch = job.score >= 70;
                         
+                        if (isHighMatch) highMatchJobs.push(job);
+                        
                         const card = document.createElement('div');
                         card.className = 'job-card';
                         card.innerHTML = `
@@ -264,6 +270,16 @@
                         `;
                         resultsContainer.appendChild(card);
                     }
+                }
+                
+                // Step 3: Send email if requested
+                if (userEmail && highMatchJobs.length > 0) {
+                    statusText.textContent = "Sending matches to your email...";
+                    await fetch('/api/send-digest', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: userEmail, jobs: highMatchJobs })
+                    });
                 }
                 
                 loaderCard.style.display = 'none';

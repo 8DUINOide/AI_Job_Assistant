@@ -8,12 +8,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None) # Fix for Google Auth intercepting Gemini API keys
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def load_profile():
     with open('master_profile.json', 'r') as f:
         return json.load(f)
+
+def fallback_evaluate_job(job_description, profile):
+    desc_lower = job_description.lower()
+    skills = [s.lower() for s in profile.get('skills', [])]
+    if not skills:
+        return 50, "Average match (Fallback Algorithm)"
+        
+    matched = [s for s in skills if s in desc_lower]
+    score = int((len(matched) / len(skills)) * 100) if skills else 50
+    
+    roles = [r.lower() for r in profile.get('job_preferences', {}).get('desired_roles', [])]
+    for r in roles:
+        if r in desc_lower:
+            score = min(100, score + 20)
+            break
+            
+    reason = f"Fallback AI Algorithm: Matched {len(matched)} skills ({', '.join(matched[:3])})."
+    return score, reason
 
 def evaluate_job(job_description, profile):
     prompt = f"""
@@ -22,8 +41,8 @@ def evaluate_job(job_description, profile):
     Provide a very brief 1-sentence reason for the score.
     
     Candidate Profile (JSON):
-    {json.dumps(profile['skills'])}
-    {json.dumps(profile['experience'])}
+    {json.dumps(profile.get('skills', []))}
+    {json.dumps(profile.get('experience', []))}
     
     Job Description:
     {job_description[:3000]}
@@ -40,8 +59,8 @@ def evaluate_job(job_description, profile):
         reason = lines[1].split(':')[1].strip()
         return score, reason
     except Exception as e:
-        print(f"Error evaluating job: {e}")
-        return 0, "Error evaluating"
+        print(f"Gemini API failed ({e}). Switching to Fallback NLP Algorithm...")
+        return fallback_evaluate_job(job_description, profile)
 
 def scrape_linkedin_jobs(keywords, location="Remote"):
     print(f"Searching for '{keywords}' in '{location}' (Easy Apply Only, Serverless Mode)...")

@@ -17,8 +17,9 @@ from scraper import load_profile, scrape_linkedin_jobs, evaluate_job
 from emailer import send_job_digest
 
 load_dotenv()
+os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None) # Fix for Google Auth intercepting Gemini API keys
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 app = Flask(__name__)
 CORS(app)
@@ -57,13 +58,26 @@ def upload_resume():
         {text[:5000]}
         """
         
-        response = model.generate_content(prompt)
-        res_text = response.text.strip()
-        if res_text.startswith("```json"): res_text = res_text[7:]
-        if res_text.startswith("```"): res_text = res_text[3:]
-        if res_text.endswith("```"): res_text = res_text[:-3]
-        
-        profile_data = json.loads(res_text)
+        try:
+            response = model.generate_content(prompt)
+            res_text = response.text.strip()
+            if res_text.startswith("```json"): res_text = res_text[7:]
+            if res_text.startswith("```"): res_text = res_text[3:]
+            if res_text.endswith("```"): res_text = res_text[:-3]
+            
+            profile_data = json.loads(res_text)
+        except Exception as api_err:
+            print(f"Gemini API failed ({api_err}). Using Fallback Keyword Extractor...")
+            text_lower = text.lower()
+            common_skills = ["javascript", "python", "java", "react", "node", "sql", "aws", "docker", "html", "css", "typescript", "c++", "c#", "go", "ruby", "php", "backend", "frontend", "api"]
+            found_skills = [s for s in common_skills if s in text_lower][:5]
+            if not found_skills:
+                found_skills = ["Software Development", "Communication", "Problem Solving", "Teamwork"]
+                
+            profile_data = {
+                "job_title": "Software Engineer" if "software" in text_lower or "developer" in text_lower else "Professional",
+                "skills": found_skills
+            }
         
         # We need a quick mock profile for evaluate_job later
         full_profile = {
@@ -104,6 +118,20 @@ def evaluate_single_job():
     
     return jsonify({"success": True, "job": job})
 
+@app.route('/api/send-digest', methods=['POST'])
+def handle_send_digest():
+    """Allows the public web app to email matches to a user's inputted email."""
+    data = request.json
+    email = data.get('email')
+    jobs = data.get('jobs', [])
+    
+    if email and jobs:
+        try:
+            send_job_digest(email, jobs)
+            return jsonify({"success": True})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    return jsonify({"success": False, "error": "Missing email or jobs"}), 400
 
 # -----------------
 # 2. CHROME EXTENSION API
