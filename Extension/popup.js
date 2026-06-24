@@ -25,8 +25,8 @@ document.getElementById('logJobBtn').addEventListener('click', async () => {
     
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
-    // We send a message to our local python backend to log it
-    fetch('http://localhost:5000/api/log-job', {
+    // We send a message to our live Vercel python backend to log it
+    fetch('https://ai-job-assistant-one.vercel.app/api/log-job', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: tab.url, title: tab.title })

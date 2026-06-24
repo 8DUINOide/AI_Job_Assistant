@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(139, 92, 246, 0.3); }
+        .blob-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(56, 189, 248, 0.2); animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
+        header {
+            text-align: center;
+            margin-top: 4rem;
+            margin-bottom: 3rem;
+            z-index: 10;
+        }
+
+        h1 { font-size: 3rem; font-weight: 700; background: linear-gradient(to right, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.subtitle { color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem; }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .upload-zone:hover { border-color: var(--primary); }
+        .upload-zone p { color: var(--text-muted); margin-top: 10px; }
+        .upload-zone input { display: none; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { background: #475569; cursor: not-allowed; }
+
+        /* Loader */
+        .loader-container { display: none; text-align: center; margin-top: 2rem; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-text { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* Results */
+        #results { margin-top: 2rem; display: none; }
+        .job-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .job-card:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.2); }
+        .job-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .job-title { font-size: 1.2rem; font-weight: 600; color: #fff; }
+        .job-company { color: var(--primary); font-size: 0.9rem; font-weight: 600;}
+        .match-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .match-badge.low { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+        .job-reason { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+        .apply-link {
+            align-self: flex-start;
+            margin-top: 0.5rem;
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .apply-link:hover { text-decoration: underline; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <header>
+        <h1>AI Job Assistant</h1>
+        <p class="subtitle">Upload your resume. Let AI find your perfect match.</p>
+    </header>
+
+    <div class="container">
+        <div class="glass-card" id="uploadCard">
+            <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p id="fileName">Drag & drop your Resume (PDF) here or click to browse</p>
+                <input type="file" id="fileInput" accept=".pdf">
+            </div>
+            <button id="searchBtn" disabled>Find Matching Jobs</button>
+        </div>
+
+        <div class="glass-card loader-container" id="loaderCard">
+            <div class="spinner"></div>
+            <h3 style="margin-bottom: 0.5rem;">AI is working...</h3>
+            <p class="status-text" id="statusText">Extracting your skills from the PDF...</p>
+        </div>
+
+        <div id="results">
+            <!-- Job cards will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const fileNameDisplay = document.getElementById('fileName');
+        const uploadCard = document.getElementById('uploadCard');
+        const loaderCard = document.getElementById('loaderCard');
+        const statusText = document.getElementById('statusText');
+        const resultsContainer = document.getElementById('results');
+
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileNameDisplay.textContent = selectedFile.name;
+                fileNameDisplay.style.color = '#fff';
+                searchBtn.disabled = false;
+            }
+        });
+
+        searchBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            uploadCard.classList.add('hidden');
+            loaderCard.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            resultsContainer.style.display = 'block';
+
+            try {
+                // Step 1: Upload PDF, parse skills, and fetch raw jobs
+                statusText.textContent = "Parsing resume & searching LinkedIn...";
+                const formData = new FormData();
+                formData.append('resume', selectedFile);
+
+                const uploadRes = await fetch('/api/upload-resume', { method: 'POST', body: formData });
+                const uploadData = await uploadRes.json();
+
+                if (!uploadData.success) throw new Error(uploadData.error);
+
+                const { profile, jobs } = uploadData;
+
+                // Step 2: Evaluate jobs one by one to avoid Vercel 10s timeout
+                for (let i = 0; i < jobs.length; i++) {
+                    statusText.textContent = `Evaluating job ${i + 1} of ${jobs.length}: ${jobs[i].title}...`;
+                    
+                    const evalRes = await fetch('/api/evaluate-job', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ job: jobs[i], profile: profile })
+                    });
+                    
+                    const evalData = await evalRes.json();
+                    
+                    if (evalData.success && evalData.score > 0) {
+                        const job = evalData.job;
+                        const isHighMatch = job.score >= 70;
+                        
+                        const card = document.createElement('div');
+                        card.className = 'job-card';
+                        card.innerHTML = `
+                            <div class="job-header">
+                                <div>
+                                    <div class="job-title">${job.title}</div>
+                                    <div class="job-company">${job.company}</div>
+                                </div>
+                                <div class="match-badge ${!isHighMatch ? 'low' : ''}">${job.score}% Match</div>
+                            </div>
+                            <div class="job-reason">${job.reason}</div>
+                            <a href="${job.link}" target="_blank" class="apply-link">View Application &rarr;</a>
+                        `;
+                        resultsContainer.appendChild(card);
+                    }
+                }
+                
+                loaderCard.style.display = 'none';
+                if (resultsContainer.children.length === 0) {
+                    resultsContainer.innerHTML = '<div class="glass-card"><p style="text-align:center; color:#94a3b8;">No strong matches found. Try a different resume.</p></div>';
+                }
+
+            } catch (err) {
+                statusText.textContent = "An error occurred: " + err.message;
+                statusText.style.color = '#ef4444';
+                document.querySelector('.spinner').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

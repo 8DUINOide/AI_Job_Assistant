@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     console.log("Fields sent to AI:", formFields);
 
-    fetch('http://localhost:5000/api/fill-form', {
+    fetch('https://ai-job-assistant-one.vercel.app/api/fill-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: formFields })

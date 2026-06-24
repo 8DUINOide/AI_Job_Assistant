@@ -1,20 +1,20 @@
 import os
 import sys
 import json
+import time
 
-# Add parent directory to path so we can import our other modules
+# Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
+import PyPDF2
 
-# Import our custom modules
 from tracker import log_application
 from scraper import load_profile, scrape_linkedin_jobs, evaluate_job
 from emailer import send_job_digest
-import time
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -23,6 +23,91 @@ model = genai.GenerativeModel('gemini-2.5-flash')
 app = Flask(__name__)
 CORS(app)
 
+# -----------------
+# 1. PUBLIC WEB APP
+# -----------------
+@app.route('/')
+def home():
+    """Serves the beautiful web app homepage."""
+    # Vercel sets the CWD to the project root
+    return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'index.html'))
+
+@app.route('/api/upload-resume', methods=['POST'])
+def upload_resume():
+    """Parses PDF and fetches raw jobs to bypass Vercel timeout."""
+    if 'resume' not in request.files:
+        return jsonify({"success": False, "error": "No resume uploaded"}), 400
+        
+    file = request.files['resume']
+    
+    try:
+        # Extract text from PDF in memory
+        reader = PyPDF2.PdfReader(file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+            
+        # Ask Gemini to quickly extract the core role and skills
+        prompt = f"""
+        Analyze this resume text. Extract the candidate's core job title (e.g. "Frontend Developer", "Data Scientist") and a list of their top 5 skills.
+        Return ONLY a JSON object like this:
+        {{"job_title": "Backend Engineer", "skills": ["Python", "Flask", "SQL", "Git", "Docker"]}}
+        
+        Resume text:
+        {text[:5000]}
+        """
+        
+        response = model.generate_content(prompt)
+        res_text = response.text.strip()
+        if res_text.startswith("```json"): res_text = res_text[7:]
+        if res_text.startswith("```"): res_text = res_text[3:]
+        if res_text.endswith("```"): res_text = res_text[:-3]
+        
+        profile_data = json.loads(res_text)
+        
+        # We need a quick mock profile for evaluate_job later
+        full_profile = {
+            "skills": profile_data['skills'],
+            "experience": "See extracted skills.",
+            "job_preferences": {"desired_roles": [profile_data['job_title']]}
+        }
+        
+        # Scrape raw jobs from LinkedIn
+        raw_jobs = scrape_linkedin_jobs(profile_data['job_title'])
+        
+        return jsonify({
+            "success": True, 
+            "profile": full_profile,
+            "jobs": raw_jobs
+        })
+        
+    except Exception as e:
+        print("Error parsing resume:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/evaluate-job', methods=['POST'])
+def evaluate_single_job():
+    """Evaluates a single job to bypass Vercel 10s limit."""
+    data = request.json
+    job = data.get('job')
+    profile = data.get('profile')
+    
+    if not job or not profile:
+        return jsonify({"success": False, "error": "Missing data"}), 400
+        
+    score, reason = evaluate_job(job['description'], profile)
+    job['score'] = score
+    job['reason'] = reason
+    
+    # Tiny delay to protect Gemini RPM limits (15/min)
+    time.sleep(4)
+    
+    return jsonify({"success": True, "job": job})
+
+
+# -----------------
+# 2. CHROME EXTENSION API
+# -----------------
 @app.route('/api/fill-form', methods=['POST'])
 def fill_form():
     data = request.json
@@ -78,21 +163,17 @@ def log_job():
         return jsonify({"success": True})
     return jsonify({"success": False}), 500
 
+# -----------------
+# 3. BACKGROUND CRON
+# -----------------
 @app.route('/api/cron', methods=['GET', 'POST'])
 def run_scraper_cron():
     """This endpoint is triggered daily by Vercel Cron."""
-    # Verify secure cron token (optional but recommended in production)
-    auth_header = request.headers.get('Authorization')
-    if os.getenv("CRON_SECRET") and auth_header != f"Bearer {os.getenv('CRON_SECRET')}":
-        return jsonify({"error": "Unauthorized"}), 401
-
     profile = load_profile()
     roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
     search_keyword = roles[0] if roles else "Software Engineer"
     
-    # Scrape only 3 pages (approx 15 jobs) to stay within Vercel execution timeouts
     found_jobs = scrape_linkedin_jobs(search_keyword)
-    
     high_match_jobs = []
     
     for job in found_jobs:
@@ -101,13 +182,11 @@ def run_scraper_cron():
             job['score'] = score
             job['reason'] = reason
             high_match_jobs.append(job)
-        time.sleep(4) # Respect Gemini RPM limits
+        time.sleep(4) 
             
     if high_match_jobs:
         send_job_digest(os.getenv("EMAIL_TARGET", "alfrancisbadillapaz10@gmail.com"), high_match_jobs)
         
     return jsonify({"status": "completed", "jobs_found": len(high_match_jobs)})
 
-# Export the app for Vercel
-# Vercel needs an application instance
 application = app
