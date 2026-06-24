@@ -224,12 +224,16 @@
             resultsContainer.style.display = 'block';
 
             try {
+                // Support running from file:// or Live Server
+                const API_BASE = window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+                    && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
+
                 // Step 1: Upload PDF, parse skills, and fetch raw jobs
                 statusText.textContent = "Parsing resume & searching LinkedIn...";
                 const formData = new FormData();
                 formData.append('resume', selectedFile);
 
-                const uploadRes = await fetch('/api/upload-resume', { method: 'POST', body: formData });
+                const uploadRes = await fetch(`${API_BASE}/api/upload-resume`, { method: 'POST', body: formData });
                 const uploadData = await uploadRes.json();
 
                 if (!uploadData.success) throw new Error(uploadData.error);
@@ -241,7 +245,7 @@
                 for (let i = 0; i < jobs.length; i++) {
                     statusText.textContent = `Evaluating job ${i + 1} of ${jobs.length}: ${jobs[i].title}...`;
                     
-                    const evalRes = await fetch('/api/evaluate-job', {
+                    const evalRes = await fetch(`${API_BASE}/api/evaluate-job`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ job: jobs[i], profile: profile })
@@ -249,7 +253,7 @@
                     
                     const evalData = await evalRes.json();
                     
-                    if (evalData.success && evalData.score > 0) {
+                    if (evalData.success && evalData.job && evalData.job.score > 0) {
                         const job = evalData.job;
                         const isHighMatch = job.score >= 70;
                         
@@ -275,7 +279,7 @@
                 // Step 3: Send email if requested
                 if (userEmail && highMatchJobs.length > 0) {
                     statusText.textContent = "Sending matches to your email...";
-                    await fetch('/api/send-digest', {
+                    await fetch(`${API_BASE}/api/send-digest`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: userEmail, jobs: highMatchJobs })

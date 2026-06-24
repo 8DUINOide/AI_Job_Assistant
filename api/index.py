@@ -113,6 +113,11 @@ def evaluate_single_job():
     job['score'] = score
     job['reason'] = reason
     
+    print(f"\nRole: {job['title']} @ {job['company']}")
+    print(f"Link: {job['link']}")
+    print(f"Match Score: {score}/100")
+    print(f"Reason: {reason}")
+    
     # Tiny delay to protect Gemini RPM limits (15/min)
     time.sleep(4)
     
@@ -218,3 +223,6 @@ def run_scraper_cron():
     return jsonify({"status": "completed", "jobs_found": len(high_match_jobs)})
 
 application = app
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
