@@ -89,15 +89,16 @@ def evaluate_jobs_batch(jobs, profile):
         results.append({"score": score, "reason": reason})
     return results
 
-def scrape_jobs_multisite(keywords, location="Remote"):
-    print(f"Searching for '{keywords}' in '{location}' across multiple sites...")
+def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset=0):
+    print(f"Searching for '{keywords}' in '{location}' across multiple sites (offset: {offset})...")
     
     try:
         jobs_df = scrape_jobs(
             site_name=["linkedin", "indeed"],
             search_term=keywords,
             location=location,
-            results_wanted=15,
+            results_wanted=results_wanted,
+            offset=offset,
             country_indeed='USA' # Required to bypass some region blocks
         )
     except Exception as e:
@@ -117,9 +118,7 @@ def scrape_jobs_multisite(keywords, location="Remote"):
     print(f"Found {len(jobs_df)} jobs. Analyzing...")
     
     for idx, row in jobs_df.iterrows():
-        if len(jobs) >= 5:
-            break
-            
+        # Removed the 5 jobs limit to allow evaluating all fetched jobs
         try:
             title = str(row.get('title', 'Unknown'))
             company = str(row.get('company', 'Unknown'))
@@ -159,28 +158,70 @@ if __name__ == "__main__":
     
     profile = load_profile()
     roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
-    search_keyword = roles[0] if roles else "Software Engineer"
-    
-    found_jobs = scrape_jobs_multisite(search_keyword)
     
     high_match_jobs = []
+    seen_signatures = set()
     
-    print("\n--- JOB MATCH RESULTS ---")
-    for job in found_jobs:
-        score, reason = evaluate_job(job, profile)
-        print(f"\nRole: {job['title']} @ {job['company']}")
-        print(f"Link: {job['link']}")
-        print(f"Match Score: {score}/100")
-        print(f"Reason: {reason}")
+    role_idx = 0
+    max_attempts_per_role = 2
+    attempts = 0
+    offset = 0
+    
+    print("\n--- STARTING CONTINUOUS JOB SEARCH ---")
+    while not high_match_jobs and role_idx < len(roles):
+        search_keyword = roles[role_idx]
+        print(f"\n--- Searching for: '{search_keyword}' (Attempt {attempts + 1}) ---")
         
-        if score > 70:
-            print(">>> HIGH MATCH! You should apply for this.")
-            job['score'] = score
-            job['reason'] = reason
-            high_match_jobs.append(job)
+        found_jobs = scrape_jobs_multisite(search_keyword, offset=offset)
+        
+        if not found_jobs:
+            print("No new jobs found in this attempt.")
+            # Move to next role
+            role_idx += 1
+            offset = 0
+            attempts = 0
+            continue
             
-        time.sleep(5)
+        print("\n--- JOB MATCH RESULTS ---")
+        for job in found_jobs:
+            # Prevent duplicates in the current run
+            signature = f"{job['company'].lower()}|{job['title'].lower()}"
+            if signature in seen_signatures:
+                continue
+            seen_signatures.add(signature)
+            
+            score, reason = evaluate_job(job, profile)
+            print(f"\nRole: {job['title']} @ {job['company']}")
+            print(f"Link: {job['link']}")
+            print(f"Match Score: {score}/100")
+            print(f"Reason: {reason}")
+            
+            if score > 70:
+                print(">>> HIGH MATCH! You should apply for this.")
+                job['score'] = score
+                job['reason'] = reason
+                high_match_jobs.append(job)
+                # Stop if we have enough jobs
+                if len(high_match_jobs) >= 5:
+                    break
+                    
+            time.sleep(1) # Reduced sleep for faster iteration
+            
+        if high_match_jobs:
+            break
+            
+        # If we reach here, we didn't find high match jobs in this batch.
+        attempts += 1
+        offset += 30 # Increase offset for next jobspy search
+        
+        if attempts >= max_attempts_per_role:
+            print(f"Max attempts reached for '{search_keyword}'. Trying next role...")
+            role_idx += 1
+            offset = 0
+            attempts = 0
             
     if high_match_jobs:
-        print("\nSending email digest...")
+        print(f"\nSending email digest with {len(high_match_jobs)} jobs...")
         send_job_digest("alfrancisbadillapaz10@gmail.com", high_match_jobs)
+    else:
+        print("\nCould not find any high match jobs after searching all roles. Try again later.")
