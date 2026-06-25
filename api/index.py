@@ -135,7 +135,8 @@ def handle_send_digest():
             
             # Log these jobs as pending
             import datetime
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            now = datetime.datetime.now()
+            today = f"{now.strftime('%B')} {now.day}, {now.year}"
             rows = []
             for j in jobs:
                 rows.append({
@@ -336,7 +337,8 @@ def run_scraper_cron():
         
         # Log these jobs as pending
         import datetime
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        now = datetime.datetime.now()
+        today = f"{now.strftime('%B')} {now.day}, {now.year}"
         rows = []
         for j in high_match_jobs:
             rows.append({

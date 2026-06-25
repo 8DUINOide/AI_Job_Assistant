@@ -245,7 +245,8 @@ if __name__ == "__main__":
         # Log these jobs as pending
         import datetime
         from tracker import log_applications_batch
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        now = datetime.datetime.now()
+        today = f"{now.strftime('%B')} {now.day}, {now.year}"
         rows = []
         for j in high_match_jobs:
             rows.append({
