@@ -92,9 +92,11 @@ def evaluate_multiple_jobs():
         if i < len(evaluated_results):
             job['score'] = evaluated_results[i].get('score', 0)
             job['reason'] = evaluated_results[i].get('reason', 'Evaluation failed')
+            job['tech_stack'] = evaluated_results[i].get('tech_stack', '')
         else:
             job['score'] = 50
             job['reason'] = 'Evaluation parsing error'
+            job['tech_stack'] = ''
             
     return jsonify({"success": True, "jobs": jobs})
 
@@ -142,7 +144,7 @@ def handle_send_digest():
                 rows.append({
                     'company': j.get('company', 'Unknown'),
                     'job_title': j.get('title', 'Unknown'),
-                    'tech_stack': '',
+                    'tech_stack': j.get('tech_stack', ''),
                     'status': 'Pending',
                     'date_applied': today,
                     'job_link': j.get('link', ''),
@@ -330,6 +332,7 @@ def run_scraper_cron():
                 if score > 70:
                     job['score'] = score
                     job['reason'] = evaluated_results[i].get('reason', '')
+                    job['tech_stack'] = evaluated_results[i].get('tech_stack', '')
                     high_match_jobs.append(job)
             
     if high_match_jobs:
@@ -344,7 +347,7 @@ def run_scraper_cron():
             rows.append({
                 'company': j.get('company', 'Unknown'),
                 'job_title': j.get('title', 'Unknown'),
-                'tech_stack': '',
+                'tech_stack': j.get('tech_stack', ''),
                 'status': 'Pending',
                 'date_applied': today,
                 'job_link': j.get('link', ''),

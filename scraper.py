@@ -16,9 +16,15 @@ def load_profile():
         return json.load(f)
 
 def evaluate_job(job, profile):
+    if isinstance(job, str):
+        # Handle case where old code passes description directly
+        job = {'description': job, 'title': '', 'location': ''}
+        
     desc_lower = job.get('description', '').lower()
     title_lower = job.get('title', '').lower()
     loc_lower = job.get('location', '').lower()
+    
+    job['tech_stack'] = '' # Initialize
     
     # Enforce Seniority Rules (Filter out senior roles for fresh grad)
     senior_keywords = ['senior', 'sr', 'lead', 'principal', 'manager', 'director', 'head', 'vp', 'supervisor', 'experienced', 'expert']
@@ -71,6 +77,9 @@ def evaluate_job(job, profile):
     matched_skills = [s for s in skills if s in desc_lower or s in title_lower]
     matched_skills = list(set(matched_skills)) # Remove duplicates
     
+    if isinstance(job, dict):
+        job['tech_stack'] = ", ".join(matched_skills)
+    
     skill_points = min(50, len(matched_skills) * 10)
     score += skill_points
     score = min(100, score)
@@ -86,7 +95,7 @@ def evaluate_jobs_batch(jobs, profile):
     results = []
     for job in jobs:
         score, reason = evaluate_job(job, profile)
-        results.append({"score": score, "reason": reason})
+        results.append({"score": score, "reason": reason, "tech_stack": job.get('tech_stack', '')})
     return results
 
 def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset=0):
@@ -252,7 +261,7 @@ if __name__ == "__main__":
             rows.append({
                 'company': j.get('company', 'Unknown'),
                 'job_title': j.get('title', 'Unknown'),
-                'tech_stack': '',
+                'tech_stack': j.get('tech_stack', ''),
                 'status': 'Pending',
                 'date_applied': today,
                 'job_link': j.get('link', ''),
