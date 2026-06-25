@@ -103,7 +103,7 @@ def log_applications_batch(rows):
         print(f"Error batch logging to spreadsheet: {e}")
         return False
 
-def get_recent_logs(limit=10):
+def get_recent_logs(limit=200):
     """Fetches the most recent logs from the Job Hunting spreadsheet."""
     try:
         service = get_sheets_service()

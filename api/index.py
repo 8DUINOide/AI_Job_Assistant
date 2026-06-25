@@ -43,7 +43,7 @@ def get_profile():
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
     try:
-        logs = get_recent_logs(limit=20)
+        logs = get_recent_logs(limit=200)
         if isinstance(logs, dict) and logs.get("auth_error"):
             return jsonify({"success": False, "auth_error": True, "error": "Google Sheets Authentication failed."}), 401
         return jsonify({"success": True, "logs": logs})
