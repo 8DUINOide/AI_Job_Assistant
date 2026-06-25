@@ -11,6 +11,8 @@
   "job_preferences": {
     "desired_roles": [
       "Backend Developer",
+      "DevOps Engineer",
+      "Full Stack Developer",
       "Software Engineer",
       "Android Developer",
       "IoT Engineer"
@@ -89,6 +91,7 @@
     "Network Support",
     "Hardware-Software Integration",
     "CORS",
-    "CI/CD"
+    "CI/CD",
+    "Docker"
   ]
 }

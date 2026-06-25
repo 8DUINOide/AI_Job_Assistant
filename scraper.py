@@ -25,6 +25,21 @@ def evaluate_job(job, profile):
     title_words = re.findall(r'\b[a-z]+\b', title_lower.replace('.', ''))
     if any(word in senior_keywords for word in title_words):
         return 0, "Rejected: Senior/Lead role not suitable for fresh graduate."
+        
+    # Enforce Years of Experience Rules (Reject jobs asking for 4+ years)
+    exp_matches = re.finditer(r'(?:(\d+)\s*(?:-|to)\s*)?(\d+)\s*\+?\s*years?', desc_lower)
+    for match in exp_matches:
+        g1, g2 = match.groups()
+        try:
+            lower_bound = int(g1) if g1 else int(g2)
+            if lower_bound >= 4:
+                start_idx = max(0, match.start() - 30)
+                end_idx = min(len(desc_lower), match.end() + 30)
+                context = desc_lower[start_idx:end_idx]
+                if 'experience' in context or 'exp' in context or 'development' in context:
+                    return 0, f"Rejected: Requires {lower_bound}+ years of experience."
+        except ValueError:
+            pass
     
     # Enforce Location Rules
     ph_locations = ['philippines', 'ncr', 'manila', 'makati', 'taguig', 'quezon', 'pasig', 'alabang', 'bicol', 'mandaluyong', 'ortigas']
