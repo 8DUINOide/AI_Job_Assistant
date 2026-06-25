@@ -414,60 +414,100 @@
             terminal.innerHTML = '';
             
             printLog("Agent manual override initiated.", "warn");
-            printLog("Fetching target roles from Master Profile...");
 
             try {
-                // Step 1: Run Agent
-                printLog("Searching LinkedIn for matches... (This may take a moment)", "info");
-                const agentRes = await fetch(`${API_BASE}/api/run-agent-manually`, { method: 'POST' });
+                // Fetch profile once
+                const profileRes = await fetch(`${API_BASE}/api/profile`);
+                const profileData = await profileRes.json();
+                const profile = profileData.profile;
+                const roles = profile.job_preferences?.desired_roles || ['Software Engineer'];
                 
-                let agentData;
-                try {
-                    agentData = await agentRes.json();
-                } catch (e) {
-                    const text = await agentRes.text().catch(() => '');
-                    throw new Error(`Server timeout or error. Status: ${agentRes.status}.`);
-                }
-
-                if (!agentData.success) throw new Error(agentData.error);
-
-                const { jobs, profile } = agentData;
-                printLog(`Found ${jobs.length} raw jobs. Beginning evaluation pipeline.`, "info");
-
-                const highMatchJobs = [];
-
-                // Step 2: Evaluate jobs in batch
-                if (jobs.length > 0) {
-                    printLog(`Evaluating ${jobs.length} jobs in a single batch to maximize speed...`, "warn");
+                let roleIdx = 0;
+                let attempts = 0;
+                const maxAttempts = 2;
+                let offset = 0;
+                let highMatchJobs = [];
+                let seenSignatures = new Set();
+                
+                printLog("Starting continuous job search...");
+                
+                while (highMatchJobs.length === 0 && roleIdx < roles.length) {
+                    const searchKeyword = roles[roleIdx];
+                    printLog(`--- Searching for: '${searchKeyword}' (Attempt ${attempts + 1}) ---`, "info");
                     
-                    const evalRes = await fetch(`${API_BASE}/api/evaluate-jobs`, {
+                    const agentRes = await fetch(`${API_BASE}/api/run-agent-manually`, { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ jobs: jobs, profile: profile })
+                        body: JSON.stringify({ search_keyword: searchKeyword, offset: offset })
                     });
                     
-                    let evalData;
-                    try { evalData = await evalRes.json(); } catch(e) { 
-                        printLog(`Failed to parse evaluation response`, "error");
+                    let agentData;
+                    try {
+                        agentData = await agentRes.json();
+                    } catch (e) {
+                        throw new Error(`Server timeout or error. Status: ${agentRes.status}.`);
+                    }
+
+                    if (!agentData.success) throw new Error(agentData.error);
+                    const jobs = agentData.jobs;
+                    
+                    if (jobs.length === 0) {
+                        printLog(`No new jobs found in this attempt.`);
+                        roleIdx++;
+                        offset = 0;
+                        attempts = 0;
+                        continue;
                     }
                     
-                    if (evalData && evalData.success && evalData.jobs) {
-                        for (let job of evalData.jobs) {
-                            const score = job.score || 0;
-                            if (score >= 70) {
-                                printLog(`=> MATCH! ${job.title} @ ${job.company} - Score: ${score}%`, "success");
-                                highMatchJobs.push(job);
-                            } else {
-                                printLog(`=> Pass. ${job.title} @ ${job.company} - Score: ${score}%`, "info");
+                    printLog(`Found ${jobs.length} raw jobs. Evaluating...`);
+                    
+                    const uniqueJobs = [];
+                    for (let j of jobs) {
+                        const sig = `${j.company.toLowerCase()}|${j.title.toLowerCase()}`;
+                        if (!seenSignatures.has(sig)) {
+                            seenSignatures.add(sig);
+                            uniqueJobs.push(j);
+                        }
+                    }
+                    
+                    if (uniqueJobs.length > 0) {
+                        const evalRes = await fetch(`${API_BASE}/api/evaluate-jobs`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobs: uniqueJobs, profile: profile })
+                        });
+                        const evalData = await evalRes.json();
+                        
+                        if (evalData && evalData.success && evalData.jobs) {
+                            for (let job of evalData.jobs) {
+                                const score = job.score || 0;
+                                if (score >= 70) {
+                                    printLog(`=> MATCH! ${job.title} @ ${job.company} - Score: ${score}%`, "success");
+                                    highMatchJobs.push(job);
+                                    if (highMatchJobs.length >= 5) break;
+                                } else {
+                                    printLog(`=> Pass. ${job.title} @ ${job.company} - Score: ${score}%`);
+                                }
                             }
                         }
                     }
+                    
+                    if (highMatchJobs.length > 0) {
+                        break;
+                    }
+                    
+                    attempts++;
+                    offset += 30;
+                    if (attempts >= maxAttempts) {
+                        printLog(`Max attempts reached for '${searchKeyword}'. Trying next role...`, "warn");
+                        roleIdx++;
+                        offset = 0;
+                        attempts = 0;
+                    }
                 }
 
-                // Step 3: Digest
                 if (highMatchJobs.length > 0) {
-                    printLog(`Sending email digest with ${highMatchJobs.length} jobs...`, "info");
-                    
+                    printLog(`Sending email digest and logging ${highMatchJobs.length} jobs as Pending...`, "info");
                     const email = profile.personal_info?.email;
                     if (email) {
                         await fetch(`${API_BASE}/api/send-digest`, {
@@ -475,21 +515,19 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ email: email, jobs: highMatchJobs })
                         });
-                        printLog("Digest sent successfully!", "success");
+                        printLog("Digest sent successfully! Check Pending Approvals.", "success");
                     } else {
                         printLog("No email found in Master Profile. Skipping digest.", "warn");
                     }
                 } else {
-                    printLog("No high match jobs found to send.", "warn");
+                    printLog("Could not find any high match jobs after searching all roles.", "error");
                 }
-
                 printLog("Agent run complete.", "success");
 
             } catch (err) {
                 printLog(`Fatal Error: ${err.message}`, "error");
             } finally {
                 triggerBtn.disabled = false;
-                // Refresh logs just in case
                 setTimeout(fetchLogs, 2000);
             }
         });

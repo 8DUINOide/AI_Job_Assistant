@@ -54,12 +54,18 @@ def get_logs():
 def run_agent_manually():
     """Fetches raw jobs based on master profile to bypass Vercel timeout."""
     try:
+        data = request.json or {}
         profile = load_profile()
         roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
-        search_keyword = roles[0] if roles else "Software Engineer"
+        
+        search_keyword = data.get('search_keyword')
+        if not search_keyword:
+            search_keyword = roles[0] if roles else "Software Engineer"
+            
+        offset = data.get('offset', 0)
         
         # Scrape raw jobs from multiple platforms
-        raw_jobs = scrape_jobs_multisite(search_keyword)
+        raw_jobs = scrape_jobs_multisite(search_keyword, offset=offset)
         
         return jsonify({
             "success": True, 
