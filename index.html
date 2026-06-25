@@ -185,6 +185,16 @@
 
         <!-- Right Column -->
         <div class="glass-card">
+            <div id="pendingApprovalsContainer" style="display: none; margin-bottom: 2rem;">
+                <h3 style="color: #fbbf24; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <span class="status-dot" style="background-color: #fbbf24; box-shadow: 0 0 8px #fbbf24; animation: none;"></span> 
+                    Action Required: Pending Jobs
+                </h3>
+                <div id="pendingJobsList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Pending jobs injected here -->
+                </div>
+            </div>
+            
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div>
                     <h2 style="margin-bottom: 0;">📊 Application Logs</h2>
@@ -217,7 +227,6 @@
                             <th>Tech Stack</th>
                             <th>Status</th>
                             <th>Link</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="logsBody">
@@ -286,61 +295,64 @@
                     }
                     
                     let applied = 0, rejected = 0, other = 0;
+                    const pendingLogs = [];
+                    const historyLogs = [];
+                    
                     data.logs.forEach(log => {
                         const s = (log.status || '').toLowerCase();
-                        if (s.includes('applied')) applied++;
-                        else if (s.includes('rejected')) rejected++;
-                        else other++;
+                        if (s === 'pending') {
+                            pendingLogs.push(log);
+                        } else {
+                            historyLogs.push(log);
+                            if (s.includes('applied')) applied++;
+                            else if (s.includes('rejected') || s.includes('did not proceed')) rejected++;
+                            else other++;
+                        }
                     });
                     
+                    const pendingContainer = document.getElementById('pendingApprovalsContainer');
+                    const pendingList = document.getElementById('pendingJobsList');
+                    if (pendingLogs.length > 0) {
+                        pendingContainer.style.display = 'block';
+                        pendingList.innerHTML = pendingLogs.map(log => `
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 1.05rem; color: #fff;">${log.job_title}</div>
+                                    <div style="color: var(--text-muted); font-size: 0.9rem;">${log.company} • Scraped: ${log.date_applied}</div>
+                                    <a href="${log.job_link}" target="_blank" style="font-size: 0.85rem; color: #3b82f6;">View Job Details</a>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="background: var(--success); padding: 8px 16px; margin: 0; width: auto;">Applied</button>
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Rejected')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto;">Denied</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        pendingContainer.style.display = 'none';
+                    }
+                    
                     document.getElementById('logsSummary').innerHTML = `
-                        <span style="color: var(--text);">Total: ${data.logs.length}</span>
+                        <span style="color: var(--text);">Total: ${historyLogs.length}</span>
                         <span style="color: var(--success);">Applied: ${applied}</span>
                         <span style="color: var(--danger);">Rejected: ${rejected}</span>
                         ${other > 0 ? `<span style="color: var(--text-muted);">Other: ${other}</span>` : ''}
                     `;
                     
-                    logsBody.innerHTML = data.logs.map((log, i) => `
+                    logsBody.innerHTML = historyLogs.map((log, i) => `
                         <tr>
                             <td style="color: var(--text-muted); font-size: 0.8rem;">${i + 1}</td>
                             <td>${log.date_applied}</td>
                             <td style="font-weight: 600;">${log.company}</td>
                             <td>${log.job_title}</td>
                             <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.tech_stack}">${log.tech_stack || '-'}</td>
-                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('rejected') || (log.status || '').toLowerCase().includes('did not proceed') ? 'var(--danger)' : ((log.status === 'Status') ? '#3b82f6' : 'var(--text-muted)'))};">${log.status || 'Unknown'}</span></td>
+                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('rejected') ? 'var(--danger)' : 'var(--text-muted)')};">${log.status || 'Unknown'}</span></td>
                             <td>${log.job_link ? `<a href="${log.job_link}" target="_blank">View</a>` : '-'}</td>
-                            <td>
-                                ${(log.status === 'Status') ? 
-                                    `<button onclick="updateJobStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="margin-top:0; padding: 4px 8px; font-size: 0.75rem; background: var(--success); width: auto; display: inline-block;">Applied</button>
-                                     <button onclick="updateJobStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Did Not Proceed')" style="margin-top:0; padding: 4px 8px; font-size: 0.75rem; background: var(--danger); width: auto; display: inline-block; margin-left: 4px;">Skip</button>` : 
-                                    '-'}
-                            </td>
                         </tr>
                     `).join('');
                 }
             } catch (e) {
                 console.error("Error fetching logs:", e);
-                logsBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">Error loading logs. Make sure Google Sheets credentials are set up.</td></tr>';
-            }
-        }
-        
-        async function updateJobStatus(company, job_title, status) {
-            try {
-                const res = await fetch(`${API_BASE}/api/update-log`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ company, job_title, status })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    printLog(`Updated status for ${company} to ${status}`, 'success');
-                    fetchLogs(); // Refresh the table
-                } else {
-                    alert('Failed to update status: ' + data.error);
-                }
-            } catch(e) {
-                alert('Error updating status');
-                console.error(e);
+                logsBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">Error loading logs. Make sure Google Sheets credentials are set up.</td></tr>';
             }
         }
         
@@ -481,6 +493,27 @@
                 setTimeout(fetchLogs, 2000);
             }
         });
+        
+        async function updateStatus(company, job_title, status) {
+            try {
+                // Show a loading state if we want, or just immediately fetch
+                const res = await fetch(`${API_BASE}/api/update-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ company, job_title, status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // Re-fetch logs to update UI
+                    fetchLogs();
+                } else {
+                    alert(`Failed to update status: ${data.error}`);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Error updating status.');
+            }
+        }
 
         // Init
         fetchProfile();

@@ -34,7 +34,7 @@ def get_sheets_service():
     service = build('sheets', 'v4', credentials=creds)
     return service
 
-def log_application(job_title, company, date_applied, status, job_link):
+def log_application(job_title, company, date_applied, status, job_link, tech_stack="", contact_person="", salary="", location=""):
     """Appends a new row to the Job Hunting spreadsheet."""
     try:
         service = get_sheets_service()
@@ -42,7 +42,7 @@ def log_application(job_title, company, date_applied, status, job_link):
         # The data to insert (Aligned with user's columns)
         # Columns: Company Name, Role Title, Tech Stack, Status, Application Date, Job Post Link, Contact Person, Salary / Package, Location
         values = [
-            [company, job_title, "", status, date_applied, job_link, "", "", ""]
+            [company, job_title, tech_stack, status, date_applied, job_link, contact_person, salary, location]
         ]
         body = {
             'values': values
@@ -63,58 +63,6 @@ def log_application(job_title, company, date_applied, status, job_link):
         print(f"Error logging to spreadsheet: {e}")
         return False
 
-def update_application_status(company, job_title, new_status):
-    """Updates the status of an existing application in the spreadsheet."""
-    try:
-        service = get_sheets_service()
-        
-        # Find the row index
-        result = service.spreadsheets().values().get(
-            spreadsheetId=SPREADSHEET_ID,
-            range=RANGE_NAME
-        ).execute()
-        
-        values = result.get('values', [])
-        row_index = -1
-        for i, row in enumerate(values):
-            if len(row) > 1:
-                r_company = row[0].strip().lower()
-                r_title = row[1].strip().lower()
-                if r_company == company.lower() and r_title == job_title.lower():
-                    row_index = i + 1 # Sheets are 1-indexed
-                    break
-        
-        if row_index == -1:
-            print(f"Could not find [{company}] '{job_title}' to update status.")
-            return False
-            
-        import datetime
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        
-        # If applying, set status and today's date. If skipping, set status and clear date.
-        if new_status.lower() == 'applied':
-            update_range = f'Sheet1!D{row_index}:E{row_index}'
-            body = {'values': [[new_status, today]]}
-        elif new_status.lower() == 'did not proceed':
-            update_range = f'Sheet1!D{row_index}:E{row_index}'
-            body = {'values': [[new_status, ""]]}
-        else:
-            update_range = f'Sheet1!D{row_index}'
-            body = {'values': [[new_status]]}
-
-        service.spreadsheets().values().update(
-            spreadsheetId=SPREADSHEET_ID,
-            range=update_range,
-            valueInputOption='USER_ENTERED',
-            body=body
-        ).execute()
-        
-        print(f"[{company}] '{job_title}' status updated to {new_status}!")
-        return True
-    except Exception as e:
-        print(f"Error updating status in spreadsheet: {e}")
-        return False
-
 def log_applications_batch(rows):
     """Appends multiple rows to the Job Hunting spreadsheet in a single batch."""
     try:
@@ -129,11 +77,9 @@ def log_applications_batch(rows):
             date_applied = row.get('date_applied', '')
             job_link = row.get('job_link', '')
             location = row.get('location', '')
-            salary = row.get('salary', '')
-            contact = row.get('contact', '')
             
             # Columns: Company Name, Role Title, Tech Stack, Status, Application Date, Job Post Link, Contact Person, Salary / Package, Location
-            values.append([company, job_title, tech_stack, status, date_applied, job_link, contact, salary, location])
+            values.append([company, job_title, tech_stack, status, date_applied, job_link, "", "", location])
             
         if not values:
             return True
@@ -223,6 +169,44 @@ def get_applied_job_ids():
     except Exception as e:
         print(f"Error fetching applied job IDs: {e}")
         return {'ids': set(), 'signatures': set()}
+        
+def update_application_status(company, job_title, new_status):
+    """Updates the status of an existing job application in the spreadsheet."""
+    try:
+        service = get_sheets_service()
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range=RANGE_NAME
+        ).execute()
+        
+        values = result.get('values', [])
+        for i, row in enumerate(values):
+            if len(row) > 1:
+                r_company = row[0].strip().lower()
+                r_title = row[1].strip().lower()
+                
+                if r_company == company.lower() and r_title == job_title.lower():
+                    # Check if it was pending to avoid overwriting randomly
+                    # Or just overwrite it anyway since it was requested
+                    row_index = i + 1
+                    update_range = f"Sheet1!D{row_index}"
+                    
+                    body = {
+                        'values': [[new_status]]
+                    }
+                    
+                    service.spreadsheets().values().update(
+                        spreadsheetId=SPREADSHEET_ID,
+                        range=update_range,
+                        valueInputOption='USER_ENTERED',
+                        body=body
+                    ).execute()
+                    print(f"Successfully updated status to '{new_status}' for {job_title} at {company}")
+                    return True
+        return False
+    except Exception as e:
+        print(f"Error updating status: {e}")
+        return False
 
 if __name__ == '__main__':
     # A simple test function to run when you execute `python tracker.py`

@@ -129,6 +129,22 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
             if pd.isna(row.get('description')):
                 description = "No description"
                 
+            salary = ""
+            min_amt = row.get('min_amount')
+            max_amt = row.get('max_amount')
+            if pd.notna(min_amt) and str(min_amt) != 'nan':
+                currency = str(row.get('currency', 'USD')).replace('nan', 'USD')
+                interval = str(row.get('interval', 'yearly')).replace('nan', 'yearly')
+                if pd.notna(max_amt) and str(max_amt) != 'nan':
+                    salary = f"{min_amt} - {max_amt} {currency}/{interval}"
+                else:
+                    salary = f"{min_amt} {currency}/{interval}"
+                    
+            contact_person = ""
+            emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', description)
+            if emails:
+                contact_person = emails[0]
+                
             job_id = None
             if 'linkedin.com' in link:
                 job_id_match = re.search(r'(\d{9,10})/?$', link.split('?')[0])
@@ -145,7 +161,9 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
                 "company": company,
                 "link": link,
                 "location": location_text,
-                "description": description
+                "description": description,
+                "salary": salary,
+                "contact_person": contact_person
             })
             
         except Exception as e:
@@ -221,24 +239,27 @@ if __name__ == "__main__":
             attempts = 0
             
     if high_match_jobs:
-        print(f"\nLogging {len(high_match_jobs)} jobs to Google Sheets as 'Action Needed'...")
+        print(f"\nSending email digest with {len(high_match_jobs)} jobs...")
+        send_job_digest("alfrancisbadillapaz10@gmail.com", high_match_jobs)
+        
+        # Log these jobs as pending
         import datetime
         from tracker import log_applications_batch
         today = datetime.datetime.now().strftime("%Y-%m-%d")
         rows = []
         for j in high_match_jobs:
             rows.append({
-                'company': j.get('company', ''),
-                'job_title': j.get('title', ''),
+                'company': j.get('company', 'Unknown'),
+                'job_title': j.get('title', 'Unknown'),
                 'tech_stack': '',
-                'status': 'Status',
-                'date_applied': '',
+                'status': 'Pending',
+                'date_applied': today,
                 'job_link': j.get('link', ''),
-                'location': j.get('location', '')
+                'location': j.get('location', ''),
+                'salary': j.get('salary', ''),
+                'contact_person': j.get('contact_person', '')
             })
         log_applications_batch(rows)
-        
-        print(f"\nSending email digest with {len(high_match_jobs)} jobs...")
-        send_job_digest("alfrancisbadillapaz10@gmail.com", high_match_jobs)
+        print("Logged jobs as 'Pending' in tracker.")
     else:
         print("\nCould not find any high match jobs after searching all roles. Try again later.")

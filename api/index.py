@@ -125,47 +125,49 @@ def handle_send_digest():
     
     if email and jobs:
         try:
-            # 1. Log jobs to Google Sheet first as Action Needed
+            send_job_digest(email, jobs)
+            
+            # Log these jobs as pending
             import datetime
-            from tracker import log_applications_batch
             today = datetime.datetime.now().strftime("%Y-%m-%d")
             rows = []
             for j in jobs:
                 rows.append({
-                    'company': j.get('company', ''),
-                    'job_title': j.get('title', ''),
+                    'company': j.get('company', 'Unknown'),
+                    'job_title': j.get('title', 'Unknown'),
                     'tech_stack': '',
-                    'status': 'Status',
-                    'date_applied': '',
+                    'status': 'Pending',
+                    'date_applied': today,
                     'job_link': j.get('link', ''),
-                    'location': j.get('location', '')
+                    'location': j.get('location', ''),
+                    'salary': j.get('salary', ''),
+                    'contact_person': j.get('contact_person', '')
                 })
             log_applications_batch(rows)
             
-            # 2. Send Email
-            send_job_digest(email, jobs)
             return jsonify({"success": True})
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
     return jsonify({"success": False, "error": "Missing email or jobs"}), 400
-
-@app.route('/api/update-log', methods=['POST'])
-def update_log_endpoint():
-    """Endpoint for web app buttons to update job status."""
+    
+@app.route('/api/update-status', methods=['POST'])
+def update_status():
+    """Updates the status of a pending job."""
     data = request.json
     company = data.get('company')
     job_title = data.get('job_title')
     new_status = data.get('status')
     
-    if not company or not job_title or not new_status:
-        return jsonify({"success": False, "error": "Missing data"}), 400
-        
-    from tracker import update_application_status
-    success = update_application_status(company, job_title, new_status)
-    if success:
-        return jsonify({"success": True})
-    else:
-        return jsonify({"success": False, "error": "Failed to update in Google Sheets"}), 500
+    if company and job_title and new_status:
+        try:
+            success = update_application_status(company, job_title, new_status)
+            if success:
+                return jsonify({"success": True})
+            else:
+                return jsonify({"success": False, "error": "Could not find job to update."}), 404
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    return jsonify({"success": False, "error": "Missing data"}), 400
 
 # -----------------
 # 2. CHROME EXTENSION API
@@ -325,6 +327,24 @@ def run_scraper_cron():
             
     if high_match_jobs:
         send_job_digest(os.getenv("EMAIL_TARGET", "alfrancisbadillapaz10@gmail.com"), high_match_jobs)
+        
+        # Log these jobs as pending
+        import datetime
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        rows = []
+        for j in high_match_jobs:
+            rows.append({
+                'company': j.get('company', 'Unknown'),
+                'job_title': j.get('title', 'Unknown'),
+                'tech_stack': '',
+                'status': 'Pending',
+                'date_applied': today,
+                'job_link': j.get('link', ''),
+                'location': j.get('location', ''),
+                'salary': j.get('salary', ''),
+                'contact_person': j.get('contact_person', '')
+            })
+        log_applications_batch(rows)
         
     return jsonify({"status": "completed", "jobs_found": len(high_match_jobs)})
 
