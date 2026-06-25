@@ -12,6 +12,7 @@
             --primary: #8b5cf6;
             --primary-hover: #7c3aed;
             --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -294,7 +295,7 @@
                         return;
                     }
                     
-                    let applied = 0, rejected = 0, other = 0;
+                    let applied = 0, rejected = 0, denied = 0, other = 0;
                     const pendingLogs = [];
                     const historyLogs = [];
                     
@@ -306,6 +307,7 @@
                             historyLogs.push(log);
                             if (s.includes('applied')) applied++;
                             else if (s.includes('rejected') || s.includes('did not proceed')) rejected++;
+                            else if (s.includes('denied')) denied++;
                             else other++;
                         }
                     });
@@ -323,7 +325,7 @@
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="background: var(--success); padding: 8px 16px; margin: 0; width: auto;">Applied</button>
-                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Deleted')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto;">Denied</button>
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto;">Denied</button>
                                 </div>
                             </div>
                         `).join('');
@@ -335,6 +337,7 @@
                         <span style="color: var(--text);">Total: ${historyLogs.length}</span>
                         <span style="color: var(--success);">Applied: ${applied}</span>
                         <span style="color: var(--danger);">Rejected: ${rejected}</span>
+                        <span style="color: var(--warning);">Denied: ${denied}</span>
                         ${other > 0 ? `<span style="color: var(--text-muted);">Other: ${other}</span>` : ''}
                     `;
                     
@@ -345,7 +348,7 @@
                             <td style="font-weight: 600;">${log.company}</td>
                             <td>${log.job_title}</td>
                             <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.tech_stack}">${log.tech_stack || '-'}</td>
-                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('rejected') ? 'var(--danger)' : 'var(--text-muted)')};">${log.status || 'Unknown'}</span></td>
+                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('denied') ? 'var(--warning)' : ((log.status || '').toLowerCase().match(/rejected|did not proceed/) ? 'var(--danger)' : 'var(--text-muted)'))};">${log.status || 'Unknown'}</span></td>
                             <td>${log.job_link ? `<a href="${log.job_link}" target="_blank">View</a>` : '-'}</td>
                         </tr>
                     `).join('');

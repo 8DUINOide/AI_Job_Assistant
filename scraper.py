@@ -120,9 +120,9 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
     for idx, row in jobs_df.iterrows():
         # Removed the 5 jobs limit to allow evaluating all fetched jobs
         try:
-            title = str(row.get('title', 'Unknown'))
-            company = str(row.get('company', 'Unknown'))
-            location_text = str(row.get('location', 'Unknown'))
+            title = str(row.get('title', 'Unknown')).strip()
+            company = str(row.get('company', 'Unknown')).strip()
+            location_text = str(row.get('location', 'Unknown')).strip()
             link = str(row.get('job_url', ''))
             description = str(row.get('description', 'No description'))
             
