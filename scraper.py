@@ -221,6 +221,23 @@ if __name__ == "__main__":
             attempts = 0
             
     if high_match_jobs:
+        print(f"\nLogging {len(high_match_jobs)} jobs to Google Sheets as 'Action Needed'...")
+        import datetime
+        from tracker import log_applications_batch
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        rows = []
+        for j in high_match_jobs:
+            rows.append({
+                'company': j.get('company', ''),
+                'job_title': j.get('title', ''),
+                'tech_stack': '',
+                'status': 'Status',
+                'date_applied': '',
+                'job_link': j.get('link', ''),
+                'location': j.get('location', '')
+            })
+        log_applications_batch(rows)
+        
         print(f"\nSending email digest with {len(high_match_jobs)} jobs...")
         send_job_digest("alfrancisbadillapaz10@gmail.com", high_match_jobs)
     else:

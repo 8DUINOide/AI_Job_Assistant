@@ -217,6 +217,7 @@
                             <th>Tech Stack</th>
                             <th>Status</th>
                             <th>Link</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="logsBody">
@@ -306,14 +307,40 @@
                             <td style="font-weight: 600;">${log.company}</td>
                             <td>${log.job_title}</td>
                             <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.tech_stack}">${log.tech_stack || '-'}</td>
-                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('rejected') ? 'var(--danger)' : 'var(--text-muted)')};">${log.status || 'Unknown'}</span></td>
+                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('rejected') || (log.status || '').toLowerCase().includes('did not proceed') ? 'var(--danger)' : ((log.status === 'Status') ? '#3b82f6' : 'var(--text-muted)'))};">${log.status || 'Unknown'}</span></td>
                             <td>${log.job_link ? `<a href="${log.job_link}" target="_blank">View</a>` : '-'}</td>
+                            <td>
+                                ${(log.status === 'Status') ? 
+                                    `<button onclick="updateJobStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="margin-top:0; padding: 4px 8px; font-size: 0.75rem; background: var(--success); width: auto; display: inline-block;">Applied</button>
+                                     <button onclick="updateJobStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Did Not Proceed')" style="margin-top:0; padding: 4px 8px; font-size: 0.75rem; background: var(--danger); width: auto; display: inline-block; margin-left: 4px;">Skip</button>` : 
+                                    '-'}
+                            </td>
                         </tr>
                     `).join('');
                 }
             } catch (e) {
                 console.error("Error fetching logs:", e);
-                logsBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">Error loading logs. Make sure Google Sheets credentials are set up.</td></tr>';
+                logsBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">Error loading logs. Make sure Google Sheets credentials are set up.</td></tr>';
+            }
+        }
+        
+        async function updateJobStatus(company, job_title, status) {
+            try {
+                const res = await fetch(`${API_BASE}/api/update-log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ company, job_title, status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    printLog(`Updated status for ${company} to ${status}`, 'success');
+                    fetchLogs(); // Refresh the table
+                } else {
+                    alert('Failed to update status: ' + data.error);
+                }
+            } catch(e) {
+                alert('Error updating status');
+                console.error(e);
             }
         }
         

@@ -14,7 +14,7 @@ import csv
 import io
 import openpyxl
 
-from tracker import log_application, get_recent_logs, log_applications_batch
+from tracker import log_application, get_recent_logs, log_applications_batch, update_application_status
 from scraper import load_profile, scrape_jobs_multisite, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
 
@@ -125,11 +125,47 @@ def handle_send_digest():
     
     if email and jobs:
         try:
+            # 1. Log jobs to Google Sheet first as Action Needed
+            import datetime
+            from tracker import log_applications_batch
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            rows = []
+            for j in jobs:
+                rows.append({
+                    'company': j.get('company', ''),
+                    'job_title': j.get('title', ''),
+                    'tech_stack': '',
+                    'status': 'Status',
+                    'date_applied': '',
+                    'job_link': j.get('link', ''),
+                    'location': j.get('location', '')
+                })
+            log_applications_batch(rows)
+            
+            # 2. Send Email
             send_job_digest(email, jobs)
             return jsonify({"success": True})
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
     return jsonify({"success": False, "error": "Missing email or jobs"}), 400
+
+@app.route('/api/update-log', methods=['POST'])
+def update_log_endpoint():
+    """Endpoint for web app buttons to update job status."""
+    data = request.json
+    company = data.get('company')
+    job_title = data.get('job_title')
+    new_status = data.get('status')
+    
+    if not company or not job_title or not new_status:
+        return jsonify({"success": False, "error": "Missing data"}), 400
+        
+    from tracker import update_application_status
+    success = update_application_status(company, job_title, new_status)
+    if success:
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "error": "Failed to update in Google Sheets"}), 500
 
 # -----------------
 # 2. CHROME EXTENSION API
