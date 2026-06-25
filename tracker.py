@@ -189,20 +189,47 @@ def update_application_status(company, job_title, new_status):
                     # Check if it was pending to avoid overwriting randomly
                     # Or just overwrite it anyway since it was requested
                     row_index = i + 1
-                    update_range = f"Sheet1!D{row_index}"
                     
-                    body = {
-                        'values': [[new_status]]
-                    }
-                    
-                    service.spreadsheets().values().update(
-                        spreadsheetId=SPREADSHEET_ID,
-                        range=update_range,
-                        valueInputOption='USER_ENTERED',
-                        body=body
-                    ).execute()
-                    print(f"Successfully updated status to '{new_status}' for {job_title} at {company}")
-                    return True
+                    if new_status == 'Deleted':
+                        # Physically delete the row
+                        sheet_metadata = service.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()
+                        sheet_id = sheet_metadata.get('sheets', '')[0].get("properties", {}).get("sheetId", 0)
+                        
+                        body = {
+                            "requests": [
+                                {
+                                    "deleteDimension": {
+                                        "range": {
+                                            "sheetId": sheet_id,
+                                            "dimension": "ROWS",
+                                            "startIndex": row_index - 1,
+                                            "endIndex": row_index
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                        service.spreadsheets().batchUpdate(
+                            spreadsheetId=SPREADSHEET_ID,
+                            body=body
+                        ).execute()
+                        print(f"Successfully deleted row for {job_title} at {company}")
+                        return True
+                    else:
+                        update_range = f"Sheet1!D{row_index}"
+                        
+                        body = {
+                            'values': [[new_status]]
+                        }
+                        
+                        service.spreadsheets().values().update(
+                            spreadsheetId=SPREADSHEET_ID,
+                            range=update_range,
+                            valueInputOption='USER_ENTERED',
+                            body=body
+                        ).execute()
+                        print(f"Successfully updated status to '{new_status}' for {job_title} at {company}")
+                        return True
         return False
     except Exception as e:
         print(f"Error updating status: {e}")
