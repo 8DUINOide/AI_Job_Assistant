@@ -386,6 +386,63 @@ def generate_resume():
         print("Error generating resume:", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/analyze-resume', methods=['POST'])
+def analyze_resume():
+    """Analyzes JD and returns match rate, keywords, and editable tailored data."""
+    try:
+        data = request.json
+        job_description = data.get('job_description')
+        if not job_description:
+            return jsonify({"success": False, "error": "Job description is required"}), 400
+            
+        master_profile = load_profile()
+        
+        # 1. Match Rate
+        # We reuse evaluate_job which takes a dict with description
+        from scraper import evaluate_job
+        score, reason = evaluate_job({'description': job_description, 'title': '', 'location': 'Unknown'}, master_profile)
+        
+        # 2. Keywords Extraction
+        from resume_generator import extract_keywords
+        profile_skills = master_profile.get("skills", [])
+        keywords_to_include, missing_keywords, matched_skills = extract_keywords(job_description, profile_skills)
+        
+        # 3. Base Tailored Data
+        tailored_data = get_tailored_profile_data(master_profile, job_description)
+        
+        return jsonify({
+            "success": True,
+            "match_rate": score,
+            "keywords_to_include": keywords_to_include,
+            "missing_keywords": missing_keywords,
+            "matched_skills": matched_skills,
+            "tailored_data": tailored_data
+        })
+    except Exception as e:
+        print("Error analyzing resume:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/generate-pdf', methods=['POST'])
+def generate_pdf():
+    """Generates PDF directly from user-edited tailored data."""
+    try:
+        data = request.json
+        tailored_data = data.get('tailored_data')
+        if not tailored_data:
+            return jsonify({"success": False, "error": "Tailored data is required"}), 400
+            
+        pdf_buffer = generate_pdf_from_data(tailored_data)
+        
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name='Tailored_Resume.pdf',
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print("Error generating PDF:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
 application = app
 
 if __name__ == '__main__':

@@ -187,7 +187,33 @@
                 <h2>📄 Resume Tailor</h2>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Paste a Job Description to generate a custom-tailored PDF resume based on your Master Profile.</p>
                 <textarea id="jobDescriptionText" rows="6" placeholder="Paste the job description here..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
-                <button id="generateResumeBtn" style="margin-top: 1rem; background: linear-gradient(to right, #3b82f6, #8b5cf6);">✨ Generate Tailored Resume</button>
+                <button id="analyzeResumeBtn" style="margin-top: 1rem; background: linear-gradient(to right, #3b82f6, #8b5cf6);">✨ Analyze & Tailor Resume</button>
+
+                <div id="resumeAnalysisContainer" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color: #fff; font-size: 1.1rem;">Analysis Results</h3>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success); padding: 5px 12px; border-radius: 20px; font-weight: bold;">
+                            Match Rate: <span id="matchRateValue">0</span>%
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <div class="info-label" style="margin-bottom: 8px; color: #38bdf8;">Keywords to include</div>
+                        <div id="keywordsToInclude" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <div class="info-label" style="margin-bottom: 8px; color: var(--danger);">Missing keywords</div>
+                        <div id="missingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
+                    
+                    <h3 style="color: #fff; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Optimized Resume (JSON Edit)</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Everything below has been tailored to the job description. Give it a final look and edit the text/skills if you'd like before generating.</p>
+                    
+                    <textarea id="tailoredDataEditor" rows="15" spellcheck="false" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.4); color: #a5b4fc; font-size: 0.85rem; font-family: monospace; resize: vertical;"></textarea>
+                    
+                    <button id="generateFinalPdfBtn" style="margin-top: 1rem; background: var(--success);">📄 Generate Final PDF</button>
+                </div>
             </div>
 
         </div>
@@ -564,24 +590,88 @@
             }
         }
 
-        const generateResumeBtn = document.getElementById('generateResumeBtn');
+        const analyzeResumeBtn = document.getElementById('analyzeResumeBtn');
         const jobDescText = document.getElementById('jobDescriptionText');
+        const analysisContainer = document.getElementById('resumeAnalysisContainer');
+        const tailoredDataEditor = document.getElementById('tailoredDataEditor');
+        const generateFinalPdfBtn = document.getElementById('generateFinalPdfBtn');
 
-        generateResumeBtn.addEventListener('click', async () => {
+        analyzeResumeBtn.addEventListener('click', async () => {
             const jd = jobDescText.value.trim();
             if (!jd) {
                 alert("Please paste a job description first.");
                 return;
             }
 
-            generateResumeBtn.disabled = true;
-            generateResumeBtn.textContent = "⏳ Tailoring Profile (This takes a moment)...";
+            analyzeResumeBtn.disabled = true;
+            analyzeResumeBtn.textContent = "⏳ Analyzing & Tailoring...";
+            analysisContainer.style.display = 'none';
             
             try {
-                const res = await fetch(`${API_BASE}/api/generate-resume`, {
+                const res = await fetch(`${API_BASE}/api/analyze-resume`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ job_description: jd })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || "Failed to analyze resume.");
+                }
+                
+                const data = await res.json();
+                
+                // Populate analysis UI
+                document.getElementById('matchRateValue').textContent = data.match_rate || 0;
+                
+                const keywordsToIncludeContainer = document.getElementById('keywordsToInclude');
+                keywordsToIncludeContainer.innerHTML = (data.keywords_to_include || []).map(k => 
+                    `<span class="tag" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8;">${k}</span>`
+                ).join('') || '<span style="color: var(--text-muted); font-size: 0.85rem;">None identified</span>';
+                
+                const missingKeywordsContainer = document.getElementById('missingKeywords');
+                missingKeywordsContainer.innerHTML = (data.missing_keywords || []).map(k => 
+                    `<span class="tag" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">${k}</span>`
+                ).join('') || '<span style="color: var(--text-muted); font-size: 0.85rem;">None identified</span>';
+                
+                // Populate editor
+                tailoredDataEditor.value = JSON.stringify(data.tailored_data, null, 4);
+                
+                // Show container
+                analysisContainer.style.display = 'block';
+
+            } catch (err) {
+                console.error(err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                analyzeResumeBtn.disabled = false;
+                analyzeResumeBtn.textContent = "✨ Analyze & Tailor Resume";
+            }
+        });
+
+        generateFinalPdfBtn.addEventListener('click', async () => {
+            const tailoredDataStr = tailoredDataEditor.value.trim();
+            if (!tailoredDataStr) {
+                alert("Tailored data is empty.");
+                return;
+            }
+            
+            let tailoredData;
+            try {
+                tailoredData = JSON.parse(tailoredDataStr);
+            } catch(e) {
+                alert("Invalid JSON format in the editor. Please fix syntax errors before generating.");
+                return;
+            }
+
+            generateFinalPdfBtn.disabled = true;
+            generateFinalPdfBtn.textContent = "⏳ Generating PDF...";
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/generate-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tailored_data: tailoredData })
                 });
 
                 if (!res.ok) {
@@ -600,13 +690,12 @@
                 window.URL.revokeObjectURL(url);
                 
                 alert("Resume generated and downloaded successfully!");
-                jobDescText.value = "";
             } catch (err) {
                 console.error(err);
                 alert(`Error: ${err.message}`);
             } finally {
-                generateResumeBtn.disabled = false;
-                generateResumeBtn.textContent = "✨ Generate Tailored Resume";
+                generateFinalPdfBtn.disabled = false;
+                generateFinalPdfBtn.textContent = "📄 Generate Final PDF";
             }
         });
 

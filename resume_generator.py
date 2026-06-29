@@ -16,6 +16,52 @@ FONT_NAME = "Helvetica"
 FONT_BOLD = "Helvetica-Bold"
 FONT_OBLIQUE = "Helvetica-Oblique"
 
+# Common tech/business keywords for heuristic matching
+COMMON_KEYWORDS = {
+    "python", "java", "javascript", "react", "node", "aws", "azure", "gcp", "sql", "nosql", 
+    "docker", "kubernetes", "agile", "scrum", "leadership", "communication", "machine learning",
+    "ai", "data pipelines", "llm", "automation", "debugging", "healthcare", "client collaboration",
+    "lean six sigma", "frontend", "backend", "fullstack", "devops", "ci/cd", "rest", "graphql",
+    "typescript", "c++", "c#", "go", "ruby", "php", "django", "flask", "spring", "vue", "angular",
+    "git", "linux", "algorithms", "data structures", "system design"
+}
+
+def extract_keywords(job_description, profile_skills):
+    """Heuristic keyword extraction for missing and included keywords."""
+    jd_lower = job_description.lower()
+    
+    # Simple word boundary check for each keyword in our common list
+    jd_keywords = set()
+    for kw in COMMON_KEYWORDS:
+        if re.search(r'\b' + re.escape(kw) + r'\b', jd_lower):
+            jd_keywords.add(kw.title() if len(kw) > 3 else kw.upper())
+            
+    # Also extract words that are Capitalized in the JD (cheap heuristic for tools/frameworks)
+    # E.g. "React", "Docker" - skip start of sentences heuristically if needed, but simple is fine.
+    capitalized = re.findall(r'\b[A-Z][a-zA-Z]{2,}\b', job_description)
+    for cap in capitalized:
+        if cap.lower() in COMMON_KEYWORDS:
+            jd_keywords.add(cap)
+            
+    # Normalize profile skills
+    profile_skills_lower = {s.lower(): s for s in profile_skills}
+    
+    keywords_to_include = list(jd_keywords)
+    missing_keywords = []
+    
+    for kw in keywords_to_include:
+        if kw.lower() not in profile_skills_lower:
+            missing_keywords.append(kw)
+            
+    # Also find which profile skills match the JD
+    matched_profile_skills = []
+    for skill_lower, skill_original in profile_skills_lower.items():
+        if re.search(r'\b' + re.escape(skill_lower) + r'\b', jd_lower):
+            matched_profile_skills.append(skill_original)
+            
+    return sorted(keywords_to_include), sorted(missing_keywords), sorted(matched_profile_skills)
+
+
 def get_tailored_profile_data(master_profile, job_description):
     """Uses NLP matching to tailor the master profile to the job description."""
     jd_lower = job_description.lower()
