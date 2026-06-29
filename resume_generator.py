@@ -82,7 +82,29 @@ def get_tailored_profile_data(master_profile, job_description):
             "items": edu_items
         })
         
-    # 4. Tailor Skills (NLP Matching)
+    # 4. Map Projects
+    proj_items = []
+    for proj in master_profile.get("projects", []):
+        desc = proj.get("description", "")
+        # Split description into bullets by period space
+        bullets = [b.strip() + "." for b in desc.split(". ") if b.strip()]
+        # Cleanup double periods if any
+        bullets = [b[:-1] if b.endswith("..") else b for b in bullets]
+        
+        proj_items.append({
+            "title": proj.get("title", ""),
+            "subtitle": proj.get("role", ""),
+            "date": "",
+            "bullets": bullets
+        })
+        
+    if proj_items:
+        tailored_data["sections"].append({
+            "title": "PROJECTS",
+            "items": proj_items
+        })
+
+    # 5. Certifications, Awards, and Skills
     all_skills = master_profile.get("skills", [])
     matched_skills = []
     other_skills = []
@@ -99,19 +121,40 @@ def get_tailored_profile_data(master_profile, job_description):
     final_skills = matched_skills + other_skills
     final_skills = final_skills[:15] # Don't overwhelm the resume
     
+    certs = master_profile.get("certifications", [])
+    awards = master_profile.get("awards", [])
+    
+    certs_awards_skills_items = []
+    
+    if certs:
+        certs_awards_skills_items.append({
+            "title": "Certifications",
+            "subtitle": "",
+            "date": "",
+            "bullets": [", ".join(certs)]
+        })
+        
     if final_skills:
-        # Group them into a single bullet
         skills_str = ", ".join(final_skills)
+        certs_awards_skills_items.append({
+            "title": "Technical Skills",
+            "subtitle": "",
+            "date": "",
+            "bullets": [skills_str]
+        })
+        
+    if awards:
+        certs_awards_skills_items.append({
+            "title": "Awards & Achievements",
+            "subtitle": "",
+            "date": "",
+            "bullets": [", ".join(awards)]
+        })
+        
+    if certs_awards_skills_items:
         tailored_data["sections"].append({
-            "title": "CERTIFICATIONS & SKILLS",
-            "items": [
-                {
-                    "title": "Technical Skills",
-                    "subtitle": "",
-                    "date": "",
-                    "bullets": [skills_str]
-                }
-            ]
+            "title": "CERTIFICATIONS, SKILLS & AWARDS",
+            "items": certs_awards_skills_items
         })
         
     return tailored_data

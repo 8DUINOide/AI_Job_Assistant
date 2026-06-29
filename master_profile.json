@@ -1,12 +1,12 @@
 {
   "personal_info": {
-    "first_name": "Al Francis",
-    "last_name": "Paz",
+    "first_name": "AL FRANCIS B.",
+    "last_name": "PAZ",
     "email": "alfrancisbadillapaz10@gmail.com",
     "phone": "09772153941",
-    "location": "Baao, Bicol Region, Philippines",
-    "linkedin_url": "www.linkedin.com/in/al-francis-paz-32424224a",
-    "portfolio_url": "8duinoide.github.io/portfolio/"
+    "location": "Baao, Camarines Sur, Philippines",
+    "linkedin_url": "",
+    "portfolio_url": "https://github.com/8DUINOide"
   },
   "job_preferences": {
     "desired_roles": [
@@ -29,70 +29,106 @@
     ],
     "salary_expectation": "Open to discussion"
   },
-  "summary": "Al Francis Paz is a passionate Computer Engineering Graduate (2026) with a strong foundation in both hardware and software development. He is a skilled Backend Developer proficient in Spring Boot, Java, and PostgreSQL, with experience in building RESTful APIs, implementing user management, budget operations, and integrating JWT-based authentication and Spring Security. His background also spans embedded systems, web, and mobile development, demonstrated through various projects and a thesis on IoT solutions. He is eager to contribute to innovative tech projects and advance as a developer.",
+  "summary": "Passionate Computer Engineering graduate skilled in software development and hardware integration. Strong foundation in creating RESTful APIs, full-stack applications, and Android solutions, aiming to merge hardware and software engineering with practical experience in automation and cloud deployment.",
   "experience": [
     {
       "title": "Backend Developer Intern",
-      "company": "REVLV Solutions, Inc.",
-      "start_date": "June 2025",
-      "end_date": "July 2025",
-      "description": "Developed ExpenSEEs-API, a RESTful backend for expense tracking using Spring Boot, Java, and PostgreSQL. Implemented user management, budget operations, expense tracking, and liquidation reports. Integrated JWT-based authentication and Spring Security for role-based access control. Configured and tested API endpoints using Postman and IntelliJ IDEA. Collaborated with frontend developers to integrate the API with an Admin Dashboard and mobile app. Deployed backend on a DigitalOcean server, ensuring CORS configuration for seamless frontend connectivity.",
+      "company": "REVLV Solutions Inc.",
+      "start_date": "Jun 2025",
+      "end_date": "Jul 2025",
+      "description": "Engineered the ExpenSEES-API, a RESTful backend for expense tracking utilizing Java, Spring Boot, and PostgreSQL, boosting user engagement by ~30%. Implemented user management and budget operations with efficient expense tracking algorithms, leading to improved reporting accuracy. Integrated JWT-based authentication and Spring Security to enforce role-based access control, enhancing application security. Deployed the software on a DigitalOcean Linux server, establishing CORS for seamless frontend dashboard integration. Collaborated with cross-functional teams to ensure the backend met client requirements while adhering to established best practices.",
       "skills_used": [
-        "Spring Boot",
         "Java",
+        "Spring Boot",
         "PostgreSQL",
-        "RESTful APIs",
         "JWT",
         "Spring Security",
-        "Postman",
-        "IntelliJ IDEA",
-        "DigitalOcean",
+        "Linux",
         "CORS"
       ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Integration of RFID and ESP32 in a Mobile-Based IoT System for Efficient Shuttle Service Management at Ateneo de Naga University",
+      "role": "Thesis: Tech Lead/ Full Stack Developer",
+      "link": "https://play.google.com/store/apps/details?id=com.shuttle.monitoring&hl=en",
+      "description": "Operational Efficiency: Automated the transit workflow for an academic institution by integrating RFID-based boarding with real-time GPS tracking. Hardware-Software Synergy: Engineered a custom IoT ecosystem using ESP32 microcontrollers to bridge physical authentication points with a centralized backend system. User-Centric Monitoring: Enabled seamless real-time visibility for administrators and students through a synchronized mobile application."
+    },
+    {
+      "title": "Personal Portfolio Website",
+      "role": "Frontend Developer",
+      "link": "https://8duinoide.github.io/portfolio/",
+      "description": "End-to-End Development: A comprehensive archive of my technical journey, covering backend infrastructure, IoT integration, and full-stack deployment. Visual Documentation: A responsive hub designed to translate complex engineering challenges into clear, professional project outcomes. Demonstrated Expertise: Real-world proof of my ability to architect, deploy, and maintain high-performance software solutions."
+    },
+    {
+      "title": "Expense Tracking System Backend",
+      "role": "Full-stack Developer",
+      "link": "",
+      "description": "Architected a robust backend ecosystem with Spring Boot and Java, enhancing data security through JWT authentication. Optimized workflows to accelerate client interaction and reporting functionality."
+    },
+    {
+      "title": "BINI Music Streaming App",
+      "role": "Android Developer",
+      "link": "",
+      "description": "Developed a native Android application using Kotlin, enabling background playback and media controls for enhanced usability. Provided efficient multimedia handling to ensure smooth user experiences."
+    },
+    {
+      "title": "Embedded IoT Solutions",
+      "role": "IoT Developer",
+      "link": "",
+      "description": "Engineered over 10 software integrations with hardware using C++ and Arduino, enhancing automation processes. Designed solutions that incorporated Robotic automation and RFID security, driving innovation in IoT applications."
     }
   ],
   "education": [
     {
       "degree": "Bachelor of Science in Computer Engineering",
-      "university": "Ateneo de Naga University",
-      "graduation_year": "2026"
+      "university": "Ateneo De Naga University",
+      "graduation_year": "May 2026"
+    },
+    {
+      "degree": "Senior High School Diploma",
+      "university": "Baao National High School",
+      "graduation_year": "June 2022"
+    },
+    {
+      "degree": "High School Diploma",
+      "university": "Baao National High School",
+      "graduation_year": "March 2020"
     }
   ],
+  "certifications": [
+    "Cisco: Data Analytics Essentials",
+    "Cisco: Ethical Hacker",
+    "Cisco: Intro to Cybersecurity",
+    "Cisco: Intro to IoT and Digital Transformation",
+    "Cisco: Junior Cybersecurity Analyst",
+    "Cisco: Network Support and Security",
+    "Cisco: Programming Essentials in C++",
+    "Cisco: Programming Essentials in Python",
+    "NDG: Linux Essentials",
+    "NDG: Linux Unhatched"
+  ],
+  "awards": [
+    "Packethacks 2024 Finalist",
+    "Breadboarding Competition - Participant",
+    "LAAD Software Festival Participant"
+  ],
   "skills": [
-    "Java",
-    "Python",
     "JavaScript",
-    "Kotlin",
-    "C++",
-    "C",
+    "React Native",
     "HTML5",
     "CSS3",
+    "Java",
     "Spring Boot",
+    "Python",
     "Node.js",
-    "React Native",
-    "Android Development",
     "Firebase",
     "PostgreSQL",
-    "SQL",
-    "Internet of Things (IoT)",
-    "Embedded Systems",
+    "C++",
     "Arduino",
-    "RFID",
-    "ESP32",
-    "RESTful APIs",
-    "JWT Authentication",
-    "Spring Security",
-    "Git",
-    "Postman",
+    "IoT",
     "Linux",
-    "DigitalOcean",
-    "IntelliJ IDEA",
-    "Cybersecurity",
-    "Data Analytics",
-    "Network Support",
-    "Hardware-Software Integration",
-    "CORS",
-    "CI/CD",
-    "Docker"
+    "Git"
   ]
 }
