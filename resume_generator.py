@@ -81,26 +81,12 @@ def get_tailored_profile_data(master_profile, job_description):
     }}
     
     Feel free to create a "PROJECTS" section if the master profile implies projects in the experience or skills, but again, only if the data is implicitly or explicitly there.
-    
-    Return ONLY valid JSON.
     """
     
-    try:
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        
-        # Clean markdown
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-            
-        return json.loads(text.strip())
-    except Exception as e:
-        print(f"Error tailoring profile: {e}")
-        return None
+    # We do NOT swallow exceptions here so that the Flask API can catch them and return the exact error message to the frontend.
+    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+    text = response.text.strip()
+    return json.loads(text)
 
 def generate_pdf_from_data(data):
     """Generates a PDF using reportlab based on the tailored data."""
