@@ -34,8 +34,9 @@
     {
       "title": "Backend Developer Intern",
       "company": "REVLV Solutions Inc.",
-      "start_date": "Jun 2025",
-      "end_date": "Jul 2025",
+      "location": "Burgundy Corporate Tower 252 Sen. Gil Puyat Avenue, Makati City",
+      "start_date": "June 2025",
+      "end_date": "July 2025",
       "description": "Engineered the ExpenSEES-API, a RESTful backend for expense tracking utilizing Java, Spring Boot, and PostgreSQL, boosting user engagement by ~30%. Implemented user management and budget operations with efficient expense tracking algorithms, leading to improved reporting accuracy. Integrated JWT-based authentication and Spring Security to enforce role-based access control, enhancing application security. Deployed the software on a DigitalOcean Linux server, establishing CORS for seamless frontend dashboard integration. Collaborated with cross-functional teams to ensure the backend met client requirements while adhering to established best practices.",
       "skills_used": [
         "Java",

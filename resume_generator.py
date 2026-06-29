@@ -53,9 +53,13 @@ def get_tailored_profile_data(master_profile, job_description):
         end = exp.get("end_date", "")
         date_str = f"{start} - {end}" if start and end else (start or end)
         
+        company = exp.get("company", "")
+        location = exp.get("location", "")
+        subtitle = f"{company} | {location}" if location else company
+        
         exp_items.append({
             "title": exp.get("title", ""),
-            "subtitle": exp.get("company", ""),
+            "subtitle": subtitle,
             "date": date_str,
             "bullets": bullets
         })
