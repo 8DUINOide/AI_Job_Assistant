@@ -11,3 +11,4 @@ openpyxl==3.1.2
 python-jobspy
 pandas
 reportlab
+google-generativeai
