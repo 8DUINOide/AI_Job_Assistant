@@ -86,6 +86,8 @@ def get_tailored_profile_data(master_profile, job_description):
             "items": edu_items
         })
         
+    import html
+    
     # 4. Map Projects
     proj_items = []
     for proj in master_profile.get("projects", []):
@@ -95,9 +97,19 @@ def get_tailored_profile_data(master_profile, job_description):
         # Cleanup double periods if any
         bullets = [b[:-1] if b.endswith("..") else b for b in bullets]
         
+        role = proj.get("role", "")
+        link = proj.get("link", "")
+        
+        if link:
+            # ReportLab parses text as XML, so we must escape characters like '&'
+            safe_link = html.escape(link)
+            subtitle = f"{role} | <font color='blue'><a href='{safe_link}'>{safe_link}</a></font>"
+        else:
+            subtitle = role
+        
         proj_items.append({
             "title": proj.get("title", ""),
-            "subtitle": proj.get("role", ""),
+            "subtitle": subtitle,
             "date": "",
             "bullets": bullets
         })
