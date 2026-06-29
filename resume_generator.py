@@ -103,7 +103,7 @@ def get_tailored_profile_data(master_profile, job_description):
         if link:
             # ReportLab parses text as XML, so we must escape characters like '&'
             safe_link = html.escape(link)
-            subtitle = f"{role} | <font color='blue'><a href='{safe_link}'>{safe_link}</a></font>"
+            subtitle = f"{role} | <a href='{safe_link}'>{safe_link}</a>"
         else:
             subtitle = role
         
