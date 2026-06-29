@@ -17,6 +17,7 @@ import openpyxl
 from tracker import log_application, get_recent_logs, log_applications_batch, update_application_status
 from scraper import load_profile, scrape_jobs_multisite, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
+from resume_generator import get_tailored_profile_data, generate_pdf_from_data
 
 load_dotenv()
 
@@ -358,6 +359,32 @@ def run_scraper_cron():
         log_applications_batch(rows)
         
     return jsonify({"status": "completed", "jobs_found": len(high_match_jobs)})
+
+@app.route('/api/generate-resume', methods=['POST'])
+def generate_resume():
+    try:
+        data = request.json
+        job_description = data.get('job_description')
+        if not job_description:
+            return jsonify({"success": False, "error": "Job description is required"}), 400
+            
+        master_profile = load_profile()
+        tailored_data = get_tailored_profile_data(master_profile, job_description)
+        
+        if not tailored_data:
+            return jsonify({"success": False, "error": "Failed to tailor profile using Gemini."}), 500
+            
+        pdf_buffer = generate_pdf_from_data(tailored_data)
+        
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name='Tailored_Resume.pdf',
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print("Error generating resume:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 application = app
 
