@@ -1,7 +1,7 @@
 import os
 import json
 import io
-import google.generativeai as genai
+import re
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -17,76 +17,104 @@ FONT_BOLD = "Helvetica-Bold"
 FONT_OBLIQUE = "Helvetica-Oblique"
 
 def get_tailored_profile_data(master_profile, job_description):
-    """Uses Gemini to tailor the master profile to the job description."""
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    """Uses NLP matching to tailor the master profile to the job description."""
+    jd_lower = job_description.lower()
     
-    prompt = f"""
-    You are an expert tech recruiter and resume writer. 
-    Your goal is to tailor the candidate's Master Profile to the Target Job Description.
+    # 1. Map personal info
+    p_info = master_profile.get("personal_info", {})
+    first_name = p_info.get("first_name", "")
+    last_name = p_info.get("last_name", "")
     
-    CRITICAL RULE: DO NOT INVENT OR HALLUCINATE ANY FACTS, EXPERIENCE, SKILLS, OR PROJECTS that are not present in the Master Profile. You may only select, reorder, and rewrite existing facts to highlight their relevance to the Job Description.
-
-    Target Job Description:
-    {job_description}
+    # Prioritize portfolio over linkedin if both exist
+    link = p_info.get("portfolio_url", "")
+    if not link:
+        link = p_info.get("linkedin_url", "")
+        
+    tailored_data = {
+        "personal_info": {
+            "name": f"{first_name} {last_name}".strip(),
+            "email": p_info.get("email", ""),
+            "phone": p_info.get("phone", ""),
+            "location": p_info.get("location", ""),
+            "link": link
+        },
+        "summary": master_profile.get("summary", ""),
+        "sections": []
+    }
     
-    Candidate's Master Profile (JSON):
-    {json.dumps(master_profile)}
+    # 2. Map Experience
+    exp_items = []
+    for exp in master_profile.get("experience", []):
+        # Split description into bullets by period
+        desc = exp.get("description", "")
+        bullets = [b.strip() + "." for b in desc.split(". ") if b.strip()]
+        
+        start = exp.get("start_date", "")
+        end = exp.get("end_date", "")
+        date_str = f"{start} - {end}" if start and end else (start or end)
+        
+        exp_items.append({
+            "title": exp.get("title", ""),
+            "subtitle": exp.get("company", ""),
+            "date": date_str,
+            "bullets": bullets
+        })
+        
+    if exp_items:
+        tailored_data["sections"].append({
+            "title": "WORK EXPERIENCE",
+            "items": exp_items
+        })
+        
+    # 3. Map Education
+    edu_items = []
+    for edu in master_profile.get("education", []):
+        edu_items.append({
+            "title": edu.get("degree", ""),
+            "subtitle": edu.get("university", ""),
+            "date": edu.get("graduation_year", ""),
+            "bullets": []
+        })
+        
+    if edu_items:
+        tailored_data["sections"].append({
+            "title": "EDUCATION",
+            "items": edu_items
+        })
+        
+    # 4. Tailor Skills (NLP Matching)
+    all_skills = master_profile.get("skills", [])
+    matched_skills = []
+    other_skills = []
     
-    Provide the tailored resume data as a JSON object with the following schema:
-    {{
-        "personal_info": {{
-            "name": "First Last",
-            "email": "email@example.com",
-            "phone": "Phone number",
-            "location": "Location",
-            "link": "github/portfolio url"
-        }},
-        "summary": "A strong, tailored professional summary.",
-        "sections": [
-            {{
-                "title": "WORK EXPERIENCE",
-                "items": [
-                    {{
-                        "title": "Job Title",
-                        "subtitle": "Company",
-                        "date": "Start - End",
-                        "bullets": ["Bullet 1", "Bullet 2"]
-                    }}
-                ]
-            }},
-            {{
-                "title": "EDUCATION",
-                "items": [
-                    {{
-                        "title": "Degree",
-                        "subtitle": "University",
-                        "date": "Graduation Year",
-                        "bullets": []
-                    }}
-                ]
-            }},
-            {{
-                "title": "SKILLS",
-                "items": [
-                    {{
-                        "title": "Technical Skills",
-                        "subtitle": "",
-                        "date": "",
-                        "bullets": ["Skill 1, Skill 2, Skill 3"]
-                    }}
-                ]
-            }}
-        ]
-    }}
+    for skill in all_skills:
+        # Check if skill exists as a whole word in JD
+        skill_lower = skill.lower()
+        if re.search(r'\b' + re.escape(skill_lower) + r'\b', jd_lower):
+            matched_skills.append(skill)
+        else:
+            other_skills.append(skill)
+            
+    # Combine matched skills first, then pad with other skills up to a reasonable amount (e.g. 15 skills)
+    final_skills = matched_skills + other_skills
+    final_skills = final_skills[:15] # Don't overwhelm the resume
     
-    Feel free to create a "PROJECTS" section if the master profile implies projects in the experience or skills, but again, only if the data is implicitly or explicitly there.
-    """
-    
-    # We do NOT swallow exceptions here so that the Flask API can catch them and return the exact error message to the frontend.
-    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-    text = response.text.strip()
-    return json.loads(text)
+    if final_skills:
+        # Group them into a single bullet
+        skills_str = ", ".join(final_skills)
+        tailored_data["sections"].append({
+            "title": "CERTIFICATIONS & SKILLS",
+            "items": [
+                {
+                    "title": "Technical Skills",
+                    "subtitle": "",
+                    "date": "",
+                    "bullets": [skills_str]
+                }
+            ]
+        })
+        
+    return tailored_data
 
 def generate_pdf_from_data(data):
     """Generates a PDF using reportlab based on the tailored data."""
