@@ -120,8 +120,8 @@ def get_tailored_profile_data(master_profile, job_description):
     edu_items = []
     for edu in master_profile.get("education", []):
         edu_items.append({
-            "title": edu.get("degree", ""),
-            "subtitle": edu.get("university", ""),
+            "title": edu.get("university", ""),
+            "subtitle": edu.get("degree", ""),
             "date": edu.get("graduation_year", ""),
             "bullets": []
         })
