@@ -756,7 +756,8 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'Tailored_Resume.pdf';
+                const nameStr = document.getElementById('profileName').textContent.trim() || 'Applicant';
+                a.download = `${nameStr}_Resume.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -798,7 +799,8 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'Cover_Letter.pdf';
+                const nameStr = document.getElementById('profileName').textContent.trim() || 'Applicant';
+                a.download = `${nameStr}_Cover Letter.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);

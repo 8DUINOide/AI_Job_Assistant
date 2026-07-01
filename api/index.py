@@ -461,10 +461,14 @@ def generate_cover_letter_pdf():
         from resume_generator import generate_cover_letter_pdf_from_text
         pdf_buffer = generate_cover_letter_pdf_from_text(cover_letter_text, master_profile)
         
+        first_name = master_profile.get("personal_info", {}).get("first_name", "Applicant")
+        last_name = master_profile.get("personal_info", {}).get("last_name", "")
+        name = f"{first_name} {last_name}".strip()
+        
         return send_file(
             pdf_buffer,
             as_attachment=True,
-            download_name='Cover_Letter.pdf',
+            download_name=f'{name}_Cover Letter.pdf',
             mimetype='application/pdf'
         )
     except Exception as e:
