@@ -198,12 +198,12 @@
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <div class="info-label" style="margin-bottom: 8px; color: #38bdf8;">Keywords to include</div>
+                        <div class="info-label" style="margin-bottom: 8px; color: #38bdf8;">Keywords to include <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic; cursor: help;" title="Click any keyword below to automatically append it to your Technical Skills section in the resume form.">(Click to add to resume)</span></div>
                         <div id="keywordsToInclude" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <div class="info-label" style="margin-bottom: 8px; color: var(--danger);">Missing keywords</div>
+                        <div class="info-label" style="margin-bottom: 8px; color: var(--danger);">Missing keywords <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic; cursor: help;" title="Click any keyword below to automatically append it to your Technical Skills section in the resume form.">(Click to add to resume)</span></div>
                         <div id="missingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                     </div>
                     
@@ -609,6 +609,57 @@
         const coverLetterEditor = document.getElementById('coverLetterEditor');
         
         let currentTailoredData = null; // Store the original data structure
+        
+        window.addSkillToResume = function(element, keyword) {
+            // Find the Technical Skills textarea
+            const labels = document.querySelectorAll('#tailoredFormEditor label');
+            let skillsTextarea = null;
+            for (let label of labels) {
+                if (label.textContent.includes('Technical Skills')) {
+                    skillsTextarea = label.nextElementSibling;
+                    break;
+                }
+            }
+            
+            if (skillsTextarea) {
+                let val = skillsTextarea.value.trim();
+                
+                // Check if it already exists (case insensitive)
+                const regex = new RegExp('\\b' + keyword.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '\\b', 'i');
+                if (regex.test(val)) {
+                    element.style.opacity = '0.5';
+                    element.style.cursor = 'default';
+                    element.onclick = null;
+                    element.onmouseover = null;
+                    element.onmouseout = null;
+                    return; // Already added
+                }
+                
+                // Append
+                if (val && !val.endsWith(',')) {
+                    val += ', ' + keyword;
+                } else {
+                    val += keyword;
+                }
+                skillsTextarea.value = val;
+                
+                // Visual feedback
+                element.style.opacity = '0.5';
+                element.style.cursor = 'default';
+                element.onclick = null;
+                element.onmouseover = null;
+                element.onmouseout = null;
+                
+                // Flash the textarea briefly to show it changed
+                const originalBg = skillsTextarea.style.background;
+                skillsTextarea.style.background = 'rgba(16, 185, 129, 0.2)';
+                setTimeout(() => {
+                    skillsTextarea.style.background = originalBg;
+                }, 500);
+            } else {
+                alert("Could not find the Technical Skills field in your resume form.");
+            }
+        };
 
         analyzeResumeBtn.addEventListener('click', async () => {
             const jd = jobDescText.value.trim();
@@ -641,12 +692,12 @@
                 
                 const keywordsToIncludeContainer = document.getElementById('keywordsToInclude');
                 keywordsToIncludeContainer.innerHTML = (data.keywords_to_include || []).map(k => 
-                    `<span class="tag" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8;">${k}</span>`
+                    `<span class="tag" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; cursor: pointer; transition: all 0.2s;" onclick="addSkillToResume(this, '${k.replace(/'/g, "\\'")}')" onmouseover="this.style.background='rgba(56, 189, 248, 0.3)'" onmouseout="this.style.background='rgba(56, 189, 248, 0.1)'">${k} <span style="font-size: 0.7rem; opacity: 0.7;">+</span></span>`
                 ).join('') || '<span style="color: var(--text-muted); font-size: 0.85rem;">None identified</span>';
                 
                 const missingKeywordsContainer = document.getElementById('missingKeywords');
                 missingKeywordsContainer.innerHTML = (data.missing_keywords || []).map(k => 
-                    `<span class="tag" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">${k}</span>`
+                    `<span class="tag" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; transition: all 0.2s;" onclick="addSkillToResume(this, '${k.replace(/'/g, "\\'")}')" onmouseover="this.style.background='rgba(239, 68, 68, 0.3)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">${k} <span style="font-size: 0.7rem; opacity: 0.7;">+</span></span>`
                 ).join('') || '<span style="color: var(--text-muted); font-size: 0.85rem;">None identified</span>';
                 
                 // Build User-Friendly Editor Form
