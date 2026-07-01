@@ -410,13 +410,18 @@ def analyze_resume():
         # 3. Base Tailored Data
         tailored_data = get_tailored_profile_data(master_profile, job_description)
         
+        # 4. Cover Letter Text
+        from resume_generator import generate_cover_letter_text
+        cover_letter_text = generate_cover_letter_text(master_profile, job_description)
+        
         return jsonify({
             "success": True,
             "match_rate": score,
             "keywords_to_include": keywords_to_include,
             "missing_keywords": missing_keywords,
             "matched_skills": matched_skills,
-            "tailored_data": tailored_data
+            "tailored_data": tailored_data,
+            "cover_letter_text": cover_letter_text
         })
     except Exception as e:
         print("Error analyzing resume:", e)
@@ -441,6 +446,29 @@ def generate_pdf():
         )
     except Exception as e:
         print("Error generating PDF:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/generate-cover-letter-pdf', methods=['POST'])
+def generate_cover_letter_pdf():
+    """Generates Cover Letter PDF from text."""
+    try:
+        data = request.json
+        cover_letter_text = data.get('cover_letter_text')
+        if not cover_letter_text:
+            return jsonify({"success": False, "error": "Cover letter text is required"}), 400
+            
+        master_profile = load_profile()
+        from resume_generator import generate_cover_letter_pdf_from_text
+        pdf_buffer = generate_cover_letter_pdf_from_text(cover_letter_text, master_profile)
+        
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name='Cover_Letter.pdf',
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print("Error generating cover letter PDF:", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
 application = app

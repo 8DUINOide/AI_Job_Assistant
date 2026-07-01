@@ -368,3 +368,130 @@ def generate_pdf_from_data(data):
     doc.build(story)
     buffer.seek(0)
     return buffer
+
+def generate_cover_letter_text(master_profile, job_description, company_name="Hiring Manager", job_title="the position"):
+    """Generates a heuristic cover letter text based on the master profile and job description."""
+    p_info = master_profile.get("personal_info", {})
+    first_name = p_info.get("first_name", "")
+    last_name = p_info.get("last_name", "")
+    name = f"{first_name} {last_name}".strip()
+    
+    # Simple extraction of keywords to mention
+    jd_lower = job_description.lower()
+    profile_skills = [s for s in master_profile.get("skills", [])]
+    
+    matched_skills = []
+    for skill in profile_skills:
+        if re.search(r'\b' + re.escape(skill.lower()) + r'\b', jd_lower):
+            matched_skills.append(skill)
+            
+    # Try to extract company name or job title from jd if not provided
+    # Very heuristic:
+    if company_name == "Hiring Manager" or company_name == "[Company Name]":
+        # Look for "at [Company]"
+        company_match = re.search(r'\bat ([A-Z][a-zA-Z0-9&]+(?:\s+[A-Z][a-zA-Z0-9&]+)*)', job_description)
+        if company_match:
+            company_name = company_match.group(1)
+            
+    skills_to_mention = matched_skills[:3]
+    if len(skills_to_mention) >= 2:
+        skills_str = ", ".join(skills_to_mention[:-1]) + ", and " + skills_to_mention[-1]
+    elif skills_to_mention:
+        skills_str = skills_to_mention[0]
+    else:
+        skills_str = "my diverse technical skill set"
+        
+    # Get current date
+    import datetime
+    today = datetime.datetime.now().strftime("%B %d, %Y")
+    
+    text = f"{today}\n\nDear {company_name},\n\n"
+    text += f"I am writing to express my strong interest in {job_title} at your company. With a background in software development and a passion for building efficient and scalable solutions, I am confident that I can make a valuable contribution to your team.\n\n"
+    
+    # Mention experience
+    exp = master_profile.get("experience", [])
+    if exp:
+        recent_exp = exp[0]
+        text += f"In my recent role as a {recent_exp.get('title', 'Developer')} at {recent_exp.get('company', 'my previous organization')}, I honed my abilities in delivering high-quality results in fast-paced environments. "
+        
+    text += f"Your job description caught my attention because it aligns perfectly with my expertise in {skills_str}. "
+    text += "I am particularly drawn to your organization's innovative approach and the opportunity to tackle challenging technical problems.\n\n"
+    
+    text += "I am eager to bring my strong work ethic and collaborative mindset to your team. Enclosed is my resume, which provides further details on my background and accomplishments. I would welcome the opportunity to discuss how my skills and experiences align with your needs in an interview.\n\n"
+    text += f"Thank you for considering my application.\n\nSincerely,\n{name}"
+    
+    return text
+
+def generate_cover_letter_pdf_from_text(text, master_profile):
+    """Generates a PDF for the cover letter."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=54,
+        leftMargin=54,
+        topMargin=54,
+        bottomMargin=54
+    )
+    
+    styles = getSampleStyleSheet()
+    
+    p_info = master_profile.get("personal_info", {})
+    first_name = p_info.get("first_name", "")
+    last_name = p_info.get("last_name", "")
+    name = f"{first_name} {last_name}".strip()
+    email = p_info.get("email", "")
+    phone = p_info.get("phone", "")
+    location = p_info.get("location", "")
+    link = p_info.get("portfolio_url", "") or p_info.get("linkedin_url", "")
+    
+    # Header Style
+    header_name_style = ParagraphStyle(
+        'HeaderName',
+        parent=styles['Heading1'],
+        fontName=FONT_BOLD,
+        fontSize=20,
+        spaceAfter=6,
+        alignment=TA_CENTER
+    )
+    
+    contact_style = ParagraphStyle(
+        'ContactStyle',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=10,
+        spaceAfter=12,
+        alignment=TA_CENTER
+    )
+    
+    body_style = ParagraphStyle(
+        'BodyStyle',
+        parent=styles['Normal'],
+        fontName=FONT_NAME,
+        fontSize=11,
+        leading=16,
+        spaceAfter=12,
+        alignment=TA_LEFT
+    )
+    
+    story = []
+    
+    # Header
+    story.append(Paragraph(name.upper(), header_name_style))
+    contact_parts = [p for p in [email, phone, location, link] if p]
+    contact_str = " &nbsp;&#9830;&nbsp; ".join(contact_parts)
+    story.append(Paragraph(contact_str, contact_style))
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.black, spaceBefore=0, spaceAfter=24))
+    
+    # Body
+    paragraphs = text.split('\n\n')
+    for para in paragraphs:
+        if para.strip():
+            # Handle newlines within paragraphs
+            para_text = para.replace('\n', '<br/>')
+            story.append(Paragraph(para_text, body_style))
+            
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+

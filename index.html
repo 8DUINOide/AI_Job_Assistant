@@ -210,11 +210,19 @@
                     <h3 style="color: #fff; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Optimized Resume</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Everything below has been tailored to the job description. Give it a final look and edit the text/skills if you'd like before generating.</p>
                     
-                    <div id="tailoredFormEditor" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div id="tailoredFormEditor" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px;">
                         <!-- Dynamically populated fields -->
                     </div>
                     
-                    <button id="generateFinalPdfBtn" style="margin-top: 1.5rem; background: var(--success);">📄 Generate Final PDF</button>
+                    <h3 style="color: #fff; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Cover Letter</h3>
+                    <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
+                        <textarea id="coverLetterEditor" rows="12" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                        <button id="generateFinalPdfBtn" style="background: var(--success); flex: 1; margin-top: 0;">📄 Generate Resume PDF</button>
+                        <button id="generateCoverLetterBtn" style="background: #38bdf8; flex: 1; margin-top: 0; color: #fff;">✉️ Generate Cover Letter PDF</button>
+                    </div>
                 </div>
             </div>
 
@@ -597,6 +605,8 @@
         const analysisContainer = document.getElementById('resumeAnalysisContainer');
         const tailoredFormEditor = document.getElementById('tailoredFormEditor');
         const generateFinalPdfBtn = document.getElementById('generateFinalPdfBtn');
+        const generateCoverLetterBtn = document.getElementById('generateCoverLetterBtn');
+        const coverLetterEditor = document.getElementById('coverLetterEditor');
         
         let currentTailoredData = null; // Store the original data structure
 
@@ -685,6 +695,9 @@
                 
                 tailoredFormEditor.innerHTML = formHtml;
                 
+                // Populate Cover Letter Editor
+                coverLetterEditor.value = data.cover_letter_text || '';
+                
                 // Show container
                 analysisContainer.style.display = 'block';
 
@@ -754,7 +767,49 @@
                 alert(`Error: ${err.message}`);
             } finally {
                 generateFinalPdfBtn.disabled = false;
-                generateFinalPdfBtn.textContent = "📄 Generate Final PDF";
+                generateFinalPdfBtn.textContent = "📄 Generate Resume PDF";
+            }
+        });
+        
+        generateCoverLetterBtn.addEventListener('click', async () => {
+            const clText = coverLetterEditor.value.trim();
+            if (!clText) {
+                alert("Cover letter text is empty. Please analyze a job description first.");
+                return;
+            }
+            
+            generateCoverLetterBtn.disabled = true;
+            generateCoverLetterBtn.textContent = "⏳ Generating...";
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/generate-cover-letter-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cover_letter_text: clText })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || "Failed to generate cover letter.");
+                }
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'Cover_Letter.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                alert("Cover letter generated and downloaded successfully!");
+            } catch (err) {
+                console.error(err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                generateCoverLetterBtn.disabled = false;
+                generateCoverLetterBtn.textContent = "✉️ Generate Cover Letter PDF";
             }
         });
 
