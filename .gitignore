@@ -1,7 +1,11 @@
 venv/
 __pycache__/
 .env
+.env.local
 credentials.json
+firebase_credentials.json
 *.pdf
 
 .vercel
+.idea/
+android/.idea/
