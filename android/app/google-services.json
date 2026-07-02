@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "450908364250",
+    "project_id": "ai-job-assistant-ba471",
+    "storage_bucket": "ai-job-assistant-ba471.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450908364250:android:7564cea15157446d3e34e3",
+        "android_client_info": {
+          "package_name": "com.aijobassistant.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "450908364250-vun7mea8qndp1h9303dsacre80kicl6q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aijobassistant.app",
+            "certificate_hash": "e36e2750866ebc1e9fbf177996e43b57fe5139f3"
+          }
+        },
+        {
+          "client_id": "450908364250-uag6htft1k9h620jqju3hsiag5qn4t98.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2xBE9zXicX6_H-VzSsEniCmES0iOT0Ng"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "450908364250-uag6htft1k9h620jqju3hsiag5qn4t98.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

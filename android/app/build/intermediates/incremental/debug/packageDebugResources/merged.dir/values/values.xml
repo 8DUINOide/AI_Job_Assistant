@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AI Job Assistant</string>
+    <string name="default_notification_channel_id">job_alerts</string>
+    <string name="default_notification_channel_name">Job Alerts</string>
+    <string name="default_web_client_id" translatable="false">450908364250-uag6htft1k9h620jqju3hsiag5qn4t98.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">450908364250</string>
+    <string name="google_api_key" translatable="false">AIzaSyD2xBE9zXicX6_H-VzSsEniCmES0iOT0Ng</string>
+    <string name="google_app_id" translatable="false">1:450908364250:android:7564cea15157446d3e34e3</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyD2xBE9zXicX6_H-VzSsEniCmES0iOT0Ng</string>
+    <string name="google_storage_bucket" translatable="false">ai-job-assistant-ba471.firebasestorage.app</string>
+    <string name="project_id" translatable="false">ai-job-assistant-ba471</string>
+    <style name="Theme.AIJobAssistant" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <style name="Theme.AIJobAssistant.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0f172a</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.AIJobAssistant</item>
+    </style>
+</resources>

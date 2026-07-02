@@ -134,15 +134,152 @@
         .terminal .info { color: #38bdf8; }
         .terminal .warn { color: #f59e0b; }
         .terminal .success { color: var(--success); }
+
+        /* Login Screen Styles */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-header-text {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-header-text h1 {
+            font-size: 1.8rem;
+            background: none;
+            color: var(--text-main);
+            -webkit-text-fill-color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .login-header-text p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 32px 24px;
+        }
+
+        .login-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .login-card > p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(0,0,0,0.2);
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .forgot-link {
+            text-align: right;
+            color: #818cf8;
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            opacity: 0.9;
+        }
+        
+        #loginError {
+            color: var(--danger);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+        }
+
     </style>
 </head>
 <body>
-    <div class="blob blob-1"></div>
+    <!-- Login Screen -->
+    <div id="loginOverlay">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <div class="login-header-text">
+            <h1>AI Job Assistant</h1>
+            <p>Your autonomous job hunting companion</p>
+        </div>
+
+        <div class="glass-card login-card">
+            <h2>Welcome Back</h2>
+            <p>Sign in to continue your job search</p>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email">
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+
+            <div class="forgot-link" onclick="alert('Please contact the administrator to reset your password.')">Forgot Password?</div>
+
+            <div id="loginError">Invalid credentials.</div>
+
+            <button class="btn-gradient" id="loginBtn">Sign In</button>
+        </div>
+    </div>
+    
+    <div id="dashboardContainer" style="display: none;">
+
     <div class="blob blob-2"></div>
 
     <header>
         <h1>Agent Command Center</h1>
         <div style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Autonomous Job Application System</div>
+        <button id="logoutBtn" style="width: auto; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #f87171; padding: 6px 12px; font-size: 0.8rem; margin-top: 10px;">Logout</button>
     </header>
 
     <div class="dashboard-grid">
@@ -285,6 +422,91 @@
     <script>
         const API_BASE = window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
                     && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
+
+        // Auth Logic
+        const adminToken = localStorage.getItem('admin_token');
+        const loginOverlay = document.getElementById('loginOverlay');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function showDashboard() {
+            loginOverlay.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+            fetchProfile();
+            fetchLogs();
+        }
+
+        function showLogin() {
+            loginOverlay.style.display = 'flex';
+            dashboardContainer.style.display = 'none';
+            localStorage.removeItem('admin_token');
+        }
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!email || !password) return;
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Signing in...';
+            loginError.style.display = 'none';
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('admin_token', data.token);
+                    showDashboard();
+                } else {
+                    loginError.style.display = 'block';
+                    loginError.textContent = data.error || 'Invalid credentials';
+                }
+            } catch (err) {
+                loginError.style.display = 'block';
+                loginError.textContent = 'Connection error';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+            }
+        });
+        
+        logoutBtn.addEventListener('click', () => {
+            showLogin();
+        });
+
+        // Add interceptor to fetch calls
+        const originalFetch = window.fetch;
+        window.fetch = async function() {
+            const token = localStorage.getItem('admin_token');
+            let [resource, config] = arguments;
+            
+            if (resource.includes('/api/') && !resource.includes('/api/login')) {
+                config = config || {};
+                config.headers = config.headers || {};
+                if (token) {
+                    if (config.headers instanceof Headers) {
+                        config.headers.append('Authorization', `Bearer ${token}`);
+                    } else {
+                        config.headers['Authorization'] = `Bearer ${token}`;
+                    }
+                }
+            }
+            
+            const response = await originalFetch(resource, config);
+            if (response.status === 401 && !resource.includes('/api/login')) {
+                showLogin();
+            }
+            return response;
+        };
+
 
         const triggerBtn = document.getElementById('triggerBtn');
         const terminal = document.getElementById('terminal');
@@ -867,8 +1089,12 @@
         });
 
         // Init
-        fetchProfile();
-        fetchLogs();
+        if (adminToken) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
     </script>
+    </div>
 </body>
 </html>

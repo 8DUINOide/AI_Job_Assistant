@@ -24,6 +24,38 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+ADMIN_EMAIL = 'admin@gmail.com'
+ADMIN_PASSWORD = '12345678'
+ADMIN_TOKEN = 'secret_admin_token_123_abc_xyz'
+
+from functools import wraps
+from flask import request, jsonify
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"success": False, "error": "Unauthorized"}), 401
+        
+        token = auth_header.split(' ')[1]
+        if token != ADMIN_TOKEN:
+            return jsonify({"success": False, "error": "Unauthorized"}), 401
+            
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json or {}
+    email = data.get('email')
+    password = data.get('password')
+    
+    if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+        return jsonify({"success": True, "token": ADMIN_TOKEN})
+    
+    return jsonify({"success": False, "error": "Invalid credentials"}), 401
+
 # -----------------
 # 1. PUBLIC WEB APP
 # -----------------
@@ -34,6 +66,7 @@ def home():
     return send_file(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'index.html'))
 
 @app.route('/api/profile', methods=['GET'])
+@require_auth
 def get_profile():
     try:
         profile = load_profile()
@@ -42,6 +75,7 @@ def get_profile():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/logs', methods=['GET'])
+@require_auth
 def get_logs():
     try:
         logs = get_recent_logs(limit=200)
@@ -52,6 +86,7 @@ def get_logs():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/run-agent-manually', methods=['POST'])
+@require_auth
 def run_agent_manually():
     """Fetches raw jobs based on master profile to bypass Vercel timeout."""
     try:
@@ -78,6 +113,7 @@ def run_agent_manually():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/evaluate-jobs', methods=['POST'])
+@require_auth
 def evaluate_multiple_jobs():
     """Evaluates multiple jobs in a single batch to bypass Gemini RPM limits and speed up execution."""
     data = request.json
@@ -102,6 +138,7 @@ def evaluate_multiple_jobs():
     return jsonify({"success": True, "jobs": jobs})
 
 @app.route('/api/evaluate-job', methods=['POST'])
+@require_auth
 def evaluate_single_job():
     """Evaluates a single job to bypass Vercel 10s limit."""
     data = request.json
@@ -126,6 +163,7 @@ def evaluate_single_job():
     return jsonify({"success": True, "job": job})
 
 @app.route('/api/send-digest', methods=['POST'])
+@require_auth
 def handle_send_digest():
     """Allows the public web app to email matches to a user's inputted email."""
     data = request.json
@@ -161,6 +199,7 @@ def handle_send_digest():
     return jsonify({"success": False, "error": "Missing email or jobs"}), 400
     
 @app.route('/api/update-status', methods=['POST'])
+@require_auth
 def update_status():
     """Updates the status of a pending job."""
     data = request.json
@@ -219,6 +258,7 @@ def fill_form():
     return jsonify({"answers": answers})
 
 @app.route('/api/log-job', methods=['POST'])
+@require_auth
 def log_job():
     data = request.json
     url = data.get('url', '')
@@ -237,6 +277,7 @@ def log_job():
     return jsonify({"success": False}), 500
 
 @app.route('/api/upload-logs', methods=['POST'])
+@require_auth
 def upload_logs():
     if 'file' not in request.files:
         return jsonify({"success": False, "error": "No file part"}), 400
@@ -294,6 +335,7 @@ def upload_logs():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/upload-credentials', methods=['POST'])
+@require_auth
 def upload_credentials():
     if 'file' not in request.files:
         return jsonify({"success": False, "error": "No file part"}), 400
@@ -361,6 +403,7 @@ def run_scraper_cron():
     return jsonify({"status": "completed", "jobs_found": len(high_match_jobs)})
 
 @app.route('/api/generate-resume', methods=['POST'])
+@require_auth
 def generate_resume():
     try:
         data = request.json
@@ -387,6 +430,7 @@ def generate_resume():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/analyze-resume', methods=['POST'])
+@require_auth
 def analyze_resume():
     """Analyzes JD and returns match rate, keywords, and editable tailored data."""
     try:
@@ -428,6 +472,7 @@ def analyze_resume():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/generate-pdf', methods=['POST'])
+@require_auth
 def generate_pdf():
     """Generates PDF directly from user-edited tailored data."""
     try:
@@ -449,6 +494,7 @@ def generate_pdf():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/generate-cover-letter-pdf', methods=['POST'])
+@require_auth
 def generate_cover_letter_pdf():
     """Generates Cover Letter PDF from text."""
     try:

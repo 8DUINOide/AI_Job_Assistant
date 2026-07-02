@@ -1,0 +1,86 @@
+[
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "com.aijobassistant.app-debug-68:/drawable_splash_icon.xml.flat",
+        "source": "com.aijobassistant.app-main-70:/drawable/splash_icon.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-mdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-mdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxxhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-mdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-mdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\drawable_ic_app_logo_nobg.png.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\drawable\\ic_app_logo_nobg.png"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-hdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-hdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-hdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-hdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxxhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxxhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xhdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\mipmap-xxhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-debug-68:\\drawable_ic_google.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-70:\\drawable\\ic_google.xml"
+    }
+]
