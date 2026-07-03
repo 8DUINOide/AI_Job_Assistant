@@ -40,7 +40,7 @@ import com.aijobassistant.app.ui.theme.*
  */
 @Composable
 fun OnboardingScreen(
-    onComplete: (resumeUri: Uri?, portfolioUrl: String) -> Unit,
+    onComplete: (resumeUri: Uri?, portfolioUrl: String, desiredRoles: List<String>) -> Unit,
     isLoading: Boolean = false,
     processingStep: String = "",
     errorMessage: String? = null
@@ -49,6 +49,7 @@ fun OnboardingScreen(
     var selectedResumeUri by remember { mutableStateOf<Uri?>(null) }
     var selectedResumeFileName by remember { mutableStateOf<String?>(null) }
     var portfolioUrl by remember { mutableStateOf("") }
+    var desiredRolesText by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     // File picker launcher
@@ -76,7 +77,7 @@ fun OnboardingScreen(
         }
     }
 
-    val steps = listOf("Upload Resume", "Portfolio Link", "Build Profile")
+    val steps = listOf("Upload Resume", "Portfolio Link", "Desired Roles", "Build Profile")
 
     Box(
         modifier = Modifier
@@ -194,7 +195,11 @@ fun OnboardingScreen(
                             portfolioUrl = portfolioUrl,
                             onUrlChange = { portfolioUrl = it }
                         )
-                        2 -> StepBuildProfile(
+                        2 -> StepDesiredRoles(
+                            desiredRolesText = desiredRolesText,
+                            onRolesChange = { desiredRolesText = it }
+                        )
+                        3 -> StepBuildProfile(
                             isLoading = isLoading,
                             processingStep = processingStep,
                             errorMessage = errorMessage
@@ -231,19 +236,29 @@ fun OnboardingScreen(
                     text = when (currentStep) {
                         0 -> if (selectedResumeUri != null) "Next" else "Skip for Now"
                         1 -> "Next"
-                        2 -> if (isLoading) "Processing..." else "Build My Profile"
+                        2 -> "Next"
+                        3 -> if (isLoading) "Saving..." else "Complete Setup"
                         else -> "Next"
                     },
+                    icon = if (currentStep == 3) {
+                        if (isLoading) Icons.Default.Settings else Icons.Default.RocketLaunch
+                    } else null,
                     onClick = {
                         when (currentStep) {
                             0 -> currentStep = 1
                             1 -> currentStep = 2
-                            2 -> onComplete(selectedResumeUri, portfolioUrl.trim())
+                            2 -> currentStep = 3
+                            3 -> {
+                                val roles = desiredRolesText.split(",")
+                                    .map { it.trim() }
+                                    .filter { it.isNotEmpty() }
+                                onComplete(selectedResumeUri, portfolioUrl.trim(), roles)
+                            }
                         }
                     },
                     modifier = Modifier.weight(if (currentStep > 0 && !isLoading) 1f else 1f),
                     isLoading = isLoading,
-                    gradientColors = if (currentStep == 2) {
+                    gradientColors = if (currentStep == 3) {
                         listOf(StatusSuccess, AccentIndigoLight)
                     } else {
                         listOf(PrimaryBlue, AccentIndigo)
@@ -265,10 +280,7 @@ private fun StepUploadResume(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "📄",
-            fontSize = 48.sp
-        )
+        Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(48.dp), tint = PrimaryBlueLight)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -363,10 +375,7 @@ private fun StepPortfolioUrl(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = "🌐",
-            fontSize = 48.sp
-        )
+        Icon(Icons.Default.Language, contentDescription = null, modifier = Modifier.size(48.dp), tint = PrimaryBlueLight)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -388,6 +397,43 @@ private fun StepPortfolioUrl(
             label = "Portfolio or LinkedIn URL (Optional)",
             leadingIcon = {
                 Icon(Icons.Default.Link, contentDescription = null, tint = TextMuted)
+            }
+        )
+    }
+}
+
+@Composable
+private fun StepDesiredRoles(
+    desiredRolesText: String,
+    onRolesChange: (String) -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+            Icon(Icons.Default.TrackChanges, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Target Roles",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Text(
+            text = "Specify the roles you are looking for (e.g., Software Engineer, Backend Developer). Separate multiple roles with commas.",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+        )
+
+        AppTextField(
+            value = desiredRolesText,
+            onValueChange = onRolesChange,
+            label = "E.g. Android Developer, Backend Intern",
+            leadingIcon = {
+                Icon(Icons.Default.Work, contentDescription = null, tint = TextMuted)
             }
         )
     }

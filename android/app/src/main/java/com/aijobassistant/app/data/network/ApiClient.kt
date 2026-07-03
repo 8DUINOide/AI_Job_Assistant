@@ -17,8 +17,17 @@ object ApiClient {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
+    private val authInterceptor = okhttp3.Interceptor { chain ->
+        val original = chain.request()
+        val requestBuilder = original.newBuilder()
+            .header("Authorization", "Bearer secret_admin_token_123_abc_xyz")
+        val request = requestBuilder.build()
+        chain.proceed(request)
+    }
+
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(authInterceptor)
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS) // Scraping and Gemini can take time
         .writeTimeout(60, TimeUnit.SECONDS)

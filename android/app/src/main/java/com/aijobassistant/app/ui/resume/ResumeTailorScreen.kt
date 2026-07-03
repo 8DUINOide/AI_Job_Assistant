@@ -219,7 +219,13 @@ fun ResumeTailorScreen(
                     Tab(
                         selected = activeTab == 1,
                         onClick = { activeTab = 1 },
-                        text = { Text("✉️ Cover Letter") }
+                        text = { 
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Cover Letter")
+                            }
+                        }
                     )
                 }
 
@@ -293,7 +299,8 @@ fun ResumeTailorScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             GradientButton(
-                                text = "✉️ Generate Cover Letter PDF",
+                                text = "Generate Cover Letter PDF",
+                                icon = Icons.Default.PictureAsPdf,
                                 onClick = { onGenerateCoverLetterPdf(editedCoverLetter) },
                                 isLoading = isGenerating,
                                 gradientColors = listOf(AccentIndigoLight, AccentIndigo)

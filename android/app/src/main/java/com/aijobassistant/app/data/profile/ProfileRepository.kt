@@ -101,7 +101,7 @@ class ProfileRepository {
     /**
      * Upload resume PDF to Vercel API to build the profile using Gemini.
      */
-    suspend fun buildProfileFromPdf(pdfBytes: ByteArray, portfolioUrl: String): Result<UserProfile> {
+    suspend fun buildProfileFromPdf(pdfBytes: ByteArray, portfolioUrl: String, desiredRoles: List<String>): Result<UserProfile> {
         return try {
             val requestFile = pdfBytes.toRequestBody("application/pdf".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("file", "resume.pdf", requestFile)
@@ -133,6 +133,14 @@ class ProfileRepository {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
+                }
+                
+                if (desiredRoles.isNotEmpty()) {
+                    userProfile = userProfile.copy(
+                        jobPreferences = userProfile.jobPreferences.copy(
+                            desiredRoles = desiredRoles
+                        )
+                    )
                 }
                 
                 // Save to Firestore

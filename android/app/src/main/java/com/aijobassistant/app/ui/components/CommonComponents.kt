@@ -32,19 +32,14 @@ fun GlassCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardBackgroundTranslucent
+            containerColor = CardBackground
         ),
         border = CardDefaults.outlinedCardBorder().copy(
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White.copy(alpha = 0.1f),
-                    Color.White.copy(alpha = 0.05f)
-                )
-            )
+            brush = Brush.linearGradient(listOf(BorderColor, BorderColor))
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -63,7 +58,8 @@ fun GradientButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isLoading: Boolean = false,
-    gradientColors: List<Color> = listOf(PrimaryBlue, AccentIndigo)
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    gradientColors: List<Color> = listOf(PrimaryBlue, PrimaryBlue)
 ) {
     Button(
         onClick = onClick,
@@ -73,36 +69,36 @@ fun GradientButton(
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
+            containerColor = PrimaryBlue,
             disabledContainerColor = SurfaceElevated
         ),
         contentPadding = PaddingValues(0.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = if (enabled && !isLoading) {
-                        Brush.horizontalGradient(gradientColors)
-                    } else {
-                        Brush.horizontalGradient(listOf(SurfaceElevated, SurfaceElevated))
-                    },
-                    shape = RoundedCornerShape(12.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = TextPrimary,
-                    strokeWidth = 2.dp
-                )
-            } else {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Text(
                     text = text,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    color = Color.White
                 )
             }
         }
@@ -166,57 +162,7 @@ fun AppTextField(
  */
 @Composable
 fun AnimatedBackgroundBlobs() {
-    val infiniteTransition = rememberInfiniteTransition(label = "blob")
-
-    val offsetX1 by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 30f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(10000, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "blob1X"
-    )
-    val offsetY1 by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 50f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(10000, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "blob1Y"
-    )
-    val offsetX2 by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = -30f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(12000, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "blob2X"
-    )
-
-    // Blob 1 - Purple (top-left)
-    Box(
-        modifier = Modifier
-            .offset(x = (-50 + offsetX1.toInt()).dp, y = (-50 + offsetY1.toInt()).dp)
-            .size(300.dp)
-            .clip(CircleShape)
-            .blur(80.dp)
-            .background(BlobPrimary)
-    )
-
-    // Blob 2 - Blue (bottom-right)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.BottomEnd)
-            .offset(x = (50 + offsetX2.toInt()).dp, y = 50.dp)
-            .size(350.dp)
-            .clip(CircleShape)
-            .blur(80.dp)
-            .background(BlobAccent)
-    )
+    // Deliberately disabled to enforce a flat minimalist aesthetic
 }
 
 /**

@@ -203,7 +203,12 @@ fun JobDiscoveryScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🔍", style = MaterialTheme.typography.displayLarge)
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search",
+                        modifier = Modifier.size(64.dp),
+                        tint = PrimaryBlue
+                    )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         "Search for jobs to get started",

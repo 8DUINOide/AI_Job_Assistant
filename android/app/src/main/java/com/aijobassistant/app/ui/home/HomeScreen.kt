@@ -46,7 +46,7 @@ fun HomeScreen(
     onNavigateToResume: () -> Unit = {},
     onNavigateToTracker: () -> Unit = {},
     onApproveJob: (Application) -> Unit = {},
-    onDenyJob: (Application) -> Unit = {},
+    onRejectJob: (Application) -> Unit = {},
     onTriggerAgent: suspend (log: (String) -> Unit) -> Unit = {}
 ) {
     var isAgentRunning by remember { mutableStateOf(false) }
@@ -101,46 +101,7 @@ fun HomeScreen(
             }
         }
 
-        // Stats Overview Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(
-                label = "Total Apps",
-                count = totalApplications,
-                icon = Icons.Default.Work,
-                color = PrimaryBlue,
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                label = "Pending",
-                count = pendingCount + if(displayPendingJobs.size > pendingJobs.size) 1 else 0,
-                icon = Icons.Default.HourglassEmpty,
-                color = StatusPending,
-                modifier = Modifier.weight(1f)
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            StatCard(
-                label = "Applied",
-                count = appliedCount,
-                icon = Icons.Default.CheckCircle,
-                color = StatusSuccess,
-                modifier = Modifier.weight(1f)
-            )
-            StatCard(
-                label = "Rejected",
-                count = rejectedCount,
-                icon = Icons.Default.Cancel,
-                color = StatusDanger,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        // Removed Stats Overview Row
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -160,7 +121,7 @@ fun HomeScreen(
                 icon = Icons.Default.Search,
                 title = "Find Jobs",
                 subtitle = "AI-powered search",
-                gradientColors = listOf(PrimaryBlue, PrimaryBlueDark),
+                backgroundColor = PrimaryBlueContainer,
                 onClick = onNavigateToJobs,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -168,7 +129,7 @@ fun HomeScreen(
                 icon = Icons.Default.Description,
                 title = "Tailor Resume",
                 subtitle = "For a specific job",
-                gradientColors = listOf(AccentIndigo, AccentIndigoLight),
+                backgroundColor = AccentIndigoContainer,
                 onClick = onNavigateToResume,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -176,7 +137,7 @@ fun HomeScreen(
                 icon = Icons.AutoMirrored.Filled.TrendingUp,
                 title = "Track",
                 subtitle = "Applications",
-                gradientColors = listOf(StatusSuccess, Color(0xFF059669)),
+                backgroundColor = StatusSuccessContainer,
                 onClick = onNavigateToTracker,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -209,10 +170,10 @@ fun HomeScreen(
                             displayPendingJobs = updatedList
                             onApproveJob(job) 
                         },
-                        onDeny = { 
+                        onReject = { 
                             val updatedList = displayPendingJobs.filter { it.id != job.id }
                             displayPendingJobs = updatedList
-                            onDenyJob(job) 
+                            onRejectJob(job) 
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -255,13 +216,13 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             GradientButton(
-                text = if (isAgentRunning) "⏳ Agent is Running..." else "🔍  Trigger Agent Now",
+                text = if (isAgentRunning) "Agent is Running..." else "Trigger Agent Now",
+                icon = if (isAgentRunning) Icons.Default.HourglassTop else Icons.Default.Search,
                 onClick = { 
                     if (!isAgentRunning) {
                         isAgentRunning = true
                     }
-                },
-                gradientColors = if (isAgentRunning) listOf(Color.Gray, Color.DarkGray) else listOf(PrimaryBlue, AccentIndigo)
+                }
             )
 
             if (isAgentRunning || agentLogs.isNotEmpty()) {
@@ -368,30 +329,27 @@ private fun QuickActionCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    gradientColors: List<Color>,
+    backgroundColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .background(
-                    Brush.verticalGradient(gradientColors.map { it.copy(alpha = 0.3f) }),
-                    RoundedCornerShape(12.dp)
-                )
                 .padding(14.dp)
         ) {
             Column {
                 Icon(
                     icon,
                     contentDescription = title,
-                    tint = TextPrimary,
+                    tint = PrimaryBlue,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -415,7 +373,7 @@ private fun QuickActionCard(
 private fun PendingJobCard(
     application: Application,
     onApprove: () -> Unit,
-    onDeny: () -> Unit
+    onReject: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -455,7 +413,7 @@ private fun PendingJobCard(
                     Text("Applied", style = MaterialTheme.typography.labelSmall)
                 }
                 Button(
-                    onClick = onDeny,
+                    onClick = onReject,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = StatusDanger,
                         contentColor = Color.White
@@ -463,7 +421,7 @@ private fun PendingJobCard(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Denied", style = MaterialTheme.typography.labelSmall)
+                    Text("Rejected", style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

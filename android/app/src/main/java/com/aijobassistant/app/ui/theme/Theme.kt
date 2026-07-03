@@ -3,7 +3,7 @@ package com.aijobassistant.app.ui.theme
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
@@ -12,24 +12,23 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 /**
- * Custom dark Material 3 color scheme matching the web dashboard's glassmorphic design.
- * The app is dark-mode only to maintain the premium feel of the original web interface.
+ * Custom light Material 3 color scheme matching a clean professional design.
  */
-private val DarkColorScheme = darkColorScheme(
+private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
-    onPrimary = TextPrimary,
+    onPrimary = Color.White,
     primaryContainer = PrimaryBlueContainer,
-    onPrimaryContainer = PrimaryBlueLight,
+    onPrimaryContainer = PrimaryBlueDark,
 
     secondary = AccentIndigo,
-    onSecondary = TextPrimary,
+    onSecondary = Color.White,
     secondaryContainer = AccentIndigoContainer,
     onSecondaryContainer = AccentIndigoLight,
 
     tertiary = StatusSuccess,
-    onTertiary = TextPrimary,
+    onTertiary = Color.White,
 
-    background = DarkBackground,
+    background = DarkBackground, // It's light now, keeping name for compatibility
     onBackground = TextPrimary,
 
     surface = CardBackground,
@@ -38,7 +37,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = TextSecondary,
 
     error = StatusDanger,
-    onError = TextPrimary,
+    onError = Color.White,
     errorContainer = StatusDangerContainer,
     onErrorContainer = StatusDanger,
 
@@ -47,16 +46,16 @@ private val DarkColorScheme = darkColorScheme(
 
     inverseSurface = TextPrimary,
     inverseOnSurface = DarkBackground,
-    inversePrimary = PrimaryBlueDark,
+    inversePrimary = PrimaryBlueLight,
 
-    scrim = Color(0x80000000)
+    scrim = Color(0x33000000)
 )
 
 @Composable
 fun AIJobAssistantTheme(
     content: @Composable () -> Unit
 ) {
-    val colorScheme = DarkColorScheme
+    val colorScheme = LightColorScheme
     val view = LocalView.current
 
     if (!view.isInEditMode) {
@@ -64,8 +63,8 @@ fun AIJobAssistantTheme(
             val window = (view.context as Activity).window
             window.statusBarColor = Color.Transparent.toArgb()
             window.navigationBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = true
         }
     }
 

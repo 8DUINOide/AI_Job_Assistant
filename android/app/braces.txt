@@ -1,0 +1,356 @@
+1 [0]: package com.aijobassistant.app.ui.profile
+2 [0]: 
+3 [0]: import androidx.compose.foundation.clickable
+4 [0]: import androidx.compose.foundation.layout.*
+5 [0]: import androidx.compose.foundation.rememberScrollState
+6 [0]: import androidx.compose.foundation.shape.RoundedCornerShape
+7 [0]: import androidx.compose.foundation.verticalScroll
+8 [0]: import androidx.compose.material.icons.Icons
+9 [0]: import androidx.compose.material.icons.automirrored.filled.ExitToApp
+10 [0]: import androidx.compose.material.icons.filled.*
+11 [0]: import androidx.compose.material3.*
+12 [0]: import androidx.compose.runtime.*
+13 [0]: import androidx.compose.ui.Alignment
+14 [0]: import androidx.compose.ui.Modifier
+15 [0]: import androidx.compose.ui.graphics.Brush
+16 [0]: import androidx.compose.ui.graphics.Color
+17 [0]: import androidx.compose.ui.text.font.FontWeight
+18 [0]: import androidx.compose.ui.text.style.TextAlign
+19 [0]: import androidx.compose.ui.unit.dp
+20 [0]: import androidx.compose.ui.unit.sp
+21 [0]: import com.aijobassistant.app.model.UserProfile
+22 [0]: import com.aijobassistant.app.ui.components.*
+23 [0]: import com.aijobassistant.app.ui.theme.*
+24 [0]: 
+25 [0]: /**
+26 [0]:  * Profile screen — view/edit the master profile.
+27 [0]:  * Converts the web dashboard's "Master Profile Vault" card.
+28 [0]:  */
+29 [0]: @OptIn(ExperimentalLayoutApi::class)
+30 [0]: @Composable
+31 [0]: fun ProfileScreen(
+32 [0]:     profile: UserProfile = UserProfile(),
+33 [0]:     onUpdateDesiredRoles: (List<String>) -> Unit = {},
+34 [0]:     onSignOut: () -> Unit = {},
+35 [0]:     onRebuildProfile: () -> Unit = {},
+36 [0]:     onDeleteAccount: () -> Unit = {}
+37 [0]: ) {
+38 [1]:     var showDeleteDialog by remember { mutableStateOf(false) }
+39 [1]:     var showEditRolesDialog by remember { mutableStateOf(false) }
+40 [1]:     var editRolesText by remember { mutableStateOf("") }
+41 [1]: 
+42 [1]:     Column(
+43 [1]:         modifier = Modifier
+44 [1]:             .fillMaxSize()
+45 [1]:             .verticalScroll(rememberScrollState())
+46 [1]:             .padding(horizontal = 16.dp, vertical = 16.dp)
+47 [1]:     ) {
+48 [2]:         // Header
+49 [2]:         Row(verticalAlignment = Alignment.CenterVertically) {
+50 [3]:             Icon(Icons.Default.Person, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(28.dp))
+51 [3]:             Spacer(modifier = Modifier.width(12.dp))
+52 [3]:             Text(
+53 [3]:                 text = "Master Profile Vault",
+54 [3]:                 style = MaterialTheme.typography.headlineMedium,
+55 [3]:                 fontWeight = FontWeight.Bold
+56 [3]:             )
+57 [3]:         }
+58 [2]:         Text(
+59 [2]:             text = "The agent uses this context to evaluate and apply for jobs.",
+60 [2]:             style = MaterialTheme.typography.bodySmall,
+61 [2]:             color = TextMuted,
+62 [2]:             modifier = Modifier.padding(top = 2.dp, bottom = 20.dp)
+63 [2]:         )
+64 [2]: 
+65 [2]:         // Profile card
+66 [2]:         GlassCard(modifier = Modifier.fillMaxWidth()) {
+67 [3]:             // Avatar + name
+68 [3]:             Column(
+69 [3]:                 modifier = Modifier.fillMaxWidth(),
+70 [3]:                 horizontalAlignment = Alignment.CenterHorizontally
+71 [3]:             ) {
+72 [4]:                 // Avatar circle with initials
+73 [4]:                 Surface(
+74 [4]:                     modifier = Modifier.size(72.dp),
+75 [4]:                     shape = RoundedCornerShape(36.dp),
+76 [4]:                     color = PrimaryBlueContainer
+77 [4]:                 ) {
+78 [5]:                     Box(contentAlignment = Alignment.Center) {
+79 [6]:                         val initials = "${profile.personalInfo.firstName.firstOrNull() ?: ""}${profile.personalInfo.lastName.firstOrNull() ?: ""}"
+80 [6]:                         Text(
+81 [6]:                             text = initials.uppercase(),
+82 [6]:                             style = MaterialTheme.typography.headlineMedium,
+83 [6]:                             color = PrimaryBlue,
+84 [6]:                             fontWeight = FontWeight.Bold
+85 [6]:                         )
+86 [6]:                     }
+87 [5]:                 }
+88 [4]:                 Spacer(modifier = Modifier.height(12.dp))
+89 [4]:                 Text(
+90 [4]:                     text = "Candidate",
+91 [4]:                     style = MaterialTheme.typography.bodySmall,
+92 [4]:                     color = TextMuted
+93 [4]:                 )
+94 [4]:                 Text(
+95 [4]:                     text = profile.personalInfo.fullName.ifBlank { "Set up your profile" },
+96 [4]:                     style = MaterialTheme.typography.titleLarge,
+97 [4]:                     fontWeight = FontWeight.Bold,
+98 [4]:                     textAlign = TextAlign.Center
+99 [4]:                 )
+100 [4]:             }
+101 [3]:         }
+102 [2]: 
+103 [2]:         Spacer(modifier = Modifier.height(16.dp))
+104 [2]: 
+105 [2]:         // Target Roles
+106 [2]:         GlassCard(modifier = Modifier.fillMaxWidth()) {
+107 [3]:             Row(
+108 [3]:                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+109 [3]:                 horizontalArrangement = Arrangement.SpaceBetween,
+110 [3]:                 verticalAlignment = Alignment.CenterVertically
+111 [3]:             ) {
+112 [4]:                 Row(verticalAlignment = Alignment.CenterVertically) {
+113 [5]:                     Icon(Icons.Default.TrackChanges, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+114 [5]:                     Spacer(modifier = Modifier.width(8.dp))
+115 [5]:                     Text(
+116 [5]:                         text = "Target Roles",
+117 [5]:                         style = MaterialTheme.typography.titleSmall,
+118 [5]:                         fontWeight = FontWeight.SemiBold
+119 [5]:                     )
+120 [5]:                 }
+121 [4]:                 IconButton(
+122 [4]:                     onClick = { 
+123 [5]:                         editRolesText = profile.jobPreferences.desiredRoles.joinToString(", ")
+124 [5]:                         showEditRolesDialog = true 
+125 [5]:                     },
+126 [4]:                     modifier = Modifier.size(24.dp)
+127 [4]:                 ) {
+128 [5]:                     Icon(
+129 [5]:                         Icons.Default.Edit,
+130 [5]:                         contentDescription = "Edit Roles",
+131 [5]:                         tint = PrimaryBlue,
+132 [5]:                         modifier = Modifier.size(18.dp)
+133 [5]:                     )
+134 [5]:                 }
+135 [4]:             }
+136 [3]:                 androidx.compose.foundation.layout.FlowRow(
+137 [3]:                     horizontalArrangement = Arrangement.spacedBy(6.dp),
+138 [3]:                     verticalArrangement = Arrangement.spacedBy(6.dp)
+139 [3]:                 ) {
+140 [4]:                     profile.jobPreferences.desiredRoles.forEach { role ->
+141 [5]:                         SkillTag(text = role)
+142 [5]:                     }
+143 [4]:                 }
+144 [3]:             }
+145 [2]:             Spacer(modifier = Modifier.height(12.dp))
+146 [2]: 
+147 [2]:         // Skills
+148 [2]:         if (profile.skills.isNotEmpty()) {
+149 [3]:             GlassCard(modifier = Modifier.fillMaxWidth()) {
+150 [4]:                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+151 [5]:                     Icon(Icons.Default.Code, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+152 [5]:                     Spacer(modifier = Modifier.width(8.dp))
+153 [5]:                     Text(
+154 [5]:                         text = "Skills",
+155 [5]:                         style = MaterialTheme.typography.titleSmall,
+156 [5]:                         fontWeight = FontWeight.SemiBold
+157 [5]:                     )
+158 [5]:                 }
+159 [4]:                 androidx.compose.foundation.layout.FlowRow(
+160 [4]:                     horizontalArrangement = Arrangement.spacedBy(6.dp),
+161 [4]:                     verticalArrangement = Arrangement.spacedBy(6.dp)
+162 [4]:                 ) {
+163 [5]:                     profile.skills.forEach { skill ->
+164 [6]:                         SkillTag(
+165 [6]:                             text = skill,
+166 [6]:                             containerColor = AccentIndigoContainer,
+167 [6]:                             textColor = AccentIndigoLight,
+168 [6]:                             borderColor = AccentIndigoLight.copy(alpha = 0.3f)
+169 [6]:                         )
+170 [6]:                     }
+171 [5]:                 }
+172 [4]:             }
+173 [3]:             Spacer(modifier = Modifier.height(12.dp))
+174 [3]:         }
+175 [2]: 
+176 [2]:         // Actions
+177 [2]:         GlassCard(modifier = Modifier.fillMaxWidth()) {
+178 [3]:             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 12.dp)) {
+179 [4]:                 Icon(Icons.Default.Settings, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+180 [4]:                 Spacer(modifier = Modifier.width(8.dp))
+181 [4]:                 Text(
+182 [4]:                     text = "Account",
+183 [4]:                     style = MaterialTheme.typography.titleSmall,
+184 [4]:                     fontWeight = FontWeight.SemiBold
+185 [4]:                 )
+186 [4]:             }
+187 [3]: 
+188 [3]:             // Rebuild profile
+189 [3]:             GradientButton(
+190 [3]:                 text = "Rebuild Profile from Resume",
+191 [3]:                 icon = Icons.Default.Refresh,
+192 [3]:                 onClick = onRebuildProfile
+193 [3]:             )
+194 [3]: 
+195 [3]:             Spacer(modifier = Modifier.height(12.dp))
+196 [3]: 
+197 [3]:             // Sign out
+198 [3]:             OutlinedButton(
+199 [3]:                 onClick = onSignOut,
+200 [3]:                 modifier = Modifier
+201 [3]:                     .fillMaxWidth()
+202 [3]:                     .height(48.dp),
+203 [3]:                 shape = RoundedCornerShape(12.dp),
+204 [3]:                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextPrimary)
+205 [3]:             ) {
+206 [4]:                 Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
+207 [4]:                 Spacer(modifier = Modifier.width(8.dp))
+208 [4]:                 Text("Sign Out")
+209 [4]:             }
+210 [3]: 
+211 [3]:             Spacer(modifier = Modifier.height(12.dp))
+212 [3]: 
+213 [3]:             // Delete account
+214 [3]:             TextButton(
+215 [3]:                 onClick = { showDeleteDialog = true },
+216 [3]:                 modifier = Modifier.fillMaxWidth()
+217 [3]:             ) {
+218 [4]:                 Text(
+219 [4]:                     "Delete Account",
+220 [4]:                     color = StatusDanger,
+221 [4]:                     style = MaterialTheme.typography.bodySmall
+222 [4]:                 )
+223 [4]:             }
+224 [3]:         }
+225 [2]: 
+226 [2]:         Spacer(modifier = Modifier.height(80.dp))
+227 [2]:     }
+228 [1]: 
+229 [1]:     // Delete account dialog
+230 [1]:     if (showDeleteDialog) {
+231 [2]:         AlertDialog(
+232 [2]:             onDismissRequest = { showDeleteDialog = false },
+233 [2]:             title = { Text("Delete Account?", color = StatusDanger) },
+234 [2]:             text = {
+235 [3]:                 Text(
+236 [3]:                     "This will permanently delete your account and all data. This action cannot be undone.",
+237 [3]:                     style = MaterialTheme.typography.bodyMedium,
+238 [3]:                     color = TextSecondary
+239 [3]:                 )
+240 [3]:             },
+241 [2]:             confirmButton = {
+242 [3]:                 TextButton(onClick = {
+243 [4]:                     onDeleteAccount()
+244 [4]:                     showDeleteDialog = false
+245 [4]:                 }) {
+246 [4]:                     Text("Delete Forever", color = StatusDanger)
+247 [4]:                 }
+248 [3]:             },
+249 [2]:             dismissButton = {
+250 [3]:                 TextButton(onClick = { showDeleteDialog = false }) {
+251 [4]:                     Text("Cancel", color = TextMuted)
+252 [4]:                 }
+253 [3]:             },
+254 [2]:             containerColor = CardBackground
+255 [2]:         )
+256 [2]:     }
+257 [1]: 
+258 [1]:     // Edit Roles dialog
+259 [1]:     if (showEditRolesDialog) {
+260 [2]:         AlertDialog(
+261 [2]:             onDismissRequest = { showEditRolesDialog = false },
+262 [2]:             title = { Text("Edit Target Roles", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary) },
+263 [2]:             text = {
+264 [3]:                 Column {
+265 [4]:                     Text(
+266 [4]:                         "Specify the roles you are looking for (e.g., Software Engineer, Backend Developer). Separate multiple roles with commas.",
+267 [4]:                         style = MaterialTheme.typography.bodySmall,
+268 [4]:                         color = TextMuted,
+269 [4]:                         modifier = Modifier.padding(bottom = 16.dp)
+270 [4]:                     )
+271 [4]:                     OutlinedTextField(
+272 [4]:                         value = editRolesText,
+273 [4]:                         onValueChange = { editRolesText = it },
+274 [4]:                         modifier = Modifier.fillMaxWidth(),
+275 [4]:                         colors = OutlinedTextFieldDefaults.colors(
+276 [4]:                             focusedContainerColor = Color.Transparent,
+277 [4]:                             unfocusedContainerColor = Color.Transparent,
+278 [4]:                             focusedBorderColor = PrimaryBlue,
+279 [4]:                             unfocusedBorderColor = BorderColor,
+280 [4]:                             focusedTextColor = TextPrimary,
+281 [4]:                             unfocusedTextColor = TextPrimary
+282 [4]:                         ),
+283 [4]:                         singleLine = false,
+284 [4]:                         maxLines = 3
+285 [4]:                     )
+286 [4]:                     
+287 [4]:                     Spacer(modifier = Modifier.height(16.dp))
+288 [4]:                     Text(
+289 [4]:                         "Suggested Roles (Max 5)",
+290 [4]:                         style = MaterialTheme.typography.labelMedium,
+291 [4]:                         color = TextSecondary,
+292 [4]:                         modifier = Modifier.padding(bottom = 8.dp)
+293 [4]:                     )
+294 [4]:                     
+295 [4]:                     val suggestedRoles = listOf(
+296 [4]:                         "Software Engineer", "Backend Developer", "Frontend Developer", 
+297 [4]:                         "Full Stack Developer", "Android Developer", "Data Scientist", 
+298 [4]:                         "DevOps Engineer", "UI/UX Designer"
+299 [4]:                     )
+300 [4]:                     
+301 [4]:                     androidx.compose.foundation.layout.FlowRow(
+302 [4]:                         horizontalArrangement = Arrangement.spacedBy(6.dp),
+303 [4]:                         verticalArrangement = Arrangement.spacedBy(6.dp)
+304 [4]:                     ) {
+305 [5]:                         suggestedRoles.forEach { role ->
+306 [6]:                             Surface(
+307 [6]:                                 shape = RoundedCornerShape(20.dp),
+308 [6]:                                 color = CardBackground,
+309 [6]:                                 border = CardDefaults.outlinedCardBorder().copy(
+310 [6]:                                     brush = Brush.linearGradient(listOf(BorderColor, BorderColor))
+311 [6]:                                 ),
+312 [6]:                                 modifier = Modifier.clickable {
+313 [7]:                                     val currentRoles = editRolesText.split(",")
+314 [7]:                                         .map { it.trim() }
+315 [7]:                                         .filter { it.isNotEmpty() }
+316 [7]:                                     
+317 [7]:                                     if (!currentRoles.contains(role) && currentRoles.size < 5) {
+318 [8]:                                         editRolesText = if (editRolesText.isBlank()) role else "$editRolesText, $role"
+319 [8]:                                     }
+320 [7]:                                 }
+321 [6]:                             ) {
+322 [7]:                                 Text(
+323 [7]:                                     text = "+ $role",
+324 [7]:                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+325 [7]:                                     style = MaterialTheme.typography.labelSmall,
+326 [7]:                                     color = TextPrimary
+327 [7]:                                 )
+328 [7]:                             }
+329 [6]:                         }
+330 [5]:                     }
+331 [4]:                 }
+332 [3]:             },
+333 [2]:             confirmButton = {
+334 [3]:                 Button(
+335 [3]:                     onClick = {
+336 [4]:                         val roles = editRolesText.split(",")
+337 [4]:                             .map { it.trim() }
+338 [4]:                             .filter { it.isNotEmpty() }
+339 [4]:                             .take(5) // Enforce max 5 roles
+340 [4]:                         onUpdateDesiredRoles(roles)
+341 [4]:                         showEditRolesDialog = false
+342 [4]:                     },
+343 [3]:                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue, contentColor = Color.White)
+344 [3]:                 ) {
+345 [4]:                     Text("Save")
+346 [4]:                 }
+347 [3]:             },
+348 [2]:             dismissButton = {
+349 [3]:                 TextButton(onClick = { showEditRolesDialog = false }) {
+350 [4]:                     Text("Cancel", color = TextMuted)
+351 [4]:                 }
+352 [3]:             },
+353 [2]:             containerColor = CardBackground
+354 [2]:         )
+355 [2]:     }
+356 [1]: }

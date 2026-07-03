@@ -6,16 +6,19 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.aijobassistant.app.R
 
-/**
- * Typography system using default sans-serif (similar to Inter on web).
- * When building in Android Studio, you can add Inter font files to res/font/
- * and reference them here for exact parity with the web design.
- */
+val OutfitFontFamily = FontFamily(
+    Font(R.font.outfit_regular, FontWeight.Normal),
+    Font(R.font.outfit_medium, FontWeight.Medium),
+    Font(R.font.outfit_semibold, FontWeight.SemiBold),
+    Font(R.font.outfit_bold, FontWeight.Bold)
+)
 
 val AppTypography = Typography(
     // Large display text (splash, hero sections)
     displayLarge = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 34.sp,
         lineHeight = 40.sp,
@@ -25,6 +28,7 @@ val AppTypography = Typography(
 
     // Screen titles (e.g., "Agent Command Center")
     headlineLarge = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 34.sp,
@@ -34,6 +38,7 @@ val AppTypography = Typography(
 
     // Section titles (e.g., "Application Logs")
     headlineMedium = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
@@ -43,6 +48,7 @@ val AppTypography = Typography(
 
     // Card titles
     titleLarge = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
@@ -52,6 +58,7 @@ val AppTypography = Typography(
 
     // Subtitle / secondary headings
     titleMedium = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 22.sp,
@@ -61,6 +68,7 @@ val AppTypography = Typography(
 
     // Small titles
     titleSmall = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -70,6 +78,7 @@ val AppTypography = Typography(
 
     // Body text
     bodyLarge = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
@@ -78,6 +87,7 @@ val AppTypography = Typography(
     ),
 
     bodyMedium = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -86,6 +96,7 @@ val AppTypography = Typography(
     ),
 
     bodySmall = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -95,6 +106,7 @@ val AppTypography = Typography(
 
     // Labels (buttons, chips, tags)
     labelLarge = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -103,6 +115,7 @@ val AppTypography = Typography(
     ),
 
     labelMedium = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
@@ -111,6 +124,7 @@ val AppTypography = Typography(
     ),
 
     labelSmall = TextStyle(
+        fontFamily = OutfitFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,

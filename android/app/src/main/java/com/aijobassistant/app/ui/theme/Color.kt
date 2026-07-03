@@ -7,22 +7,22 @@ import androidx.compose.ui.graphics.Color
  */
 
 // Background
-val DarkBackground = Color(0xFF0B1121)
-val CardBackground = Color(0xFF151E32)
-val CardBackgroundTranslucent = Color(0xB3151E32) // ~70% opacity
-val SurfaceElevated = Color(0xFF1E2B45)
+val DarkBackground = Color(0xFFF8FAFC) // Now Light Background
+val CardBackground = Color(0xFFFFFFFF)
+val CardBackgroundTranslucent = Color(0xE6FFFFFF) // ~90% opacity white
+val SurfaceElevated = Color(0xFFF1F5F9)
 
-// Primary (Blue)
-val PrimaryBlue = Color(0xFF0F69DB)
-val PrimaryBlueHover = Color(0xFF0C54B0)
-val PrimaryBlueLight = Color(0xFF4D94EB)
-val PrimaryBlueDark = Color(0xFF0A4796)
-val PrimaryBlueContainer = Color(0x260F69DB) // 15% opacity
+// Primary (Emerald Green - variable names kept for backward compatibility)
+val PrimaryBlue = Color(0xFF059669) // Emerald 600 - Success, growth
+val PrimaryBlueHover = Color(0xFF047857) // Emerald 700
+val PrimaryBlueLight = Color(0xFF34D399) // Emerald 400
+val PrimaryBlueDark = Color(0xFF065F46) // Emerald 800
+val PrimaryBlueContainer = Color(0x26059669) // 15% opacity
 
 // Secondary (Indigo)
-val AccentIndigo = Color(0xFF2D34A9)
-val AccentIndigoLight = Color(0xFF4F57C4)
-val AccentIndigoContainer = Color(0x262D34A9) // 15% opacity
+val AccentIndigo = Color(0xFF475569) // Slate 600
+val AccentIndigoLight = Color(0xFF64748B) // Slate 500
+val AccentIndigoContainer = Color(0x26475569) // 15% opacity
 
 // Gradient endpoints
 val GradientStart = PrimaryBlue
@@ -38,13 +38,13 @@ val StatusDangerContainer = Color(0x1AEF4444)
 val StatusPending = Color(0xFFFBBF24)
 
 // Text
-val TextPrimary = Color(0xFFF8FAFC)
-val TextSecondary = Color(0xFF94A3B8)
+val TextPrimary = Color(0xFF0F172A)
+val TextSecondary = Color(0xFF334155)
 val TextMuted = Color(0xFF64748B)
 
 // Borders
-val BorderColor = Color(0x1AFFFFFF) // 10% white
-val BorderSubtle = Color(0x0DFFFFFF) // 5% white
+val BorderColor = Color(0x1A000000) // 10% black
+val BorderSubtle = Color(0x0D000000) // 5% black
 
 // Blob / decorative
 val BlobPrimary = Color(0x4D0F69DB) // 30% opacity

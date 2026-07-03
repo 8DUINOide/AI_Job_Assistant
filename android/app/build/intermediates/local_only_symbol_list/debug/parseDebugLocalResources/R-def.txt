@@ -4,6 +4,10 @@ drawable ic_app_logo_nobg
 drawable ic_google
 drawable ic_launcher_background
 drawable splash_icon
+font outfit_bold
+font outfit_medium
+font outfit_regular
+font outfit_semibold
 mipmap ic_launcher
 mipmap ic_launcher_foreground
 mipmap ic_launcher_round

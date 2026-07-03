@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                             authRepository.sendPasswordResetEmail(email)
                         }
                     },
-                    onCompleteOnboarding = { resumeUri, portfolioUrl, onSuccess ->
+                    onCompleteOnboarding = { resumeUri, portfolioUrl, desiredRoles, onSuccess ->
                         lifecycleScope.launch {
                             isAuthLoading = true
                             try {
@@ -133,7 +133,7 @@ class MainActivity : ComponentActivity() {
                                     inputStream?.close()
                                     
                                     if (bytes != null) {
-                                        val result = profileRepository.buildProfileFromPdf(bytes, portfolioUrl)
+                                        val result = profileRepository.buildProfileFromPdf(bytes, portfolioUrl, desiredRoles)
                                         if (result.isSuccess && result.getOrNull() != null) {
                                             userProfile = result.getOrNull()!!
                                         } else {
@@ -149,6 +149,12 @@ class MainActivity : ComponentActivity() {
                             } finally {
                                 isAuthLoading = false
                             }
+                        }
+                    },
+                    onUpdateProfile = { updatedProfile ->
+                        userProfile = updatedProfile
+                        lifecycleScope.launch {
+                            profileRepository.saveProfile(updatedProfile)
                         }
                     },
                     onSignOut = {

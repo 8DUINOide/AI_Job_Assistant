@@ -72,7 +72,8 @@ fun AppNavigation(
     onGoogleSignIn: () -> Unit,
     onSignUp: (String, String, String, String) -> Unit,
     onForgotPassword: (String) -> Unit,
-    onCompleteOnboarding: (android.net.Uri?, String, () -> Unit) -> Unit,
+    onCompleteOnboarding: (android.net.Uri?, String, List<String>, () -> Unit) -> Unit,
+    onUpdateProfile: (com.aijobassistant.app.model.UserProfile) -> Unit,
     onSignOut: () -> Unit,
     onDeleteAccount: () -> Unit
 ) {
@@ -187,8 +188,8 @@ fun AppNavigation(
 
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
-                    onComplete = { uri, url ->
-                        onCompleteOnboarding(uri, url) {
+                    onComplete = { uri, url, roles ->
+                        onCompleteOnboarding(uri, url, roles) {
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(0) { inclusive = true }
                             }
@@ -243,7 +244,7 @@ fun AppNavigation(
                             trackerRepository.updateStatus(app.id, com.aijobassistant.app.model.ApplicationStatus.APPLIED)
                         }
                     },
-                    onDenyJob = { app ->
+                    onRejectJob = { app ->
                         coroutineScope.launch {
                             trackerRepository.updateStatus(app.id, com.aijobassistant.app.model.ApplicationStatus.REJECTED)
                         }
@@ -251,41 +252,87 @@ fun AppNavigation(
                     onTriggerAgent = { log ->
                         log("Starting continuous job search...")
                         try {
-                            val role = profile.jobPreferences.desiredRoles.firstOrNull() ?: "Software Engineer"
-                            log("--- Searching for: '$role' ---")
+                            val roles = profile.jobPreferences.desiredRoles.ifEmpty { listOf("Software Engineer") }
+                            var highMatchJobsCount = 0
+                            val seenSignatures = mutableSetOf<String>()
                             
-                            val searchResponse = jobsRepository.searchJobs(role)
-                            if (searchResponse.isSuccess) {
-                                val rawJobs = searchResponse.getOrNull() ?: emptyList()
-                                log("Found ${rawJobs.size} raw jobs. Evaluating...")
+                            for (role in roles) {
+                                if (highMatchJobsCount >= 5) break
                                 
-                                val evalResponse = jobsRepository.evaluateJobs(rawJobs.take(3).map { it.toMap() })
-                                if (evalResponse.isSuccess) {
-                                    val evaluated = evalResponse.getOrNull() ?: emptyList()
-                                    var count = 0
-                                    for (job in evaluated) {
-                                        if (job.score >= 70) {
-                                            log("=> MATCH! ${job.title} @ ${job.company} - Score: ${job.score}%")
-                                            trackerRepository.addApplication(
-                                                com.aijobassistant.app.model.Application(
-                                                    company = job.company,
-                                                    jobTitle = job.title,
-                                                    status = com.aijobassistant.app.model.ApplicationStatus.PENDING,
-                                                    jobLink = job.link ?: "",
-                                                    techStack = job.techStack
-                                                )
-                                            )
-                                            count++
-                                        } else {
-                                            log("=> Pass. ${job.title} @ ${job.company} - Score: ${job.score}%")
+                                var attempts = 0
+                                val maxAttempts = 2
+                                var offset = 0
+                                
+                                while (attempts < maxAttempts) {
+                                    log("--- Searching for: '$role' (Attempt ${attempts + 1}) ---")
+                                    val searchResponse = jobsRepository.searchJobs(role, offset = offset)
+                                    
+                                    if (searchResponse.isSuccess) {
+                                        val rawJobs = searchResponse.getOrNull() ?: emptyList()
+                                        if (rawJobs.isEmpty()) {
+                                            log("No new jobs found in this attempt.")
+                                            break
                                         }
+                                        log("Found ${rawJobs.size} raw jobs. Evaluating...")
+                                        
+                                        val uniqueJobs = rawJobs.filter {
+                                            val sig = "${it.company.lowercase()}|${it.title.lowercase()}"
+                                            if (!seenSignatures.contains(sig)) {
+                                                seenSignatures.add(sig)
+                                                true
+                                            } else {
+                                                false
+                                            }
+                                        }
+                                        
+                                        if (uniqueJobs.isNotEmpty()) {
+                                            val evalResponse = jobsRepository.evaluateJobs(uniqueJobs.map { it.toMap() })
+                                            if (evalResponse.isSuccess) {
+                                                val evaluated = evalResponse.getOrNull() ?: emptyList()
+                                                var countInAttempt = 0
+                                                for (job in evaluated) {
+                                                    if (job.score >= 70) {
+                                                        log("=> MATCH! ${job.title} @ ${job.company} - Score: ${job.score}%")
+                                                        trackerRepository.addApplication(
+                                                            com.aijobassistant.app.model.Application(
+                                                                company = job.company,
+                                                                jobTitle = job.title,
+                                                                status = com.aijobassistant.app.model.ApplicationStatus.PENDING,
+                                                                jobLink = job.link ?: "",
+                                                                techStack = job.techStack
+                                                            )
+                                                        )
+                                                        highMatchJobsCount++
+                                                        countInAttempt++
+                                                        if (highMatchJobsCount >= 5) break
+                                                    } else {
+                                                        log("=> Pass. ${job.title} @ ${job.company} - Score: ${job.score}%")
+                                                    }
+                                                }
+                                                if (countInAttempt > 0) {
+                                                    break // found matches, break attempt loop for this role
+                                                }
+                                            } else {
+                                                log("Evaluation failed: ${evalResponse.exceptionOrNull()?.message}")
+                                            }
+                                        }
+                                        
+                                        attempts++
+                                        offset += 30
+                                        if (attempts >= maxAttempts && highMatchJobsCount < 5) {
+                                            log("Max attempts reached for '$role'. Trying next role...")
+                                        }
+                                    } else {
+                                        log("Search failed: ${searchResponse.exceptionOrNull()?.message}")
+                                        break
                                     }
-                                    log("Digest complete! Logged $count jobs as Pending.")
-                                } else {
-                                    log("Evaluation failed: ${evalResponse.exceptionOrNull()?.message}")
                                 }
+                            }
+                            
+                            if (highMatchJobsCount > 0) {
+                                log("Digest complete! Logged $highMatchJobsCount jobs as Pending.")
                             } else {
-                                log("Search failed: ${searchResponse.exceptionOrNull()?.message}")
+                                log("Could not find any high match jobs after searching all roles.")
                             }
                         } catch (e: Exception) {
                             log("Agent error: ${e.localizedMessage}")
@@ -309,6 +356,13 @@ fun AppNavigation(
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     profile = profile,
+                    onUpdateDesiredRoles = { newRoles ->
+                        onUpdateProfile(
+                            profile.copy(
+                                jobPreferences = profile.jobPreferences.copy(desiredRoles = newRoles)
+                            )
+                        )
+                    },
                     onSignOut = {
                         onSignOut()
                         navController.navigate(Screen.Login.route) {
