@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -122,6 +123,7 @@ fun HomeScreen(
                 title = "Find Jobs",
                 subtitle = "AI-powered search",
                 backgroundColor = PrimaryBlueContainer,
+                iconTint = PrimaryBlue,
                 onClick = onNavigateToJobs,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -130,6 +132,7 @@ fun HomeScreen(
                 title = "Tailor Resume",
                 subtitle = "For a specific job",
                 backgroundColor = AccentIndigoContainer,
+                iconTint = AccentIndigo,
                 onClick = onNavigateToResume,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -138,6 +141,7 @@ fun HomeScreen(
                 title = "Track",
                 subtitle = "Applications",
                 backgroundColor = StatusSuccessContainer,
+                iconTint = StatusSuccess,
                 onClick = onNavigateToTracker,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
@@ -330,41 +334,53 @@ private fun QuickActionCard(
     title: String,
     subtitle: String,
     backgroundColor: Color,
+    iconTint: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.outlinedCardColors(containerColor = CardBackground),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(14.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            Column {
-                Icon(
-                    icon,
-                    contentDescription = title,
-                    tint = PrimaryBlue,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
-                )
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = backgroundColor,
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(
+                        icon,
+                        contentDescription = title,
+                        tint = iconTint,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary,
+                lineHeight = 14.sp
+            )
         }
     }
 }
@@ -390,9 +406,7 @@ private fun PendingJobCard(
                 Text(
                     text = application.jobTitle,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = "${application.company} • ${application.dateApplied}",
@@ -410,7 +424,7 @@ private fun PendingJobCard(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Applied", style = MaterialTheme.typography.labelSmall)
+                    Text("Applied", style = MaterialTheme.typography.labelSmall, color = Color.White)
                 }
                 Button(
                     onClick = onReject,
@@ -421,7 +435,7 @@ private fun PendingJobCard(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Rejected", style = MaterialTheme.typography.labelSmall)
+                    Text("Rejected", style = MaterialTheme.typography.labelSmall, color = Color.White)
                 }
             }
         }
@@ -445,9 +459,7 @@ private fun RecentApplicationRow(application: Application) {
                 Text(
                     text = application.jobTitle,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = application.company,

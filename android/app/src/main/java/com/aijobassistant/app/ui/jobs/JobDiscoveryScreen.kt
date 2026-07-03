@@ -255,9 +255,7 @@ private fun JobCard(
                 Text(
                     text = job.title,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = job.company,
@@ -324,9 +322,7 @@ private fun JobCard(
             Text(
                 text = job.reason,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextMuted,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                color = TextMuted
             )
         }
 

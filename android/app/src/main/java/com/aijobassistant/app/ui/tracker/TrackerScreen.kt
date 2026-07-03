@@ -291,9 +291,7 @@ private fun ApplicationRow(
                 Text(
                     text = application.jobTitle,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = application.company,
