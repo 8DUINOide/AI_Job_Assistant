@@ -592,11 +592,11 @@
                             }
                             
                             const getFlagImg = (code, alt) => `<img src="https://flagcdn.com/20x15/${code}.png" alt="${alt}" style="vertical-align: text-bottom; margin-right: 6px; border-radius: 2px;">`;
-                            let locFlag = '📍';
+                            let locFlag = '';
                             const searchStr = ((log.location || '') + ' ' + (log.job_title || '')).toLowerCase();
                             
                             if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) {
-                                locFlag = '🌐';
+                                locFlag = getFlagImg('un', 'Remote/Global');
                             }
                             else if (searchStr.includes('canada') || searchStr.includes('toronto') || searchStr.includes('vancouver')) {
                                 locFlag = getFlagImg('ca', 'Canada');
