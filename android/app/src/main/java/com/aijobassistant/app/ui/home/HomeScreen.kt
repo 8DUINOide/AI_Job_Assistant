@@ -511,18 +511,18 @@ private fun PendingJobCard(
                         }
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Button(
                             onClick = onApprove,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = StatusSuccess,
                                 contentColor = Color.White
                             ),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(32.dp)
+                            modifier = Modifier.height(30.dp)
                         ) {
-                            Text("Applied", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                            Text("Applied", style = MaterialTheme.typography.labelSmall, color = Color.White, maxLines = 1, softWrap = false)
                         }
                         Button(
                             onClick = onReject,
@@ -530,11 +530,11 @@ private fun PendingJobCard(
                                 containerColor = StatusDanger,
                                 contentColor = Color.White
                             ),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(32.dp)
+                            modifier = Modifier.height(30.dp)
                         ) {
-                            Text("Rejected", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                            Text("Rejected", style = MaterialTheme.typography.labelSmall, color = Color.White, maxLines = 1, softWrap = false)
                         }
                     }
                 }

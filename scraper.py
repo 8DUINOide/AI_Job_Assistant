@@ -162,6 +162,11 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
             if emails:
                 contact_person = emails[0]
                 
+            date_posted_raw = row.get('date_posted')
+            posted_at = "Posted recently"
+            if pd.notna(date_posted_raw) and str(date_posted_raw).strip() != 'nan':
+                posted_at = f"Posted on {str(date_posted_raw)[:10]}"
+                
             job_id = None
             if 'linkedin.com' in link:
                 job_id_match = re.search(r'(\d{9,10})/?$', link.split('?')[0])
@@ -180,7 +185,8 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
                 "location": location_text,
                 "description": description,
                 "salary": salary,
-                "contact_person": contact_person
+                "contact_person": contact_person,
+                "posted_at": posted_at
             })
             
         except Exception as e:

@@ -111,7 +111,7 @@ def build_profile_endpoint():
             except Exception:
                 portfolio_text = ""
         
-        # --- Local Heuristic & NLP Parser (Bypassing Gemini) ---
+        # --- Smart Local Heuristic Parser (No Gemini API to avoid fees) ---
         import re
         from resume_generator import COMMON_KEYWORDS
 
@@ -139,10 +139,67 @@ def build_profile_endpoint():
             else:
                 first_name = name_parts[0] if name_parts else ""
 
-        # 3. Skills Extraction using the existing keyword dictionary
+        # 3. Skills Extraction
         found_skills = list(set([skill.title() for skill in COMMON_KEYWORDS if skill.lower() in text_lower]))
 
-        # 4. Assemble the Profile Data JSON
+        # 4. Text Segmentation for Experience, Education, Summary
+        sections = {'experience': '', 'education': '', 'summary': ''}
+        current_section = None
+        
+        for line in resume_text.split('\n'):
+            line_clean = line.strip().upper()
+            if not line_clean:
+                continue
+                
+            if any(h == line_clean or line_clean.startswith(h) for h in ['WORK EXPERIENCE', 'EXPERIENCE', 'EMPLOYMENT HISTORY', 'WORK HISTORY', 'PROFESSIONAL EXPERIENCE']):
+                current_section = 'experience'
+                continue
+            elif any(h == line_clean or line_clean.startswith(h) for h in ['EDUCATION', 'ACADEMIC BACKGROUND', 'ACADEMICS']):
+                current_section = 'education'
+                continue
+            elif any(h == line_clean or line_clean.startswith(h) for h in ['SUMMARY', 'PROFILE', 'ABOUT ME', 'PROFESSIONAL SUMMARY']):
+                current_section = 'summary'
+                continue
+            elif any(h == line_clean or line_clean.startswith(h) for h in ['SKILLS', 'TECHNOLOGIES', 'PROJECTS', 'CERTIFICATIONS']):
+                current_section = 'other'
+                continue
+                
+            if current_section and current_section in sections:
+                sections[current_section] += line.strip() + "\n"
+
+        # Build Experience Array
+        experiences = []
+        if sections['experience'].strip():
+            # Split by dates roughly or just chunk it
+            exp_lines = [l for l in sections['experience'].split('\n') if l.strip()]
+            chunk_size = 5
+            for i in range(0, len(exp_lines), chunk_size):
+                chunk = exp_lines[i:i+chunk_size]
+                title = chunk[0] if chunk else "Experience"
+                desc = "\n".join(chunk[1:]) if len(chunk) > 1 else title
+                experiences.append({
+                    "title": title[:100],
+                    "company": "See Description",
+                    "start_date": "",
+                    "end_date": "",
+                    "description": desc,
+                    "skills_used": found_skills[:5]
+                })
+
+        # Build Education Array
+        educations = []
+        if sections['education'].strip():
+            edu_text = sections['education'].strip()
+            educations.append({
+                "degree": edu_text[:100].replace('\n', ' - '),
+                "university": edu_text[100:200].replace('\n', ' ') if len(edu_text) > 100 else "",
+                "graduation_year": ""
+            })
+
+        summary = sections['summary'].strip()
+        if not summary:
+            summary = f"Professional with expertise in {', '.join(found_skills[:5])}."
+
         profile_data = {
             "personal_info": {
                 "first_name": first_name,
@@ -202,10 +259,12 @@ def run_agent_manually():
         if not search_keyword:
             search_keyword = roles[0] if roles else "Software Engineer"
             
+        location = data.get('location', 'Remote')
         offset = data.get('offset', 0)
+        results_wanted = data.get('results_wanted', 30)
         
         # Scrape raw jobs from multiple platforms
-        raw_jobs = scrape_jobs_multisite(search_keyword, offset=offset)
+        raw_jobs = scrape_jobs_multisite(search_keyword, location=location, offset=offset, results_wanted=results_wanted)
         
         return jsonify({
             "success": True, 

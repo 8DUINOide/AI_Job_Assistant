@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import okhttp3.ResponseBody
+import kotlinx.coroutines.channels.awaitClose
 
 /**
  * Repository for job discovery operations.
@@ -26,10 +27,10 @@ class JobsRepository {
     /**
      * Search for jobs using Vercel API.
      */
-    suspend fun searchJobs(keyword: String, location: String = "Remote", offset: Int = 0): Result<List<Job>> {
+    suspend fun searchJobs(keyword: String, location: String = "Remote", offset: Int = 0, resultsWanted: Int = 30): Result<List<Job>> {
         val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Not authenticated"))
         return try {
-            val response = api.searchJobs(JobSearchRequest(search_keyword = keyword, offset = offset, uid = uid))
+            val response = api.searchJobs(JobSearchRequest(search_keyword = keyword, location = location, offset = offset, uid = uid, results_wanted = resultsWanted))
             if (response.success && response.jobs != null) {
                 val jobs = response.jobs.map { Job.fromMap(it) }
                 Result.success(jobs)
@@ -80,14 +81,75 @@ class JobsRepository {
     suspend fun saveJob(job: Job): Result<Unit> {
         val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Not authenticated"))
         return try {
+            val docId = job.signature.replace(Regex("[^a-zA-Z0-9]"), "_")
             firestore.collection("users").document(uid)
                 .collection("savedJobs")
-                .document(job.signature.replace("|", "_"))
+                .document(docId)
                 .set(job.toMap())
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Unsave a job (remove from user's saved jobs).
+     */
+    suspend fun unsaveJob(job: Job): Result<Unit> {
+        val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Not authenticated"))
+        return try {
+            val docId = job.signature.replace(Regex("[^a-zA-Z0-9]"), "_")
+            firestore.collection("users").document(uid)
+                .collection("savedJobs")
+                .document(docId)
+                .delete()
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Observe the user's saved jobs.
+     */
+    fun observeSavedJobs(): kotlinx.coroutines.flow.Flow<List<Job>> {
+        return kotlinx.coroutines.flow.callbackFlow {
+            var firestoreListener: com.google.firebase.firestore.ListenerRegistration? = null
+            
+            val authListener = com.google.firebase.auth.FirebaseAuth.AuthStateListener { firebaseAuth ->
+                val uid = firebaseAuth.currentUser?.uid
+                if (uid == null) {
+                    firestoreListener?.remove()
+                    firestoreListener = null
+                    trySend(emptyList())
+                } else {
+                    if (firestoreListener == null) {
+                        firestoreListener = firestore.collection("users").document(uid)
+                            .collection("savedJobs")
+                            .addSnapshotListener { snapshot, error ->
+                                if (error != null) {
+                                    close(error)
+                                    return@addSnapshotListener
+                                }
+                                if (snapshot != null) {
+                                    val jobs = snapshot.documents.mapNotNull {
+                                        val map = it.data ?: return@mapNotNull null
+                                        Job.fromMap(map)
+                                    }
+                                    trySend(jobs)
+                                }
+                            }
+                    }
+                }
+            }
+            
+            auth.addAuthStateListener(authListener)
+            awaitClose {
+                auth.removeAuthStateListener(authListener)
+                firestoreListener?.remove()
+            }
         }
     }
 

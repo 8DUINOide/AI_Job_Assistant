@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import com.aijobassistant.app.model.Job
 import com.aijobassistant.app.ui.components.*
 import com.aijobassistant.app.ui.theme.*
@@ -30,16 +31,20 @@ import com.aijobassistant.app.ui.theme.*
 @Composable
 fun JobDiscoveryScreen(
     jobs: List<Job> = emptyList(),
+    savedJobs: List<Job> = emptyList(),
     isSearching: Boolean = false,
     searchProgress: String = "",
+    error: String? = null,
     onSearch: (keyword: String, location: String) -> Unit = { _, _ -> },
     onJobClick: (Job) -> Unit = {},
     onSaveJob: (Job) -> Unit = {},
+    onUnsaveJob: (Job) -> Unit = {},
     onTailorResume: (Job) -> Unit = {}
 ) {
     var searchKeyword by remember { mutableStateOf("") }
     var locationFilter by remember { mutableStateOf("Remote") }
     var showLocationDropdown by remember { mutableStateOf(false) }
+    var activeTab by remember { mutableIntStateOf(0) } // 0 = Discover, 1 = Saved
 
     val locationOptions = listOf("Remote", "Philippines", "Manila", "Makati", "Taguig", "Quezon City")
 
@@ -58,10 +63,55 @@ fun JobDiscoveryScreen(
             text = "AI-powered job search across LinkedIn & Indeed",
             style = MaterialTheme.typography.bodySmall,
             color = TextMuted,
-            modifier = Modifier.padding(top = 2.dp, bottom = 16.dp)
+            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
         )
+        
+        if (error != null) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = StatusDanger.copy(alpha = 0.1f)),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            ) {
+                Text(
+                    text = error,
+                    color = StatusDanger,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
 
-        // Search bar
+        // Tabs
+        TabRow(
+            selectedTabIndex = activeTab,
+            containerColor = Color.Transparent,
+            contentColor = PrimaryBlue,
+            divider = {},
+            indicator = { tabPositions ->
+                if (activeTab < tabPositions.size) {
+                    androidx.compose.material3.TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[activeTab]),
+                        color = PrimaryBlue
+                    )
+                }
+            },
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Tab(
+                selected = activeTab == 0,
+                onClick = { activeTab = 0 },
+                text = { Text("Discover", fontWeight = if (activeTab == 0) FontWeight.Bold else FontWeight.Normal) },
+                unselectedContentColor = TextMuted
+            )
+            Tab(
+                selected = activeTab == 1,
+                onClick = { activeTab = 1 },
+                text = { Text("Saved", fontWeight = if (activeTab == 1) FontWeight.Bold else FontWeight.Normal) },
+                unselectedContentColor = TextMuted
+            )
+        }
+
+        if (activeTab == 0) {
+            // Search bar
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             AppTextField(
                 value = searchKeyword,
@@ -163,63 +213,119 @@ fun JobDiscoveryScreen(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Results count
-        if (jobs.isNotEmpty() && !isSearching) {
-            Text(
-                text = "${jobs.size} jobs found",
-                style = MaterialTheme.typography.labelMedium,
-                color = TextMuted,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+        
+        // End of first activeTab == 0 block
         }
 
-        // Job cards list
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(jobs, key = { it.signature }) { job ->
-                JobCard(
-                    job = job,
-                    onClick = { onJobClick(job) },
-                    onSave = { onSaveJob(job) },
-                    onTailorResume = { onTailorResume(job) }
+        if (activeTab == 0) {
+            // Results count
+            if (jobs.isNotEmpty() && !isSearching) {
+                Text(
+                    text = "${jobs.size} jobs found",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextMuted,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
 
-            // Bottom padding for nav bar
-            item { Spacer(modifier = Modifier.height(80.dp)) }
-        }
-
-        // Empty state
-        if (jobs.isEmpty() && !isSearching) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+            // Job cards list
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = "Search",
-                        modifier = Modifier.size(64.dp),
-                        tint = PrimaryBlue
+                items(jobs, key = { it.signature }) { job ->
+                    val isSaved = savedJobs.any { it.signature == job.signature }
+                    JobCard(
+                        job = job,
+                        isSaved = isSaved,
+                        onClick = { onJobClick(job) },
+                        onSave = { onSaveJob(job) },
+                        onUnsave = { onUnsaveJob(job) },
+                        onTailorResume = { onTailorResume(job) }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        "Search for jobs to get started",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextMuted
-                    )
-                    Text(
-                        "AI will score each job based on your profile",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
-                    )
+                }
+
+                // Bottom padding for nav bar
+                item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+
+            // Empty state
+            if (jobs.isEmpty() && !isSearching) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Search",
+                            modifier = Modifier.size(64.dp),
+                            tint = PrimaryBlue
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            "Search for jobs to get started",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextMuted
+                        )
+                        Text(
+                            "AI will score each job based on your profile",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMuted
+                        )
+                    }
+                }
+            }
+        } else {
+            // Saved Jobs Tab
+            if (savedJobs.isNotEmpty()) {
+                Text(
+                    text = "${savedJobs.size} saved jobs",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextMuted,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(savedJobs, key = { it.signature }) { job ->
+                        JobCard(
+                            job = job,
+                            isSaved = true,
+                            onClick = { onJobClick(job) },
+                            onSave = { },
+                            onUnsave = { onUnsaveJob(job) },
+                            onTailorResume = { onTailorResume(job) }
+                        )
+                    }
+                    // Bottom padding for nav bar
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.BookmarkBorder,
+                            contentDescription = "Saved",
+                            modifier = Modifier.size(64.dp),
+                            tint = TextMuted
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            "No saved jobs yet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextMuted
+                        )
+                    }
                 }
             }
         }
@@ -229,10 +335,13 @@ fun JobDiscoveryScreen(
 @Composable
 private fun JobCard(
     job: Job,
+    isSaved: Boolean,
     onClick: () -> Unit,
     onSave: () -> Unit,
+    onUnsave: () -> Unit,
     onTailorResume: () -> Unit
 ) {
+
     val scoreColor = when {
         job.score >= 70 -> StatusSuccess
         job.score >= 50 -> StatusWarning
@@ -385,26 +494,40 @@ private fun JobCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(
-                onClick = onSave,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
-            ) {
-                Icon(Icons.Default.BookmarkBorder, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Save", style = MaterialTheme.typography.labelSmall)
+            if (isSaved) {
+                OutlinedButton(
+                    onClick = { onUnsave() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryBlue),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    Icon(Icons.Default.Bookmark, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Saved", style = MaterialTheme.typography.labelSmall)
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { onSave() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    Icon(Icons.Default.BookmarkBorder, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Save", style = MaterialTheme.typography.labelSmall)
+                }
             }
             Button(
                 onClick = onTailorResume,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue, contentColor = Color.White),
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
             ) {
-                Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Description, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Tailor Resume", style = MaterialTheme.typography.labelSmall)
+                Text("Tailor Resume", style = MaterialTheme.typography.labelSmall, color = Color.White)
             }
         }
     }

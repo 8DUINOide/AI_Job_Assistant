@@ -50,9 +50,10 @@ fun ResumeTailorScreen(
     onAnalyze: (jobDescription: String) -> Unit = {},
     onGenerateResumePdf: (editedData: Map<String, Any?>) -> Unit = {},
     onGenerateCoverLetterPdf: (editedText: String) -> Unit = {},
-    onAddKeyword: (keyword: String) -> Unit = {} // Keeping it for compatibility but we'll handle append locally
+    onAddKeyword: (keyword: String) -> Unit = {},
+    initialJobDescription: String = ""
 ) {
-    var jobDescription by remember { mutableStateOf("") }
+    var jobDescription by remember(initialJobDescription) { mutableStateOf(initialJobDescription) }
     var showResults by remember { mutableStateOf(false) }
     var editedCoverLetter by remember { mutableStateOf("") }
     var activeTab by remember { mutableIntStateOf(0) } // 0 = Resume, 1 = Cover Letter

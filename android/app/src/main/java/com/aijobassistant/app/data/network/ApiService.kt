@@ -7,8 +7,10 @@ import retrofit2.http.*
 
 data class JobSearchRequest(
     val search_keyword: String,
+    val location: String = "Remote",
     val offset: Int = 0,
-    val uid: String
+    val uid: String,
+    val results_wanted: Int = 30
 )
 
 data class JobSearchResponse(

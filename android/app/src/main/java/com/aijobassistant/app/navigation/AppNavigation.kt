@@ -226,17 +226,29 @@ fun AppNavigation(
                     recentApplications = recentApplications,
                     onNavigateToJobs = {
                         navController.navigate(Screen.Jobs.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onNavigateToResume = {
                         navController.navigate(Screen.Resume.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onNavigateToTracker = {
                         navController.navigate(Screen.Tracker.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     onApproveJob = { app ->
@@ -347,13 +359,54 @@ fun AppNavigation(
             }
 
             composable(Screen.Jobs.route) {
-                JobDiscoveryScreen()
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val viewModel: com.aijobassistant.app.ui.jobs.JobDiscoveryViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                val state by viewModel.state.collectAsState()
+
+                JobDiscoveryScreen(
+                    jobs = state.jobs,
+                    savedJobs = state.savedJobs,
+                    isSearching = state.isSearching,
+                    searchProgress = state.searchProgress,
+                    error = state.error,
+                    onSearch = { keyword, location ->
+                        viewModel.searchJobs(keyword, location)
+                    },
+                    onJobClick = { job ->
+                        val url = job.link ?: return@JobDiscoveryScreen
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Ignored
+                        }
+                    },
+                    onSaveJob = { job ->
+                        viewModel.saveJob(job)
+                    },
+                    onUnsaveJob = { job ->
+                        viewModel.unsaveJob(job)
+                    },
+                    onTailorResume = { job ->
+                        navController.currentBackStackEntry?.savedStateHandle?.set("job_description", job.description)
+                        navController.navigate(Screen.Resume.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
 
             composable(Screen.Resume.route) {
                 val context = androidx.compose.ui.platform.LocalContext.current
                 val resumeViewModel: com.aijobassistant.app.ui.resume.ResumeTailorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
                 val state by resumeViewModel.state.collectAsState()
+                
+                val initialJd = navController.previousBackStackEntry?.savedStateHandle?.get<String>("job_description") ?: ""
+                navController.previousBackStackEntry?.savedStateHandle?.remove<String>("job_description") // Clear after reading
 
                 ResumeTailorScreen(
                     matchRate = state.matchRate,
@@ -363,6 +416,7 @@ fun AppNavigation(
                     isGenerating = state.isGenerating,
                     tailoredData = state.tailoredData,
                     coverLetterText = state.coverLetterText,
+                    initialJobDescription = initialJd,
                     onAnalyze = { jd ->
                         val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
                         resumeViewModel.analyzeResume(jd, uid)
