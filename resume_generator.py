@@ -317,9 +317,9 @@ def generate_pdf_from_data(data):
     # Render Name
     story.append(Paragraph(name.upper(), name_style))
     
-    # Render Contact Info separated by diamond (&#9830;) or bullet
+    # Render Contact Info separated by pipe
     contact_parts = [p for p in [email, phone, location, link] if p]
-    contact_str = " &nbsp;&#9830;&nbsp; ".join(contact_parts)
+    contact_str = " &nbsp;|&nbsp; ".join(contact_parts)
     story.append(Paragraph(contact_str, contact_style))
     
     # Horizontal line

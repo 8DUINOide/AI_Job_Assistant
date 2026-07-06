@@ -54,10 +54,6 @@ data class GenerateCoverLetterPdfRequest(
     val cover_letter_text: String
 )
 
-data class GenerateResumeFromTemplateRequest(
-    val profile_data: Map<String, Any?>
-)
-
 data class BuildProfileResponse(
     val success: Boolean,
     val profile: Map<String, Any>?,
@@ -83,12 +79,6 @@ interface ApiService {
     
     @POST("api/generate-cover-letter-pdf")
     suspend fun generateCoverLetterPdf(@Body request: GenerateCoverLetterPdfRequest): ResponseBody
-    
-    @POST("api/generate-resume-docx")
-    suspend fun generateResumeDocx(@Body request: GenerateResumeFromTemplateRequest): ResponseBody
-    
-    @POST("api/generate-resume-template-pdf")
-    suspend fun generateResumeTemplatePdf(@Body request: GenerateResumeFromTemplateRequest): ResponseBody
     
     @Multipart
     @POST("api/build-profile")

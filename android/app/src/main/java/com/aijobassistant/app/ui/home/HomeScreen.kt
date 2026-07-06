@@ -488,7 +488,7 @@ private fun PendingJobCard(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Scraped: ${application.dateApplied}",
+                            text = "Date: ${application.dateApplied}",
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             color = TextMuted
                         )
