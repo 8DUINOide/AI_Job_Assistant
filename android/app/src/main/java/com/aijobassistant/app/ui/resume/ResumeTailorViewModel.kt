@@ -37,6 +37,8 @@ data class ResumeTailorState(
 )
 
 class ResumeTailorViewModel : ViewModel() {
+    private val jobsRepository = com.aijobassistant.app.data.jobs.JobsRepository()
+    
     private val _state = MutableStateFlow(ResumeTailorState())
     val state: StateFlow<ResumeTailorState> = _state.asStateFlow()
 
@@ -44,21 +46,21 @@ class ResumeTailorViewModel : ViewModel() {
         viewModelScope.launch {
             _state.update { it.copy(isAnalyzing = true, error = null) }
             try {
-                val request = AnalyzeResumeRequest(job_description = jobDescription, uid = uid)
-                val response = ApiClient.apiService.analyzeResume(request)
-                if (response.success) {
+                val result = jobsRepository.analyzeJobDescription(jobDescription)
+                if (result.isSuccess) {
+                    val data = result.getOrNull()!!
                     _state.update {
                         it.copy(
                             isAnalyzing = false,
-                            matchRate = response.match_rate,
-                            keywordsToInclude = response.keywords_to_include,
-                            missingKeywords = response.missing_keywords,
-                            tailoredData = response.tailored_data,
-                            coverLetterText = response.cover_letter_text
+                            matchRate = data["matchRate"] as Int,
+                            keywordsToInclude = data["keywordsToInclude"] as List<String>,
+                            missingKeywords = data["missingKeywords"] as List<String>,
+                            tailoredData = data["tailoredData"] as Map<String, Any?>,
+                            coverLetterText = data["coverLetterText"] as String
                         )
                     }
                 } else {
-                    _state.update { it.copy(isAnalyzing = false, error = "Failed to analyze resume.") }
+                    _state.update { it.copy(isAnalyzing = false, error = result.exceptionOrNull()?.message ?: "Failed to analyze resume.") }
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isAnalyzing = false, error = e.localizedMessage) }
@@ -78,10 +80,13 @@ class ResumeTailorViewModel : ViewModel() {
         viewModelScope.launch {
             _state.update { it.copy(isGenerating = true, error = null) }
             try {
-                val request = GeneratePdfRequest(tailored_data = data)
-                val responseBody = ApiClient.apiService.generatePdf(request)
-                savePdfAndOpen(context, responseBody, "${applicantName}_Resume.pdf")
-                _state.update { it.copy(isGenerating = false) }
+                val result = jobsRepository.generateResumePdf(data)
+                if (result.isSuccess) {
+                    savePdfAndOpen(context, result.getOrNull()!!, "${applicantName}_Resume.pdf")
+                    _state.update { it.copy(isGenerating = false) }
+                } else {
+                    _state.update { it.copy(isGenerating = false, error = result.exceptionOrNull()?.message ?: "Failed to generate PDF") }
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(isGenerating = false, error = e.localizedMessage) }
             }

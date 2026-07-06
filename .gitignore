@@ -10,3 +10,11 @@ firebase_credentials.json
 .idea/
 android/.idea/
 .env*
+
+# Android ignores
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.iml

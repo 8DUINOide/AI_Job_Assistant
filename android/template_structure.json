@@ -1,0 +1,884 @@
+[
+  {
+    "text": "JUAN DELA CRUZ",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "JUAN DELA CRUZ",
+        "bold": true,
+        "size": "203200"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Quezon City, Metro Manila | +63 917 123 4567 | juan.delacruz@gmail.com  |  linkedin.com/in/juandelacruz  |  github.com/juandelacruz",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Quezon City",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": ", ",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "Metro Manila",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": " | +63 917 123 4567 | juan.delacruz@",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "gmail",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": ".",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "com  |  linkedin.com/in/juandelacruz  |  github.com/juandelacruz",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "EDUCATION\t",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "EDUCATION",
+        "bold": true,
+        "size": "139700"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "UNIVERSITY OF THE PHILIPPINES – DILIMAN\tQuezon City",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "UNIVERSITY OF THE PHILIPPINES – DILIMAN",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\tQuezon City",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "BS Computer Science\t2024",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "BS Computer Science",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "\t2024",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Major in Software Engineering · Minor in Data Science",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Major in Software Engineering · Minor in Data Science",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "General Weighted Average (GWA): 1.50 / 1.00 (Cum Laude); Dean’s Lister, 2021–2024",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "General Weighted Average (GWA): 1.50 / 1.00 (Cum Laude); Dean’s Lister, 2021–2024",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Relevant Coursework: Data Structures & Algorithms, Software Engineering, Operating Systems, Database Systems, Web & Mobile Development",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Relevant Coursework: Data Structures & Algorithms, Software Engineering, ",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "Operating Systems, Database Systems, Web & Mobile Development",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "FULL-STACK WEB DEVELOPMENT BOOTCAMP\tRemote, Philippines",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "FULL-STACK WEB DEVELOPMENT BOOTCAMP",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "Remote",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": ", ",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "Philippines",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Intensive program in the MERN stack (MongoDB, Express, React, Node.js)\t2023",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Intensive program in the MERN stack (MongoDB, Express, React, Node.js)",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "\t2023",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "WORK EXPERIENCE\t",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "WORK EXPERIENCE",
+        "bold": true,
+        "size": "139700"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "TECHSTART SOLUTIONS (early-stage fintech startup)\tBGC, Taguig",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "TECHSTART SOLUTIONS ",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "(early-stage fintech startup)",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "\tBGC, Taguig",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Junior Software Engineer\tJan 2024 – Present",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Junior Software Engineer",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "\tJan 2024 – Present",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Built and shipped REST APIs in Laravel and Node.js serving 50,000+ daily active users, cutting average response time by 40%",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Built and shipped REST APIs in Laravel and Node.js serving 50,000+ daily active users, cutting average response time by 40%",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Developed responsive front-end features in React and Tailwind CSS, increasing sign-up conversion by 25%",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Developed responsive front-end features in React and Tailwind CSS, increasing sign-up conversion by 25%",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Wrote unit and integration tests (PHPUnit, Jest), raising code coverage from 40% to 85% and reducing production bugs",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Wrote unit and integration tests (PHPUnit, Jest), raising code coverage from 40% to 85% and reducing production bugs",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "METRO DIGITAL INC.\tCebu City, Cebu",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "METRO DIGITAL INC.",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\tCebu City, Cebu",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Web Developer\tJun 2022 – Dec 2023",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Web Developer\tJun 2022 – Dec 2023",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Migrated a legacy PHP system to Laravel, reducing server costs by 30% and improving maintainability",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Migrated a legacy PHP system to Laravel, reducing server costs by 30% and improving maintainability",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Automated manual reporting with Python scripts, saving the team 10+ hours weekly; integrated GCash and PayMaya payment gateways",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Automated manual reporting with Python scripts, saving the team 10+ hours weekly; integrated GCash and PayMaya payment gateways",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "PROJECTS\t",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "PROJECTS",
+        "bold": true,
+        "size": "139700"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "JEEPNEY ROUTE FINDER (Mobile App)\t2023",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "JEEPNEY ROUTE FINDER (Mobile App)",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\t2023",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Built a React Native app that maps jeepney and bus routes across Metro Manila using the Google Maps API; 1,000+ downloads",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Built a React Native app that maps jeepney and bus routes across Metro Manila using the Google Maps API; 1,000+ downloads",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Implemented offline route caching so commuters can search routes without using mobile data",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Implemented offline route caching so commuters can search routes without using mobile data",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "SARI-SARI STORE POS & INVENTORY SYSTEM\t2022",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "SARI-SARI STORE POS & INVENTORY SYSTEM",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\t2022",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Developed a web-based point-of-sale and inventory system for a local sari-sari store using Laravel and MySQL",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Developed a web-based point-of-sale and inventory system for a local sari-sari store using Laravel and MySQL",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Awarded Best Capstone Project (out of 30 teams)",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Awarded Best Capstone Project (out of 30 teams)",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "ACTIVITIES\t",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "ACTIVITIES",
+        "bold": true,
+        "size": "139700"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "GOOGLE DEVELOPER STUDENT CLUB (GDSC)\tQuezon City",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "GOOGLE DEVELOPER STUDENT CLUB (GDSC)",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\tQuezon City",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Tech Lead\tAug 2022 – May 2024",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Tech Lead\tAug 2022 – May 2024",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Organized 10+ hands-on coding workshops and a 3-day hackathon for 300+ students",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Organized 10+ hands-on coding workshops and a 3-day hackathon for 300+ students",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Mentored 20+ junior members in Git, web development, and technical interview preparation",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Mentored 20+ junior members in Git, web development, and technical interview preparation",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "COMPETITIVE PROGRAMMING CLUB\tQuezon City",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "COMPETITIVE PROGRAMMING CLUB",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "\tQuezon City",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Member\tJun 2021 – May 2024",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Member\tJun 2021 – May 2024",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Competed in HackerRank and CodeChef contests; placed in the top 10% of a national collegiate programming competition",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Competed in HackerRank and CodeChef contests; placed in the top 10% of a national collegiate programming competition",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "ADDITIONAL\t",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "ADDITIONAL",
+        "bold": true,
+        "size": "139700"
+      },
+      {
+        "text": "\t",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  },
+  {
+    "text": "Technical Skills: Proficient in JavaScript/TypeScript, PHP (Laravel), React, Node.js, MySQL, HTML/CSS; Familiar with Python, Git, Docker, REST APIs, and AWS",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Technical Skills",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": ": Proficient in JavaScript/TypeScript, PHP (Laravel), React, Node.js, MySQL, HTML/CSS; Familiar with Python, Git, Docker, REST APIs, and AWS",
+        "bold": null,
+        "size": "133350"
+      }
+    ]
+  },
+  {
+    "text": "Certifications: AWS Certified Cloud Practitioner; freeCodeCamp – Full-Stack Web Development  ·  Languages: English (fluent), Filipino (native)\n",
+    "style": "normal",
+    "runs": [
+      {
+        "text": "Certifications: ",
+        "bold": true,
+        "size": "133350"
+      },
+      {
+        "text": "AWS Certified Cloud Practitioner; freeCodeCamp – Full-Stack Web Development",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "  ·  Languages: English (fluent), Filipino (native)\n",
+        "bold": null,
+        "size": "133350"
+      },
+      {
+        "text": "",
+        "bold": null,
+        "size": null
+      }
+    ]
+  }
+]

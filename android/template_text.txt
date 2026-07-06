@@ -1,0 +1,82 @@
+JUAN DELA CRUZ 
+Quezon City, Metro Manila | +63 917 123 4567 | juan.delacruz@gmail.com  |  linkedin.com/in/juandelacruz  |  
+github.com/juandelacruz 
+ 
+EDUCATION  
+ 
+ 
+UNIVERSITY OF THE PHILIPPINES – DILIMAN 
+Quezon City 
+BS Computer Science 
+2024 
+Major in Software Engineering · Minor in Data Science 
+General Weighted Average (GWA): 1.50 / 1.00 (Cum Laude); Dean’s Lister, 2021–2024 
+Relevant Coursework: Data Structures & Algorithms, Software Engineering, Operating Systems, Database Systems, 
+Web & Mobile Development 
+ 
+FULL-STACK WEB DEVELOPMENT BOOTCAMP 
+Remote, Philippines 
+Intensive program in the MERN stack (MongoDB, Express, React, Node.js) 
+2023 
+ 
+WORK EXPERIENCE 
+ 
+ 
+ 
+TECHSTART SOLUTIONS (early-stage fintech startup) 
+BGC, Taguig 
+Junior Software Engineer 
+Jan 2024 – Present 
+● Built and shipped REST APIs in Laravel and Node.js serving 50,000+ daily active users, cutting average response time by 
+40% 
+● Developed responsive front-end features in React and Tailwind CSS, increasing sign-up conversion by 25% 
+● Wrote unit and integration tests (PHPUnit, Jest), raising code coverage from 40% to 85% and reducing production bugs 
+ 
+METRO DIGITAL INC. 
+Cebu City, Cebu 
+Web Developer 
+Jun 2022 – Dec 2023 
+● Migrated a legacy PHP system to Laravel, reducing server costs by 30% and improving maintainability 
+● Automated manual reporting with Python scripts, saving the team 10+ hours weekly; integrated GCash and PayMaya 
+payment gateways 
+ 
+PROJECTS 
+ 
+ 
+ 
+JEEPNEY ROUTE FINDER (Mobile App) 
+2023 
+● Built a React Native app that maps jeepney and bus routes across Metro Manila using the Google Maps API; 1,000+ 
+downloads 
+● Implemented offline route caching so commuters can search routes without using mobile data 
+ 
+SARI-SARI STORE POS & INVENTORY SYSTEM 
+2022 
+● Developed a web-based point-of-sale and inventory system for a local sari-sari store using Laravel and MySQL 
+● Awarded Best Capstone Project (out of 30 teams) 
+ 
+ACTIVITIES  
+ 
+ 
+GOOGLE DEVELOPER STUDENT CLUB (GDSC) 
+Quezon City 
+Tech Lead 
+Aug 2022 – May 2024 
+● Organized 10+ hands-on coding workshops and a 3-day hackathon for 300+ students 
+● Mentored 20+ junior members in Git, web development, and technical interview preparation 
+ 
+COMPETITIVE PROGRAMMING CLUB 
+Quezon City 
+Member 
+Jun 2021 – May 2024 
+● Competed in HackerRank and CodeChef contests; placed in the top 10% of a national collegiate programming competition 
+ 
+ADDITIONAL 
+ 
+ 
+ 
+Technical Skills: Proficient in JavaScript/TypeScript, PHP (Laravel), React, Node.js, MySQL, HTML/CSS; Familiar with 
+Python, Git, Docker, REST APIs, and AWS 
+Certifications: AWS Certified Cloud Practitioner; freeCodeCamp – Full-Stack Web Development  ·  Languages: English 
+(fluent), Filipino (native) 
+ 

@@ -30,7 +30,22 @@ class JobsRepository {
     suspend fun searchJobs(keyword: String, location: String = "Remote", offset: Int = 0, resultsWanted: Int = 30): Result<List<Job>> {
         val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Not authenticated"))
         return try {
-            val response = api.searchJobs(JobSearchRequest(search_keyword = keyword, location = location, offset = offset, uid = uid, results_wanted = resultsWanted))
+            val userDoc = firestore.collection("users").document(uid).collection("profile").document("master").get().await()
+            val profile = if (userDoc.exists() && userDoc.data != null) {
+                userDoc.data!!
+            } else {
+                return Result.failure(Exception("Profile not found"))
+            }
+
+            val request = JobSearchRequest(
+                search_keyword = keyword, 
+                location = location, 
+                offset = offset, 
+                uid = uid,
+                results_wanted = resultsWanted,
+                profile = profile
+            )
+            val response = api.searchJobs(request)
             if (response.success && response.jobs != null) {
                 val jobs = response.jobs.map { Job.fromMap(it) }
                 Result.success(jobs)
@@ -159,7 +174,14 @@ class JobsRepository {
     suspend fun analyzeJobDescription(jobDescription: String): Result<Map<String, Any?>> {
         val uid = auth.currentUser?.uid ?: return Result.failure(Exception("Not authenticated"))
         return try {
-            val response = api.analyzeResume(AnalyzeResumeRequest(job_description = jobDescription, uid = uid))
+            val userDoc = firestore.collection("users").document(uid).collection("profile").document("master").get().await()
+            val profile = if (userDoc.exists() && userDoc.data != null) {
+                userDoc.data!!
+            } else {
+                return Result.failure(Exception("Profile not found"))
+            }
+            
+            val response = api.analyzeResume(AnalyzeResumeRequest(job_description = jobDescription, uid = uid, profile = profile))
             if (response.success) {
                 val analysisResult = mapOf(
                     "matchRate" to response.match_rate,

@@ -56,9 +56,11 @@ class JobDiscoveryViewModel : ViewModel() {
                 val result = jobsRepository.searchJobs(keyword = role, location = "Remote", offset = 0, resultsWanted = 10)
                 
                 if (result.isSuccess) {
+                    val fetchedJobs = result.getOrNull() ?: emptyList()
+                    val distinctJobs = fetchedJobs.distinctBy { it.signature }
                     _state.update { 
                         it.copy(
-                            jobs = result.getOrNull() ?: emptyList(),
+                            jobs = distinctJobs,
                             isSearching = false,
                             searchProgress = ""
                         ) 
@@ -87,9 +89,11 @@ class JobDiscoveryViewModel : ViewModel() {
             val result = jobsRepository.searchJobs(keyword = keyword, location = location, offset = 0)
             
             if (result.isSuccess) {
+                val fetchedJobs = result.getOrNull() ?: emptyList()
+                val distinctJobs = fetchedJobs.distinctBy { it.signature }
                 _state.update { 
                     it.copy(
-                        jobs = result.getOrNull() ?: emptyList(),
+                        jobs = distinctJobs,
                         isSearching = false,
                         searchProgress = ""
                     ) 
