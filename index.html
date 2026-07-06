@@ -583,19 +583,38 @@
                     const pendingList = document.getElementById('pendingJobsList');
                     if (pendingLogs.length > 0) {
                         pendingContainer.style.display = 'block';
-                        pendingList.innerHTML = pendingLogs.map(log => `
-                            <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                <div>
-                                    <div style="font-weight: 600; font-size: 1.05rem; color: #fff;">${log.job_title}</div>
-                                    <div style="color: var(--text-muted); font-size: 0.9rem;">${log.company} • Scraped: ${log.date_applied}</div>
-                                    <a href="${log.job_link}" target="_blank" style="font-size: 0.85rem; color: #3b82f6;">View Job Details</a>
+                        pendingList.innerHTML = pendingLogs.map(log => {
+                            let sourceLogo = '';
+                            if (log.job_link && log.job_link.includes('indeed.com')) {
+                                sourceLogo = '<img src="https://www.indeed.com/favicon.ico" width="16" height="16" alt="Indeed" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
+                            } else if (log.job_link && log.job_link.includes('linkedin.com')) {
+                                sourceLogo = '<img src="https://www.linkedin.com/favicon.ico" width="16" height="16" alt="LinkedIn" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
+                            }
+                            
+                            return `
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
+                                <div style="flex: 1; min-width: 250px;">
+                                    <div style="font-weight: 600; font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${log.job_title}</div>
+                                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px;">
+                                        ${log.company} ${log.location ? '• ' + log.location : ''}
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px;">
+                                        <strong>Tech Stack:</strong> ${log.tech_stack || 'N/A'}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 15px; font-size: 0.85rem;">
+                                        <span style="color: var(--text-muted);">Scraped: ${log.date_applied}</span>
+                                        <a href="${log.job_link}" target="_blank" style="color: #3b82f6; text-decoration: none; display: flex; align-items: center;">
+                                            ${sourceLogo} View Job
+                                        </a>
+                                    </div>
                                 </div>
-                                <div style="display: flex; gap: 8px;">
-                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="background: var(--success); padding: 8px 16px; margin: 0; width: auto;">Applied</button>
-                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto;">Denied</button>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: auto; margin-bottom: auto;">
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="background: var(--success); padding: 8px 16px; margin: 0; width: auto; font-weight: 500;">Applied</button>
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Rejected')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto; font-weight: 500;">Rejected</button>
+                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); padding: 8px 12px; margin: 0; width: auto; font-weight: bold; border-radius: 6px; color: var(--text-muted); cursor: pointer;" title="Dismiss / Denied">✕</button>
                                 </div>
                             </div>
-                        `).join('');
+                        `}).join('');
                     } else {
                         pendingContainer.style.display = 'none';
                     }
