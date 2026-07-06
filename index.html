@@ -591,17 +591,34 @@
                                 sourceLogo = '<img src="https://www.linkedin.com/favicon.ico" width="16" height="16" alt="LinkedIn" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
                             }
                             
-                            let locFlag = '';
+                            const getFlagImg = (code, alt) => `<img src="https://flagcdn.com/20x15/${code}.png" alt="${alt}" style="vertical-align: text-bottom; margin-right: 6px; border-radius: 2px;">`;
+                            let locFlag = '📍';
                             const searchStr = ((log.location || '') + ' ' + (log.job_title || '')).toLowerCase();
-                            if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) locFlag = '🌐';
-                            else if (searchStr.includes('united states') || searchStr.includes('usa') || searchStr.match(/\\b(us|ny|ca|tx|wa|fl|il)\\b/)) locFlag = '🇺🇸';
-                            else if (searchStr.includes('united kingdom') || searchStr.match(/\\buk\\b/) || searchStr.includes('london')) locFlag = '🇬🇧';
-                            else if (searchStr.includes('canada') || searchStr.includes('toronto') || searchStr.includes('vancouver')) locFlag = '🇨🇦';
-                            else if (searchStr.includes('australia') || searchStr.includes('sydney') || searchStr.includes('melbourne')) locFlag = '🇦🇺';
-                            else if (searchStr.includes('philippines') || searchStr.includes('manila')) locFlag = '🇵🇭';
-                            else if (searchStr.includes('india') || searchStr.includes('bangalore') || searchStr.includes('mumbai')) locFlag = '🇮🇳';
-                            else if (searchStr.includes('germany') || searchStr.includes('berlin')) locFlag = '🇩🇪';
-                            else locFlag = '📍';
+                            
+                            if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) {
+                                locFlag = '🌐';
+                            }
+                            else if (searchStr.includes('canada') || searchStr.includes('toronto') || searchStr.includes('vancouver')) {
+                                locFlag = getFlagImg('ca', 'Canada');
+                            }
+                            else if (searchStr.includes('united kingdom') || searchStr.match(/\buk\b/) || searchStr.includes('london')) {
+                                locFlag = getFlagImg('gb', 'UK');
+                            }
+                            else if (searchStr.includes('united states') || searchStr.includes('usa') || searchStr.match(/\b(us|ny|ca|tx|wa|fl|il|opt)\b/)) {
+                                locFlag = getFlagImg('us', 'US');
+                            }
+                            else if (searchStr.includes('australia') || searchStr.includes('sydney') || searchStr.includes('melbourne')) {
+                                locFlag = getFlagImg('au', 'Australia');
+                            }
+                            else if (searchStr.includes('philippines') || searchStr.includes('manila')) {
+                                locFlag = getFlagImg('ph', 'Philippines');
+                            }
+                            else if (searchStr.includes('india') || searchStr.includes('bangalore') || searchStr.includes('mumbai')) {
+                                locFlag = getFlagImg('in', 'India');
+                            }
+                            else if (searchStr.includes('germany') || searchStr.includes('berlin')) {
+                                locFlag = getFlagImg('de', 'Germany');
+                            }
                             
                             return `
                             <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; padding-right: 40px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
