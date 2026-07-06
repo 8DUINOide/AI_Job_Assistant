@@ -154,13 +154,23 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
             salary = ""
             min_amt = row.get('min_amount')
             max_amt = row.get('max_amount')
+            
+            def format_salary(amt):
+                try:
+                    return f"{float(amt):,.0f}"
+                except (ValueError, TypeError):
+                    return str(amt)
+                    
             if pd.notna(min_amt) and str(min_amt) != 'nan':
                 currency = str(row.get('currency', 'USD')).replace('nan', 'USD')
                 interval = str(row.get('interval', 'yearly')).replace('nan', 'yearly')
+                min_str = format_salary(min_amt)
+                
                 if pd.notna(max_amt) and str(max_amt) != 'nan':
-                    salary = f"{min_amt} - {max_amt} {currency}/{interval}"
+                    max_str = format_salary(max_amt)
+                    salary = f"{min_str} - {max_str} {currency}/{interval}"
                 else:
-                    salary = f"{min_amt} {currency}/{interval}"
+                    salary = f"{min_str} {currency}/{interval}"
                     
             contact_person = ""
             emails = re.findall(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', description)
