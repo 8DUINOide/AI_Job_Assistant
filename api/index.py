@@ -246,13 +246,65 @@ def get_logs():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+def normalize_profile(p):
+    """Converts Android camelCase profile to Python snake_case profile."""
+    if not p: return p
+    norm = {}
+    
+    pi = p.get('personalInfo') or p.get('personal_info') or {}
+    norm['personal_info'] = {
+        'first_name': pi.get('firstName') or pi.get('first_name', ''),
+        'last_name': pi.get('lastName') or pi.get('last_name', ''),
+        'email': pi.get('email', ''),
+        'phone': pi.get('phone', ''),
+        'location': pi.get('location', ''),
+        'linkedin_url': pi.get('linkedinUrl') or pi.get('linkedin_url', ''),
+        'portfolio_url': pi.get('portfolioUrl') or pi.get('portfolio_url', '')
+    }
+    
+    jp = p.get('jobPreferences') or p.get('job_preferences') or {}
+    norm['job_preferences'] = {
+        'desired_roles': jp.get('desiredRoles') or jp.get('desired_roles', []),
+        'work_type': jp.get('workType') or jp.get('work_type', []),
+        'locations': jp.get('locations', []),
+        'salary_expectation': jp.get('salaryExpectation') or jp.get('salary_expectation', '')
+    }
+    
+    norm['summary'] = p.get('summary', '')
+    norm['skills'] = p.get('skills', [])
+    
+    exps = p.get('experience', [])
+    norm['experience'] = []
+    for e in exps:
+        norm['experience'].append({
+            'title': e.get('title', ''),
+            'company': e.get('company', ''),
+            'location': e.get('location', ''),
+            'start_date': e.get('startDate') or e.get('start_date', ''),
+            'end_date': e.get('endDate') or e.get('end_date', ''),
+            'description': e.get('description', ''),
+            'skills_used': e.get('skillsUsed') or e.get('skills_used', [])
+        })
+        
+    edus = p.get('education', [])
+    norm['education'] = []
+    for e in edus:
+        norm['education'].append({
+            'degree': e.get('degree', ''),
+            'university': e.get('university', ''),
+            'graduation_year': e.get('graduationYear') or e.get('graduation_year', ''),
+            'gpa': e.get('gpa', '')
+        })
+        
+    return norm
+
 @app.route('/api/run-agent-manually', methods=['POST'])
 @require_auth
 def run_agent_manually():
     """Fetches raw jobs based on master profile to bypass Vercel timeout."""
     try:
         data = request.json or {}
-        profile = load_profile()
+        profile = normalize_profile(data.get('profile')) or load_profile()
         roles = profile.get('job_preferences', {}).get('desired_roles', ['Software Engineer'])
         
         search_keyword = data.get('search_keyword')
@@ -281,7 +333,8 @@ def evaluate_multiple_jobs():
     """Evaluates multiple jobs in a single batch to bypass Gemini RPM limits and speed up execution."""
     data = request.json
     jobs = data.get('jobs', [])
-    profile = data.get('profile')
+    jobs = data.get('jobs', [])
+    profile = normalize_profile(data.get('profile'))
     
     if not jobs or not profile:
         return jsonify({"success": False, "error": "Missing data"}), 400
@@ -306,7 +359,8 @@ def evaluate_single_job():
     """Evaluates a single job to bypass Vercel 10s limit."""
     data = request.json
     job = data.get('job')
-    profile = data.get('profile')
+    job = data.get('job')
+    profile = normalize_profile(data.get('profile'))
     
     if not job or not profile:
         return jsonify({"success": False, "error": "Missing data"}), 400
@@ -574,7 +628,7 @@ def generate_resume():
         if not job_description:
             return jsonify({"success": False, "error": "Job description is required"}), 400
             
-        master_profile = load_profile()
+        master_profile = normalize_profile(data.get('profile')) or load_profile()
         tailored_data = get_tailored_profile_data(master_profile, job_description)
         
         if not tailored_data:
@@ -602,7 +656,7 @@ def analyze_resume():
         if not job_description:
             return jsonify({"success": False, "error": "Job description is required"}), 400
             
-        master_profile = load_profile()
+        master_profile = normalize_profile(data.get('profile')) or load_profile()
         
         # 1. Match Rate
         # We reuse evaluate_job which takes a dict with description
