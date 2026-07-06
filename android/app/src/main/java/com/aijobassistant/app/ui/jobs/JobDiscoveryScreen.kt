@@ -245,6 +245,38 @@ private fun JobCard(
             .fillMaxWidth()
             .clickable { onClick() }
     ) {
+        // Top row: posted time, flag, menu
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(StatusDanger)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = job.postedAt,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextMuted
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(job.countryFlag, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.width(16.dp))
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = "More options",
+                    tint = TextPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
         // Header row: title + score
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -299,6 +331,26 @@ private fun JobCard(
                     Icon(Icons.Default.Payments, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(job.salary, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                }
+            }
+        }
+
+        // Platform & Link
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Language, contentDescription = null, tint = PrimaryBlue, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(job.platform, style = MaterialTheme.typography.bodySmall, color = PrimaryBlue)
+            }
+            if (job.link.isNotBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.OpenInNew, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("View Job", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 }
             }
         }

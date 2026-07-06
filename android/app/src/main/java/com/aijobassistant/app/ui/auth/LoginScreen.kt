@@ -73,13 +73,13 @@ fun LoginScreen(
                     modifier = Modifier.offset(y = 16.dp)
                 ) {
                     Text(
-                        text = "AI Job Assistant",
+                        text = "JobAi",
                         style = MaterialTheme.typography.headlineLarge,
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Your autonomous job hunting companion",
+                        text = "Your AI Job-Hunting Gabay",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextMuted,
                         modifier = Modifier.padding(top = 4.dp)

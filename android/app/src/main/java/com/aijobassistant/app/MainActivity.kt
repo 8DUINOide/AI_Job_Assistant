@@ -24,9 +24,12 @@ class MainActivity : ComponentActivity() {
     private val authRepository = AuthRepository()
     private val profileRepository = ProfileRepository()
 
+    private var isAppReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition { !isAppReady }
         enableEdgeToEdge()
         createNotificationChannel()
 
@@ -48,11 +51,13 @@ class MainActivity : ComponentActivity() {
 
                             // Load profile if onboarding complete
                             if (isOnboardingComplete) {
-                                loadProfile(user.uid) { profile ->
+                                val profile = loadProfile(user.uid)
+                                if (profile != null) {
                                     userProfile = profile
                                 }
                             }
                         }
+                        isAppReady = true
                     }
                 }
 
@@ -172,23 +177,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun loadProfile(uid: String, onLoaded: (UserProfile) -> Unit) {
-        lifecycleScope.launch {
-            try {
-                val doc = FirebaseFirestore.getInstance()
-                    .collection("users").document(uid)
-                    .collection("profile").document("master")
-                    .get().await()
+    private suspend fun loadProfile(uid: String): UserProfile? {
+        return try {
+            val doc = FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("profile").document("master")
+                .get().await()
 
-                if (doc.exists()) {
-                    val data = doc.data
-                    if (data != null) {
-                        onLoaded(UserProfile.fromMap(data))
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            if (doc.exists()) {
+                val data = doc.data
+                if (data != null) {
+                    UserProfile.fromMap(data)
+                } else null
+            } else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 

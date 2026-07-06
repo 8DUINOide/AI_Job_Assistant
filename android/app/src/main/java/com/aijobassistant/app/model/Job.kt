@@ -16,7 +16,10 @@ data class Job(
     val techStack: String = "",
     val score: Int = 0,
     val reason: String = "",
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    val postedAt: String = "Posted 3 hours ago",
+    val platform: String = "Indeed",
+    val countryFlag: String = "🇺🇸"
 ) {
     /** Unique signature for deduplication (matches Python logic) */
     val signature: String get() = "${company.lowercase()}|${title.lowercase()}"
@@ -33,7 +36,10 @@ data class Job(
         "techStack" to techStack,
         "score" to score,
         "reason" to reason,
-        "isSaved" to isSaved
+        "isSaved" to isSaved,
+        "postedAt" to postedAt,
+        "platform" to platform,
+        "countryFlag" to countryFlag
     )
 
     companion object {
@@ -49,7 +55,10 @@ data class Job(
             techStack = map["techStack"] as? String ?: map["tech_stack"] as? String ?: "",
             score = (map["score"] as? Number)?.toInt() ?: 0,
             reason = map["reason"] as? String ?: "",
-            isSaved = map["isSaved"] as? Boolean ?: false
+            isSaved = map["isSaved"] as? Boolean ?: false,
+            postedAt = map["postedAt"] as? String ?: map["posted_at"] as? String ?: "Posted 3 hours ago",
+            platform = map["platform"] as? String ?: "Indeed",
+            countryFlag = map["countryFlag"] as? String ?: map["country_flag"] as? String ?: "🇺🇸"
         )
     }
 }

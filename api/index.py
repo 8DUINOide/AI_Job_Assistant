@@ -74,6 +74,130 @@ def get_profile():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/build-profile', methods=['POST'])
+@require_auth
+def build_profile_endpoint():
+    try:
+        portfolio_url = request.form.get('portfolio_url', '')
+        file = request.files.get('file')
+        
+        if not file:
+            return jsonify({"success": False, "error": "No resume file provided"}), 400
+        
+        # Extract text from PDF inline (avoids profile_builder.py playwright dependency)
+        resume_text = ""
+        try:
+            reader = PyPDF2.PdfReader(file)
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    resume_text += page_text + "\n"
+        except Exception as pdf_err:
+            return jsonify({"success": False, "error": f"Failed to read PDF: {str(pdf_err)}"}), 400
+        
+        if not resume_text.strip():
+            return jsonify({"success": False, "error": "Could not extract any text from the PDF"}), 400
+        
+        # Portfolio URL scraping (best-effort, skip if unavailable)
+        portfolio_text = ""
+        if portfolio_url:
+            try:
+                import requests as req
+                resp = req.get(portfolio_url, timeout=5)
+                if resp.ok:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(resp.text, 'html.parser')
+                    portfolio_text = soup.get_text(separator='\n', strip=True)
+            except Exception:
+                portfolio_text = ""
+        
+        # Build profile using Gemini
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = f"""
+You are an expert technical recruiter and career coach.
+I will provide you with the raw text from my Resume/LinkedIn and my Portfolio website.
+I want you to analyze my experience, skills, and background, and generate a structured JSON profile.
+
+Based on the data, determine my 'desired_roles' (e.g., Backend Developer, Full Stack Developer, Tech Lead).
+Do NOT include frontend roles if my primary experience is backend/fullstack unless specifically stated.
+
+Raw Resume/LinkedIn Text:
+{resume_text}
+
+Raw Portfolio Text:
+{portfolio_text}
+
+Respond ONLY with a valid JSON object matching exactly this schema:
+{{
+  "personal_info": {{
+    "first_name": "...",
+    "last_name": "...",
+    "email": "...",
+    "phone": "...",
+    "location": "...",
+    "linkedin_url": "...",
+    "portfolio_url": "..."
+  }},
+  "job_preferences": {{
+    "desired_roles": ["Role 1", "Role 2"],
+    "work_type": ["Remote", "Hybrid", "On-site"],
+    "locations": ["...", "Remote"],
+    "salary_expectation": "..."
+  }},
+  "summary": "A professional summary of my background based on the data...",
+  "experience": [
+    {{
+      "title": "...",
+      "company": "...",
+      "start_date": "...",
+      "end_date": "...",
+      "description": "...",
+      "skills_used": ["..."]
+    }}
+  ],
+  "education": [
+    {{
+      "degree": "...",
+      "university": "...",
+      "graduation_year": "..."
+    }}
+  ],
+  "skills": ["Skill 1", "Skill 2"]
+}}
+"""
+        
+        response = gemini_model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Clean up any markdown blocks around the json
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        
+        profile_data = json.loads(response_text.strip())
+        
+        if not profile_data:
+            return jsonify({"success": False, "error": "Failed to generate profile"}), 500
+        
+        # Also save to master_profile.json for the web dashboard
+        try:
+            profile_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'master_profile.json')
+            with open(profile_path, 'w') as f:
+                json.dump(profile_data, f, indent=2)
+        except Exception:
+            pass  # Non-critical, Vercel filesystem is read-only anyway
+            
+        return jsonify({"success": True, "profile": profile_data})
+    except Exception as e:
+        print("Error in build_profile:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/api/logs', methods=['GET'])
 @require_auth
 def get_logs():

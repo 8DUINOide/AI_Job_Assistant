@@ -1,7 +1,6 @@
 import os
 import json
 import PyPDF2
-from playwright.sync_api import sync_playwright
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -29,6 +28,7 @@ def extract_text_from_url(url):
     text = ""
     print(f"Scanning portfolio URL: {url}...")
     try:
+        from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
@@ -118,6 +118,8 @@ def build_master_profile(resume_text, portfolio_text):
             
         print("Successfully generated and saved 'master_profile.json'!")
         print("Determined desired roles:", profile_data['job_preferences']['desired_roles'])
+        
+        return profile_data
         
     except Exception as e:
         print(f"Error generating profile: {e}")

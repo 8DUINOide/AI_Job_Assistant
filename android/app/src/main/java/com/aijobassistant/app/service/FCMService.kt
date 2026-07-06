@@ -27,7 +27,7 @@ class FCMService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        val title = message.notification?.title ?: message.data["title"] ?: "AI Job Assistant"
+        val title = message.notification?.title ?: message.data["title"] ?: "JobAi"
         val body = message.notification?.body ?: message.data["body"] ?: "New job matches found!"
 
         showNotification(title, body)

@@ -346,7 +346,30 @@ fun AppNavigation(
             }
 
             composable(Screen.Resume.route) {
-                ResumeTailorScreen()
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val resumeViewModel: com.aijobassistant.app.ui.resume.ResumeTailorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                val state by resumeViewModel.state.collectAsState()
+
+                ResumeTailorScreen(
+                    matchRate = state.matchRate,
+                    keywordsToInclude = state.keywordsToInclude,
+                    missingKeywords = state.missingKeywords,
+                    isAnalyzing = state.isAnalyzing,
+                    isGenerating = state.isGenerating,
+                    tailoredData = state.tailoredData,
+                    coverLetterText = state.coverLetterText,
+                    onAnalyze = { jd ->
+                        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        resumeViewModel.analyzeResume(jd, uid)
+                    },
+                    onGenerateResumePdf = { data ->
+                        resumeViewModel.generateResumePdf(context, data, profile.personalInfo.fullName)
+                    },
+                    onGenerateCoverLetterPdf = { text ->
+                        resumeViewModel.generateCoverLetterPdf(context, text, profile.personalInfo.fullName)
+                    },
+                    onAddKeyword = { /* Handled locally inside the screen */ }
+                )
             }
 
             composable(Screen.Tracker.route) {

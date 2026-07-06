@@ -46,6 +46,10 @@ data class GeneratePdfRequest(
     val tailored_data: Map<String, Any?>
 )
 
+data class GenerateCoverLetterPdfRequest(
+    val cover_letter_text: String
+)
+
 data class BuildProfileResponse(
     val success: Boolean,
     val profile: Map<String, Any>?,
@@ -68,6 +72,9 @@ interface ApiService {
     
     @POST("api/generate-pdf")
     suspend fun generatePdf(@Body request: GeneratePdfRequest): ResponseBody
+    
+    @POST("api/generate-cover-letter-pdf")
+    suspend fun generateCoverLetterPdf(@Body request: GenerateCoverLetterPdfRequest): ResponseBody
     
     @Multipart
     @POST("api/build-profile")

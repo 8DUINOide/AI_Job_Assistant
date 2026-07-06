@@ -15,15 +15,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.aijobassistant.app.ui.components.*
 import com.aijobassistant.app.ui.theme.*
 
-/**
- * Resume Tailor screen — paste a JD, analyze keywords, edit, and generate PDF.
- * Converts the web dashboard's "Resume Tailor" section.
- */
+// Data classes for handling Compose state mapping from the API response
+data class SectionItemState(
+    val title: String,
+    val subtitle: String,
+    val date: String,
+    var bullets: MutableState<String>
+)
+
+data class SectionState(
+    val title: String,
+    val items: List<SectionItemState>
+)
+
+data class TailoredDataState(
+    var summary: MutableState<String>,
+    val sections: List<SectionState>
+)
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ResumeTailorScreen(
@@ -32,23 +45,44 @@ fun ResumeTailorScreen(
     missingKeywords: List<String> = emptyList(),
     isAnalyzing: Boolean = false,
     isGenerating: Boolean = false,
-    summaryText: String = "",
+    tailoredData: Map<String, Any?>? = null,
     coverLetterText: String = "",
     onAnalyze: (jobDescription: String) -> Unit = {},
-    onGenerateResumePdf: (editedSummary: String) -> Unit = {},
+    onGenerateResumePdf: (editedData: Map<String, Any?>) -> Unit = {},
     onGenerateCoverLetterPdf: (editedText: String) -> Unit = {},
-    onAddKeyword: (keyword: String) -> Unit = {}
+    onAddKeyword: (keyword: String) -> Unit = {} // Keeping it for compatibility but we'll handle append locally
 ) {
     var jobDescription by remember { mutableStateOf("") }
     var showResults by remember { mutableStateOf(false) }
-    var editedSummary by remember { mutableStateOf("") }
     var editedCoverLetter by remember { mutableStateOf("") }
     var activeTab by remember { mutableIntStateOf(0) } // 0 = Resume, 1 = Cover Letter
+    
+    var tailoredState by remember { mutableStateOf<TailoredDataState?>(null) }
 
-    // Sync from props
-    LaunchedEffect(summaryText) { editedSummary = summaryText }
     LaunchedEffect(coverLetterText) { editedCoverLetter = coverLetterText }
     LaunchedEffect(matchRate) { if (matchRate > 0) showResults = true }
+    
+    // Parse the JSON Map into our Compose State classes
+    LaunchedEffect(tailoredData) {
+        if (tailoredData != null) {
+            val summaryStr = tailoredData["summary"] as? String ?: ""
+            val sectionsList = tailoredData["sections"] as? List<Map<String, Any?>> ?: emptyList()
+            val parsedSections = sectionsList.map { secMap ->
+                val secTitle = secMap["title"] as? String ?: ""
+                val itemsList = secMap["items"] as? List<Map<String, Any?>> ?: emptyList()
+                val parsedItems = itemsList.map { itemMap ->
+                    val iTitle = itemMap["title"] as? String ?: ""
+                    val iSubtitle = itemMap["subtitle"] as? String ?: ""
+                    val iDate = itemMap["date"] as? String ?: ""
+                    val iBulletsList = itemMap["bullets"] as? List<*> ?: emptyList<Any>()
+                    val iBullets = iBulletsList.filterIsInstance<String>().joinToString("\n")
+                    SectionItemState(iTitle, iSubtitle, iDate, mutableStateOf(iBullets))
+                }
+                SectionState(secTitle, parsedItems)
+            }
+            tailoredState = TailoredDataState(mutableStateOf(summaryStr), parsedSections)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -157,17 +191,45 @@ fun ResumeTailorScreen(
                         color = AccentIndigoLight,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
+                    
+                    val handleKeywordClick = { keyword: String -> 
+                        // Find the Technical Skills section and append
+                        tailoredState?.sections?.forEach { sec ->
+                            sec.items.forEach { item ->
+                                if (item.title.contains("Technical Skills", ignoreCase = true) || 
+                                    item.title.contains("Skills", ignoreCase = true) ||
+                                    sec.title.contains("SKILLS", ignoreCase = true)) {
+                                    
+                                    val currentText = item.bullets.value
+                                    if (!currentText.contains(keyword, ignoreCase = true)) {
+                                        if (currentText.isBlank()) {
+                                            item.bullets.value = keyword
+                                        } else if (currentText.endsWith(",")) {
+                                            item.bullets.value = "$currentText $keyword"
+                                        } else {
+                                            item.bullets.value = "$currentText, $keyword"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        onAddKeyword(keyword)
+                    }
+
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        if (keywordsToInclude.isEmpty()) {
+                            Text("None identified", color = TextMuted, style = MaterialTheme.typography.bodySmall)
+                        }
                         keywordsToInclude.forEach { keyword ->
                             SkillTag(
                                 text = "$keyword +",
                                 containerColor = AccentIndigoContainer,
                                 textColor = AccentIndigoLight,
                                 borderColor = AccentIndigoLight.copy(alpha = 0.3f),
-                                modifier = Modifier.clickable { onAddKeyword(keyword) }
+                                modifier = Modifier.clickable { handleKeywordClick(keyword) }
                             )
                         }
                     }
@@ -185,13 +247,16 @@ fun ResumeTailorScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        if (missingKeywords.isEmpty()) {
+                            Text("None identified", color = TextMuted, style = MaterialTheme.typography.bodySmall)
+                        }
                         missingKeywords.forEach { keyword ->
                             SkillTag(
                                 text = "$keyword +",
                                 containerColor = StatusDangerContainer,
                                 textColor = StatusDanger,
                                 borderColor = StatusDanger.copy(alpha = 0.3f),
-                                modifier = Modifier.clickable { onAddKeyword(keyword) }
+                                modifier = Modifier.clickable { handleKeywordClick(keyword) }
                             )
                         }
                     }
@@ -233,50 +298,152 @@ fun ResumeTailorScreen(
 
                 when (activeTab) {
                     0 -> {
-                        // Editable summary
+                        // Editable tailored resume
                         GlassCard(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                "Professional Summary",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            OutlinedTextField(
-                                value = editedSummary,
-                                onValueChange = { editedSummary = it },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = TextPrimary,
-                                    unfocusedTextColor = TextPrimary,
-                                    focusedBorderColor = PrimaryBlue,
-                                    unfocusedBorderColor = BorderColor,
-                                    cursorColor = PrimaryBlue,
-                                    focusedContainerColor = CardBackground.copy(alpha = 0.3f),
-                                    unfocusedContainerColor = CardBackground.copy(alpha = 0.3f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            )
+                            tailoredState?.let { tState ->
+                                Text(
+                                    "Your Optimized Resume",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PrimaryBlue,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                                Text(
+                                    "Everything below has been tailored to the job description. Give it a final look and edit the text/skills if you'd like before generating.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextMuted,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+                                
+                                // Summary
+                                Text(
+                                    "Professional Summary",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                OutlinedTextField(
+                                    value = tState.summary.value,
+                                    onValueChange = { tState.summary.value = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = TextPrimary,
+                                        unfocusedTextColor = TextPrimary,
+                                        focusedBorderColor = PrimaryBlue,
+                                        unfocusedBorderColor = BorderColor,
+                                        cursorColor = PrimaryBlue,
+                                        focusedContainerColor = CardBackground.copy(alpha = 0.3f),
+                                        unfocusedContainerColor = CardBackground.copy(alpha = 0.3f)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
 
-                            GradientButton(
-                                text = "📄 Generate Resume PDF",
-                                onClick = { onGenerateResumePdf(editedSummary) },
-                                isLoading = isGenerating,
-                                gradientColors = listOf(StatusSuccess, Color(0xFF059669))
-                            )
+                                // Dynamic Sections
+                                tState.sections.forEach { section ->
+                                    Divider(color = BorderColor, modifier = Modifier.padding(vertical = 12.dp))
+                                    Text(
+                                        section.title,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = AccentIndigoLight,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    
+                                    section.items.forEach { item ->
+                                        Surface(
+                                            color = CardBackgroundTranslucent,
+                                            shape = RoundedCornerShape(8.dp),
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(12.dp)) {
+                                                if (item.title.isNotBlank() && item.title != "null") {
+                                                    Text(item.title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                                                }
+                                                if (item.subtitle.isNotBlank() && item.subtitle != "null") {
+                                                    Text(
+                                                        "${item.subtitle}" + if(item.date.isNotBlank() && item.date != "null") " | ${item.date}" else "", 
+                                                        color = TextMuted, 
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        modifier = Modifier.padding(bottom = 8.dp)
+                                                    )
+                                                }
+                                                
+                                                Text(
+                                                    "Bullet Points (One per line)",
+                                                    color = TextMuted,
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    modifier = Modifier.padding(bottom = 4.dp)
+                                                )
+                                                OutlinedTextField(
+                                                    value = item.bullets.value,
+                                                    onValueChange = { item.bullets.value = it },
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(if (item.bullets.value.lines().size > 2) 100.dp else 60.dp),
+                                                    colors = OutlinedTextFieldDefaults.colors(
+                                                        focusedTextColor = TextPrimary,
+                                                        unfocusedTextColor = TextPrimary,
+                                                        focusedBorderColor = PrimaryBlue,
+                                                        unfocusedBorderColor = BorderColor,
+                                                        cursorColor = PrimaryBlue,
+                                                        focusedContainerColor = CardBackground.copy(alpha = 0.3f),
+                                                        unfocusedContainerColor = CardBackground.copy(alpha = 0.3f)
+                                                    ),
+                                                    shape = RoundedCornerShape(8.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                GradientButton(
+                                    text = "📄 Generate Resume PDF",
+                                    onClick = { 
+                                        val finalData = mapOf(
+                                            "summary" to tState.summary.value,
+                                            "sections" to tState.sections.map { sec ->
+                                                mapOf(
+                                                    "title" to sec.title,
+                                                    "items" to sec.items.map { item ->
+                                                        mapOf(
+                                                            "title" to item.title,
+                                                            "subtitle" to item.subtitle,
+                                                            "date" to item.date,
+                                                            "bullets" to item.bullets.value.split("\n").filter { it.isNotBlank() }
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        )
+                                        onGenerateResumePdf(finalData) 
+                                    },
+                                    isLoading = isGenerating,
+                                    gradientColors = listOf(StatusSuccess, Color(0xFF059669))
+                                )
+                            } ?: run {
+                                Text(
+                                    "No resume data analyzed yet. Please paste a job description and click Analyze.",
+                                    color = TextMuted,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
                         }
                     }
                     1 -> {
                         // Editable cover letter
                         GlassCard(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "Cover Letter",
-                                style = MaterialTheme.typography.titleSmall,
+                                "Your Cover Letter",
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                color = PrimaryBlue,
+                                modifier = Modifier.padding(bottom = 16.dp)
                             )
                             OutlinedTextField(
                                 value = editedCoverLetter,
@@ -316,10 +483,6 @@ fun ResumeTailorScreen(
     }
 }
 
-/**
- * Simple FlowRow that wraps items to the next line.
- * A basic implementation since Compose provides this in newer versions.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FlowRow(
