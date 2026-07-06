@@ -10,7 +10,8 @@ data class JobSearchRequest(
     val location: String = "Remote",
     val offset: Int = 0,
     val uid: String,
-    val results_wanted: Int = 30
+    val results_wanted: Int = 30,
+    val profile: Map<String, Any?>
 )
 
 data class JobSearchResponse(
@@ -31,7 +32,8 @@ data class EvaluateJobResponse(
 
 data class AnalyzeResumeRequest(
     val job_description: String,
-    val uid: String
+    val uid: String,
+    val profile: Map<String, Any?>
 )
 
 data class AnalyzeResumeResponse(
@@ -50,6 +52,10 @@ data class GeneratePdfRequest(
 
 data class GenerateCoverLetterPdfRequest(
     val cover_letter_text: String
+)
+
+data class GenerateResumeFromTemplateRequest(
+    val profile_data: Map<String, Any?>
 )
 
 data class BuildProfileResponse(
@@ -77,6 +83,12 @@ interface ApiService {
     
     @POST("api/generate-cover-letter-pdf")
     suspend fun generateCoverLetterPdf(@Body request: GenerateCoverLetterPdfRequest): ResponseBody
+    
+    @POST("api/generate-resume-docx")
+    suspend fun generateResumeDocx(@Body request: GenerateResumeFromTemplateRequest): ResponseBody
+    
+    @POST("api/generate-resume-template-pdf")
+    suspend fun generateResumeTemplatePdf(@Body request: GenerateResumeFromTemplateRequest): ResponseBody
     
     @Multipart
     @POST("api/build-profile")

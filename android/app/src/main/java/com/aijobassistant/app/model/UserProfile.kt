@@ -11,6 +11,7 @@ data class UserProfile(
     val experience: List<Experience> = emptyList(),
     val education: List<Education> = emptyList(),
     val projects: List<Project> = emptyList(),
+    val activities: List<Activity> = emptyList(),
     val skills: List<String> = emptyList(),
     val certifications: List<String> = emptyList(),
     val awards: List<String> = emptyList(),
@@ -24,6 +25,7 @@ data class UserProfile(
         "experience" to experience.map { it.toMap() },
         "education" to education.map { it.toMap() },
         "projects" to projects.map { it.toMap() },
+        "activities" to activities.map { it.toMap() },
         "skills" to skills,
         "certifications" to certifications,
         "awards" to awards,
@@ -41,6 +43,7 @@ data class UserProfile(
                 experience = (map["experience"] as? List<Map<String, Any?>>)?.map { Experience.fromMap(it) } ?: emptyList(),
                 education = (map["education"] as? List<Map<String, Any?>>)?.map { Education.fromMap(it) } ?: emptyList(),
                 projects = (map["projects"] as? List<Map<String, Any?>>)?.map { Project.fromMap(it) } ?: emptyList(),
+                activities = (map["activities"] as? List<Map<String, Any?>>)?.map { Activity.fromMap(it) } ?: emptyList(),
                 skills = (map["skills"] as? List<String>) ?: emptyList(),
                 certifications = (map["certifications"] as? List<String>) ?: emptyList(),
                 awards = (map["awards"] as? List<String>) ?: emptyList(),
@@ -179,6 +182,35 @@ data class Project(
             title = map["title"] as? String ?: "",
             role = map["role"] as? String ?: "",
             link = map["link"] as? String ?: "",
+            description = map["description"] as? String ?: ""
+        )
+    }
+}
+
+data class Activity(
+    val organization: String = "",
+    val location: String = "",
+    val role: String = "",
+    val startDate: String = "",
+    val endDate: String = "",
+    val description: String = ""
+) {
+    fun toMap(): Map<String, Any?> = mapOf(
+        "organization" to organization,
+        "location" to location,
+        "role" to role,
+        "startDate" to startDate,
+        "endDate" to endDate,
+        "description" to description
+    )
+
+    companion object {
+        fun fromMap(map: Map<String, Any?>): Activity = Activity(
+            organization = map["organization"] as? String ?: "",
+            location = map["location"] as? String ?: "",
+            role = map["role"] as? String ?: "",
+            startDate = map["startDate"] as? String ?: map["start_date"] as? String ?: "",
+            endDate = map["endDate"] as? String ?: map["end_date"] as? String ?: "",
             description = map["description"] as? String ?: ""
         )
     }

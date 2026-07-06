@@ -23,6 +23,7 @@ import com.aijobassistant.app.ui.home.HomeScreen
 import com.aijobassistant.app.ui.jobs.JobDiscoveryScreen
 import com.aijobassistant.app.ui.profile.ProfileScreen
 import com.aijobassistant.app.ui.resume.ResumeTailorScreen
+import com.aijobassistant.app.ui.resume.ResumeBuilderScreen
 import com.aijobassistant.app.ui.tracker.TrackerScreen
 import com.aijobassistant.app.ui.theme.*
 
@@ -35,6 +36,7 @@ sealed class Screen(val route: String) {
     data object Onboarding : Screen("onboarding")
     data object Home : Screen("home")
     data object Jobs : Screen("jobs")
+    data object ResumeBuilder : Screen("resume_builder")
     data object Resume : Screen("resume")
     data object Tracker : Screen("tracker")
     data object Profile : Screen("profile")
@@ -52,7 +54,7 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem(Screen.Home, "Home", Icons.Default.Home),
     BottomNavItem(Screen.Jobs, "Jobs", Icons.Default.Search),
-    BottomNavItem(Screen.Resume, "Resume", Icons.Default.Description),
+    BottomNavItem(Screen.ResumeBuilder, "Resume", Icons.Default.Description),
     BottomNavItem(Screen.Tracker, "Tracker", Icons.Default.Checklist),
     BottomNavItem(Screen.Profile, "Profile", Icons.Default.Person)
 )
@@ -397,6 +399,28 @@ fun AppNavigation(
                             restoreState = true
                         }
                     }
+                )
+            }
+
+            composable(Screen.ResumeBuilder.route) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val builderViewModel: com.aijobassistant.app.ui.resume.ResumeBuilderViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                val builderState by builderViewModel.state.collectAsState()
+
+                ResumeBuilderScreen(
+                    state = builderState,
+                    onGeneratePdf = { builderViewModel.generatePdf(context) },
+                    onGenerateDocx = { builderViewModel.generateDocx(context) },
+                    onAddEducation = { builderViewModel.addEducation() },
+                    onRemoveEducation = { builderViewModel.removeEducation(it) },
+                    onAddExperience = { builderViewModel.addExperience() },
+                    onRemoveExperience = { builderViewModel.removeExperience(it) },
+                    onAddProject = { builderViewModel.addProject() },
+                    onRemoveProject = { builderViewModel.removeProject(it) },
+                    onAddActivity = { builderViewModel.addActivity() },
+                    onRemoveActivity = { builderViewModel.removeActivity(it) },
+                    onFieldChanged = { builderViewModel.notifyFieldChanged() },
+                    onClearMessages = { builderViewModel.clearMessages() }
                 )
             }
 
