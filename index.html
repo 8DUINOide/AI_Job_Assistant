@@ -591,12 +591,27 @@
                                 sourceLogo = '<img src="https://www.linkedin.com/favicon.ico" width="16" height="16" alt="LinkedIn" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
                             }
                             
+                            let locFlag = '';
+                            if (log.location) {
+                                const loc = log.location.toLowerCase();
+                                if (loc.includes('remote')) locFlag = '🌐';
+                                else if (loc.includes('united states') || loc.includes('usa') || loc.match(/\\b(us|ny|ca|tx|wa|fl|il)\\b/)) locFlag = '🇺🇸';
+                                else if (loc.includes('united kingdom') || loc.includes('uk') || loc.includes('london')) locFlag = '🇬🇧';
+                                else if (loc.includes('canada') || loc.includes('toronto') || loc.includes('vancouver')) locFlag = '🇨🇦';
+                                else if (loc.includes('australia') || loc.includes('sydney') || loc.includes('melbourne')) locFlag = '🇦🇺';
+                                else if (loc.includes('philippines') || loc.includes('manila')) locFlag = '🇵🇭';
+                                else if (loc.includes('india') || loc.includes('bangalore') || loc.includes('mumbai')) locFlag = '🇮🇳';
+                                else if (loc.includes('germany') || loc.includes('berlin')) locFlag = '🇩🇪';
+                                else locFlag = '📍';
+                            }
+                            
                             return `
-                            <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
+                            <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; padding-right: 40px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
+                                <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; padding: 4px; margin: 0; width: auto; font-weight: bold; font-size: 1.1rem; color: var(--text-muted); cursor: pointer;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'" title="Dismiss / Denied">✕</button>
                                 <div style="flex: 1; min-width: 250px;">
                                     <div style="font-weight: 600; font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${log.job_title}</div>
                                     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px;">
-                                        ${log.company} ${log.location ? '• ' + log.location : ''}
+                                        ${log.company} ${log.location ? '• ' + locFlag + ' ' + log.location : ''}
                                     </div>
                                     <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px;">
                                         <strong>Tech Stack:</strong> ${log.tech_stack || 'N/A'}
@@ -611,7 +626,6 @@
                                 <div style="display: flex; gap: 8px; align-items: center; margin-top: auto; margin-bottom: auto;">
                                     <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Applied')" style="background: var(--success); padding: 8px 16px; margin: 0; width: auto; font-weight: 500;">Applied</button>
                                     <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Rejected')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto; font-weight: 500;">Rejected</button>
-                                    <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); padding: 8px 12px; margin: 0; width: auto; font-weight: bold; border-radius: 6px; color: var(--text-muted); cursor: pointer;" title="Dismiss / Denied">✕</button>
                                 </div>
                             </div>
                         `}).join('');
