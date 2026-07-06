@@ -9,3 +9,4 @@ firebase_credentials.json
 .vercel
 .idea/
 android/.idea/
+.env*

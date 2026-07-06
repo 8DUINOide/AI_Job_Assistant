@@ -111,79 +111,59 @@ def build_profile_endpoint():
             except Exception:
                 portfolio_text = ""
         
-        # Build profile using Gemini
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        gemini_model = genai.GenerativeModel('gemini-2.5-flash')
-        
-        prompt = f"""
-You are an expert technical recruiter and career coach.
-I will provide you with the raw text from my Resume/LinkedIn and my Portfolio website.
-I want you to analyze my experience, skills, and background, and generate a structured JSON profile.
+        # --- Local Heuristic & NLP Parser (Bypassing Gemini) ---
+        import re
+        from resume_generator import COMMON_KEYWORDS
 
-Based on the data, determine my 'desired_roles' (e.g., Backend Developer, Full Stack Developer, Tech Lead).
-Do NOT include frontend roles if my primary experience is backend/fullstack unless specifically stated.
+        full_text = resume_text + "\n" + portfolio_text
+        text_lower = full_text.lower()
 
-Raw Resume/LinkedIn Text:
-{resume_text}
+        # 1. Contact Info Extraction via Regex
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+(?:\.\w+)?', full_text)
+        phone_match = re.search(r'\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}', full_text)
+        linkedin_match = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[\w-]+', full_text)
 
-Raw Portfolio Text:
-{portfolio_text}
+        email = email_match.group(0) if email_match else ""
+        phone = phone_match.group(0) if phone_match else ""
+        linkedin_url = linkedin_match.group(0) if linkedin_match else ""
 
-Respond ONLY with a valid JSON object matching exactly this schema:
-{{
-  "personal_info": {{
-    "first_name": "...",
-    "last_name": "...",
-    "email": "...",
-    "phone": "...",
-    "location": "...",
-    "linkedin_url": "...",
-    "portfolio_url": "..."
-  }},
-  "job_preferences": {{
-    "desired_roles": ["Role 1", "Role 2"],
-    "work_type": ["Remote", "Hybrid", "On-site"],
-    "locations": ["...", "Remote"],
-    "salary_expectation": "..."
-  }},
-  "summary": "A professional summary of my background based on the data...",
-  "experience": [
-    {{
-      "title": "...",
-      "company": "...",
-      "start_date": "...",
-      "end_date": "...",
-      "description": "...",
-      "skills_used": ["..."]
-    }}
-  ],
-  "education": [
-    {{
-      "degree": "...",
-      "university": "...",
-      "graduation_year": "..."
-    }}
-  ],
-  "skills": ["Skill 1", "Skill 2"]
-}}
-"""
-        
-        response = gemini_model.generate_content(prompt)
-        response_text = response.text.strip()
-        
-        # Clean up any markdown blocks around the json
-        if response_text.startswith("```json"):
-            response_text = response_text[7:]
-        if response_text.startswith("```"):
-            response_text = response_text[3:]
-        if response_text.endswith("```"):
-            response_text = response_text[:-3]
-        
-        profile_data = json.loads(response_text.strip())
-        
-        if not profile_data:
-            return jsonify({"success": False, "error": "Failed to generate profile"}), 500
+        # 2. Name Heuristic (Usually on the first non-empty line)
+        lines = [line.strip() for line in resume_text.split('\n') if line.strip()]
+        first_name = ""
+        last_name = ""
+        if lines:
+            name_parts = lines[0].split()
+            if len(name_parts) >= 2:
+                first_name = name_parts[0]
+                last_name = " ".join(name_parts[1:])
+            else:
+                first_name = name_parts[0] if name_parts else ""
+
+        # 3. Skills Extraction using the existing keyword dictionary
+        found_skills = list(set([skill.title() for skill in COMMON_KEYWORDS if skill.lower() in text_lower]))
+
+        # 4. Assemble the Profile Data JSON
+        profile_data = {
+            "personal_info": {
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "phone": phone,
+                "location": "",
+                "linkedin_url": linkedin_url,
+                "portfolio_url": portfolio_url
+            },
+            "job_preferences": {
+                "desired_roles": ["Software Engineer"], # Override by app
+                "work_type": ["Remote", "Hybrid"],
+                "locations": ["Remote"],
+                "salary_expectation": ""
+            },
+            "summary": "Profile automatically extracted from uploaded resume.",
+            "experience": [],
+            "education": [],
+            "skills": found_skills
+        }
         
         # Also save to master_profile.json for the web dashboard
         try:
