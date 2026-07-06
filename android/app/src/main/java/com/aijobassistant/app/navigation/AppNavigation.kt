@@ -249,6 +249,11 @@ fun AppNavigation(
                             trackerRepository.updateStatus(app.id, com.aijobassistant.app.model.ApplicationStatus.REJECTED)
                         }
                     },
+                    onDenyJob = { app ->
+                        coroutineScope.launch {
+                            trackerRepository.updateStatus(app.id, com.aijobassistant.app.model.ApplicationStatus.DENIED)
+                        }
+                    },
                     onTriggerAgent = { log ->
                         log("Starting continuous job search...")
                         try {
@@ -373,7 +378,35 @@ fun AppNavigation(
             }
 
             composable(Screen.Tracker.route) {
-                TrackerScreen()
+                val coroutineScope = rememberCoroutineScope()
+                val trackerRepository = remember { com.aijobassistant.app.data.tracker.TrackerRepository() }
+                val applications by trackerRepository.observeApplications().collectAsState(initial = emptyList())
+                val context = androidx.compose.ui.platform.LocalContext.current
+
+                TrackerScreen(
+                    applications = applications,
+                    onUpdateStatus = { app, status ->
+                        coroutineScope.launch {
+                            trackerRepository.updateStatus(app.id, status)
+                        }
+                    },
+                    onDeleteApplication = { app ->
+                        coroutineScope.launch {
+                            trackerRepository.deleteApplication(app.id)
+                        }
+                    },
+                    onOpenLink = { url ->
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Ignored
+                        }
+                    },
+                    onNavigateBack = {
+                        navController.navigateUp()
+                    }
+                )
             }
 
             composable(Screen.Profile.route) {

@@ -32,7 +32,8 @@ fun TrackerScreen(
     isLoading: Boolean = false,
     onUpdateStatus: (Application, ApplicationStatus) -> Unit = { _, _ -> },
     onDeleteApplication: (Application) -> Unit = {},
-    onOpenLink: (String) -> Unit = {}
+    onOpenLink: (String) -> Unit = {},
+    onNavigateBack: () -> Unit = {}
 ) {
     var selectedFilter by remember { mutableStateOf<ApplicationStatus?>(null) }
     var showStatusDialog by remember { mutableStateOf<Application?>(null) }
@@ -52,11 +53,26 @@ fun TrackerScreen(
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         // Header
-        Text(
-            text = "Application Tracker",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp, top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Text(
+                text = "Application Tracker",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
         Text(
             text = "${applications.size} total applications",
             style = MaterialTheme.typography.bodySmall,

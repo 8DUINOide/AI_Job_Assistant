@@ -48,6 +48,7 @@ fun HomeScreen(
     onNavigateToTracker: () -> Unit = {},
     onApproveJob: (Application) -> Unit = {},
     onRejectJob: (Application) -> Unit = {},
+    onDenyJob: (Application) -> Unit = {},
     onTriggerAgent: suspend (log: (String) -> Unit) -> Unit = {}
 ) {
     var isAgentRunning by remember { mutableStateOf(false) }
@@ -178,6 +179,11 @@ fun HomeScreen(
                             val updatedList = displayPendingJobs.filter { it.id != job.id }
                             displayPendingJobs = updatedList
                             onRejectJob(job) 
+                        },
+                        onDeny = {
+                            val updatedList = displayPendingJobs.filter { it.id != job.id }
+                            displayPendingJobs = updatedList
+                            onDenyJob(job)
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -389,53 +395,148 @@ private fun QuickActionCard(
 private fun PendingJobCard(
     application: Application,
     onApprove: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    onDeny: () -> Unit
 ) {
+    val searchStr = (application.location + " " + application.jobTitle).lowercase()
+    val flagCode = when {
+        searchStr.contains("remote") || searchStr.contains("latam") || searchStr.contains("worldwide") -> "un"
+        searchStr.contains("canada") || searchStr.contains("toronto") || searchStr.contains("vancouver") -> "ca"
+        searchStr.contains("united kingdom") || "\\buk\\b".toRegex().containsMatchIn(searchStr) || searchStr.contains("london") -> "gb"
+        searchStr.contains("united states") || searchStr.contains("usa") || "\\b(us|ny|ca|tx|wa|fl|il|opt)\\b".toRegex().containsMatchIn(searchStr) -> "us"
+        searchStr.contains("australia") || searchStr.contains("sydney") || searchStr.contains("melbourne") -> "au"
+        searchStr.contains("philippines") || searchStr.contains("manila") -> "ph"
+        searchStr.contains("india") || searchStr.contains("bangalore") || searchStr.contains("mumbai") -> "in"
+        searchStr.contains("germany") || searchStr.contains("berlin") -> "de"
+        else -> ""
+    }
+
+    val sourceUrl = application.jobLink ?: ""
+    val sourceLogo = when {
+        sourceUrl.contains("indeed.com") -> "https://www.indeed.com/favicon.ico"
+        sourceUrl.contains("linkedin.com") -> "https://www.linkedin.com/favicon.ico"
+        else -> ""
+    }
+
     Card(
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x0DFFFFFF))
+        colors = CardDefaults.cardColors(containerColor = Color(0x0DFFFFFF)),
+        modifier = Modifier.padding(bottom = 12.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(12.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = application.jobTitle,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "${application.company} • ${application.dateApplied}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextMuted
+            IconButton(
+                onClick = onDeny,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Deny",
+                    tint = TextMuted
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Button(
-                    onClick = onApprove,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = StatusSuccess,
-                        contentColor = Color.White
-                    ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Applied", style = MaterialTheme.typography.labelSmall, color = Color.White)
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 28.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (flagCode.isNotEmpty()) {
+                        coil.compose.AsyncImage(
+                            model = "https://flagcdn.com/20x15/$flagCode.png",
+                            contentDescription = "Flag",
+                            modifier = Modifier
+                                .height(16.dp)
+                                .padding(end = 6.dp)
+                        )
+                    }
+                    Text(
+                        text = application.jobTitle,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                Button(
-                    onClick = onReject,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = StatusDanger,
-                        contentColor = Color.White
-                    ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                    shape = RoundedCornerShape(8.dp)
+                
+                val locationText = if (application.location.isNotBlank()) " • ${application.location}" else ""
+                Text(
+                    text = "${application.company}$locationText",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+
+                Text(
+                    text = "Tech Stack: ${application.techStack.ifBlank { "N/A" }}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = Color(0xFFCBD5E1),
+                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Rejected", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Scraped: ${application.dateApplied}",
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            color = TextMuted
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (sourceLogo.isNotEmpty()) {
+                                coil.compose.AsyncImage(
+                                    model = sourceLogo,
+                                    contentDescription = "Source",
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .padding(end = 4.dp)
+                                )
+                            }
+                            Text(
+                                text = "View Job",
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                color = Color(0xFF3B82F6),
+                                modifier = Modifier.clickable { /* Handle link */ }
+                            )
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Button(
+                            onClick = onApprove,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = StatusSuccess,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Applied", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                        }
+                        Button(
+                            onClick = onReject,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = StatusDanger,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text("Rejected", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                        }
+                    }
                 }
             }
         }

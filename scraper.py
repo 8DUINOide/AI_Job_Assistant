@@ -77,8 +77,15 @@ def evaluate_job(job, profile):
     matched_skills = [s for s in skills if s in desc_lower or s in title_lower]
     matched_skills = list(set(matched_skills)) # Remove duplicates
     
+    # Extract general tech stack
+    common_tech = ['java', 'python', 'javascript', 'typescript', 'c++', 'c#', 'ruby', 'go', 'rust', 'php', 'swift', 'kotlin', 'react', 'angular', 'vue', 'node', 'express', 'django', 'flask', 'spring', 'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'sql', 'mysql', 'postgres', 'mongodb', 'redis']
+    job_tech = [t for t in common_tech if f"\\b{t}\\b" in desc_lower or f"\\b{t}\\b" in title_lower or t in title_lower.split() or t in desc_lower.split()]
+    
+    # Combine profile matched skills and general extracted tech
+    combined_tech = list(set(matched_skills + job_tech))
+    
     if isinstance(job, dict):
-        job['tech_stack'] = ", ".join(matched_skills)
+        job['tech_stack'] = ", ".join(combined_tech)
     
     skill_points = min(50, len(matched_skills) * 10)
     score += skill_points
@@ -130,7 +137,8 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
         # Removed the 5 jobs limit to allow evaluating all fetched jobs
         try:
             title = str(row.get('title', 'Unknown')).strip()
-            company = str(row.get('company', 'Unknown')).strip()
+            company_raw = str(row.get('company', 'Unknown')).strip()
+            company = company_raw.split('\n')[0].strip()
             location_text = str(row.get('location', 'Unknown')).strip()
             link = str(row.get('job_url', ''))
             description = str(row.get('description', 'No description'))
