@@ -592,26 +592,24 @@
                             }
                             
                             let locFlag = '';
-                            if (log.location) {
-                                const loc = log.location.toLowerCase();
-                                if (loc.includes('remote')) locFlag = '🌐';
-                                else if (loc.includes('united states') || loc.includes('usa') || loc.match(/\\b(us|ny|ca|tx|wa|fl|il)\\b/)) locFlag = '🇺🇸';
-                                else if (loc.includes('united kingdom') || loc.includes('uk') || loc.includes('london')) locFlag = '🇬🇧';
-                                else if (loc.includes('canada') || loc.includes('toronto') || loc.includes('vancouver')) locFlag = '🇨🇦';
-                                else if (loc.includes('australia') || loc.includes('sydney') || loc.includes('melbourne')) locFlag = '🇦🇺';
-                                else if (loc.includes('philippines') || loc.includes('manila')) locFlag = '🇵🇭';
-                                else if (loc.includes('india') || loc.includes('bangalore') || loc.includes('mumbai')) locFlag = '🇮🇳';
-                                else if (loc.includes('germany') || loc.includes('berlin')) locFlag = '🇩🇪';
-                                else locFlag = '📍';
-                            }
+                            const searchStr = ((log.location || '') + ' ' + (log.job_title || '')).toLowerCase();
+                            if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) locFlag = '🌐';
+                            else if (searchStr.includes('united states') || searchStr.includes('usa') || searchStr.match(/\\b(us|ny|ca|tx|wa|fl|il)\\b/)) locFlag = '🇺🇸';
+                            else if (searchStr.includes('united kingdom') || searchStr.match(/\\buk\\b/) || searchStr.includes('london')) locFlag = '🇬🇧';
+                            else if (searchStr.includes('canada') || searchStr.includes('toronto') || searchStr.includes('vancouver')) locFlag = '🇨🇦';
+                            else if (searchStr.includes('australia') || searchStr.includes('sydney') || searchStr.includes('melbourne')) locFlag = '🇦🇺';
+                            else if (searchStr.includes('philippines') || searchStr.includes('manila')) locFlag = '🇵🇭';
+                            else if (searchStr.includes('india') || searchStr.includes('bangalore') || searchStr.includes('mumbai')) locFlag = '🇮🇳';
+                            else if (searchStr.includes('germany') || searchStr.includes('berlin')) locFlag = '🇩🇪';
+                            else locFlag = '📍';
                             
                             return `
                             <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; padding-right: 40px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
                                 <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; padding: 4px; margin: 0; width: auto; font-weight: bold; font-size: 1.1rem; color: var(--text-muted); cursor: pointer;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'" title="Dismiss / Denied">✕</button>
                                 <div style="flex: 1; min-width: 250px;">
-                                    <div style="font-weight: 600; font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${log.job_title}</div>
+                                    <div style="font-weight: 600; font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${locFlag} ${log.job_title}</div>
                                     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px;">
-                                        ${log.company} ${log.location ? '• ' + locFlag + ' ' + log.location : ''}
+                                        ${log.company} ${log.location ? '• ' + log.location : ''}
                                     </div>
                                     <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px;">
                                         <strong>Tech Stack:</strong> ${log.tech_stack || 'N/A'}
