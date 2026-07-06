@@ -108,6 +108,11 @@ def evaluate_jobs_batch(jobs, profile):
 def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset=0):
     print(f"Searching for '{keywords}' in '{location}' across multiple sites (offset: {offset})...")
     
+    country = 'USA'
+    loc_lower = location.lower()
+    if 'philippines' in loc_lower or 'makati' in loc_lower or 'manila' in loc_lower or 'ncr' in loc_lower or 'cebu' in loc_lower or 'taguig' in loc_lower or 'quezon' in loc_lower or 'pasig' in loc_lower or 'alabang' in loc_lower or 'mandaluyong' in loc_lower or 'ortigas' in loc_lower:
+        country = 'philippines'
+        
     try:
         jobs_df = scrape_jobs(
             site_name=["linkedin", "indeed"],
@@ -115,7 +120,7 @@ def scrape_jobs_multisite(keywords, location="Remote", results_wanted=30, offset
             location=location,
             results_wanted=results_wanted,
             offset=offset,
-            country_indeed='USA' # Required to bypass some region blocks
+            country_indeed=country
         )
     except Exception as e:
         print(f"Error during jobspy scraping: {e}")
