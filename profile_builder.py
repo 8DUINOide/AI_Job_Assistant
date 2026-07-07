@@ -130,13 +130,17 @@ def build_master_profile(resume_text, portfolio_text):
             print("Successfully generated and saved 'master_profile.json'!")
         except Exception as file_err:
             print("Could not save to file (read-only system):", file_err)
+            
         print("Determined desired roles:", profile_data['job_preferences']['desired_roles'])
-        
         return profile_data
         
     except Exception as e:
         print(f"Error generating profile: {e}")
-        print("Raw response was:", response.text)
+        try:
+            print("Raw response was:", response.text)
+        except Exception:
+            pass
+        return None
 
 if __name__ == "__main__":
     resume_file = "resume.pdf" # Place your resume here

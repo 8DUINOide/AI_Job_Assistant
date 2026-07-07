@@ -18,6 +18,7 @@ from tracker import log_application, get_recent_logs, log_applications_batch, up
 from scraper import load_profile, scrape_jobs_multisite, evaluate_job, evaluate_jobs_batch
 from emailer import send_job_digest
 from resume_generator import get_tailored_profile_data, generate_pdf_from_data
+from profile_builder import build_master_profile
 
 load_dotenv()
 
@@ -93,10 +94,10 @@ def build_profile_endpoint():
         client_ip = request.remote_addr or "unknown"
         now = time.time()
         
-        # Max 5 calls per 30 minutes
+        # Max 10 calls per 30 minutes
         calls = BUILD_PROFILE_CALLS.get(client_ip, [])
         calls = [t for t in calls if now - t < 1800]
-        if len(calls) >= 5:
+        if len(calls) >= 10:
             return jsonify({"success": False, "error": "Rate limit exceeded to protect API quotas. Try again in 30 minutes."}), 429
             
         calls.append(now)
@@ -131,7 +132,6 @@ def build_profile_endpoint():
                 portfolio_text = ""
         
         # --- Robust Gemini Parser ---
-        from profile_builder import build_master_profile
         profile_data = build_master_profile(resume_text, portfolio_text)
         
         if not profile_data:
