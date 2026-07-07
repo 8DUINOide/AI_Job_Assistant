@@ -138,6 +138,17 @@ def build_profile_endpoint():
                 last_name = " ".join(name_parts[1:])
             else:
                 first_name = name_parts[0] if name_parts else ""
+                
+        # 2.5 Location Extraction Heuristic (look in first 10 lines for City, ST or City, Country)
+        location = ""
+        header_text = " ".join(lines[:10])
+        loc_match = re.search(r'([A-Z][a-zA-Z\s]+,\s*[A-Z]{2}(?:\s*\d{5})?)', header_text)
+        if loc_match:
+            location = loc_match.group(1).strip()
+        else:
+            loc_match2 = re.search(r'([A-Z][a-zA-Z\s]+,\s*(?:Philippines|UK|United Kingdom|USA|United States|Canada|Australia|India))', header_text, re.IGNORECASE)
+            if loc_match2:
+                location = loc_match2.group(1).strip()
 
         # 3. Skills Extraction
         found_skills = list(set([skill.title() for skill in COMMON_KEYWORDS if skill.lower() in text_lower]))
@@ -410,7 +421,7 @@ def build_profile_endpoint():
                 "last_name": last_name,
                 "email": email,
                 "phone": phone,
-                "location": "",
+                "location": location,
                 "linkedin_url": linkedin_url,
                 "portfolio_url": portfolio_url
             },
@@ -922,10 +933,14 @@ def generate_pdf():
         pdf_data = convert_profile_to_pdf_data(tailored_data)
         pdf_buffer = generate_pdf_from_data(pdf_data)
         
+        first_name = tailored_data.get("personal_info", {}).get("first_name", "Applicant")
+        last_name = tailored_data.get("personal_info", {}).get("last_name", "")
+        name = f"{first_name} {last_name}".strip()
+        
         return send_file(
             pdf_buffer,
             as_attachment=True,
-            download_name='Tailored_Resume.pdf',
+            download_name=f'{name}_Resume.pdf',
             mimetype='application/pdf'
         )
     except Exception as e:

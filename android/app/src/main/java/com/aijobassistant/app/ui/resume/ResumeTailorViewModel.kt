@@ -66,7 +66,7 @@ class ResumeTailorViewModel : ViewModel() {
             if (result.isSuccess) {
                 val bytes = result.getOrNull()?.bytes()
                 if (bytes != null) {
-                    openPdf(context, bytes, "${userName}_Tailored_Resume.pdf")
+                    openPdf(context, bytes, "${userName}_Resume.pdf")
                 }
             } else {
                 Toast.makeText(context, "Failed to generate PDF", Toast.LENGTH_SHORT).show()
@@ -82,7 +82,7 @@ class ResumeTailorViewModel : ViewModel() {
             if (result.isSuccess) {
                 val bytes = result.getOrNull()?.bytes()
                 if (bytes != null) {
-                    openPdf(context, bytes, "${userName}_Cover_Letter.pdf")
+                    openPdf(context, bytes, "${userName}_Cover Letter.pdf")
                 }
             } else {
                 Toast.makeText(context, "Failed to generate PDF", Toast.LENGTH_SHORT).show()
