@@ -140,7 +140,7 @@ def build_master_profile(resume_text, portfolio_text):
             print("Raw response was:", response.text)
         except Exception:
             pass
-        return None
+        raise e
 
 if __name__ == "__main__":
     resume_file = "resume.pdf" # Place your resume here

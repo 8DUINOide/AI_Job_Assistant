@@ -1,11 +1,30 @@
-import requests
-import json
+import urllib.request
+import os
 
-url = 'https://ai-job-assistant-one.vercel.app/api/build-profile'
-headers = {'Authorization': 'Bearer secret_admin_token_123_abc_xyz'}
-files = {'file': ('test.pdf', b'%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n/Resources <<\n/Font <<\n/F1 4 0 R\n>>\n>>\n/Contents 5 0 R\n>>\nendobj\n4 0 obj\n<<\n/Type /Font\n/Subtype /Type1\n/BaseFont /Helvetica\n>>\nendobj\n5 0 obj\n<< /Length 44 >>\nstream\nBT\n/F1 24 Tf\n100 700 Td\n(Hello World) Tj\nET\nendstream\nendobj\nxref\n0 6\n0000000000 65535 f\n0000000009 00000 n\n0000000058 00000 n\n0000000115 00000 n\n0000000219 00000 n\n0000000307 00000 n\ntrailer\n<<\n/Size 6\n/Root 1 0 R\n>>\nstartxref\n402\n%%EOF', 'application/pdf')}
-data = {'portfolio_url': ''}
+BOUNDARY = '----WebKitFormBoundary7MA4YWxkTrZu0gW'
+file_path = 'resume.pdf'
+with open(file_path, 'rb') as f:
+    file_content = f.read()
 
-response = requests.post(url, headers=headers, files=files, data=data)
-print(f'Status Code: {response.status_code}')
-print(f'Response Body: {response.text}')
+body = (
+    b'--' + BOUNDARY.encode('utf-8') + b'\r\n'
+    b'Content-Disposition: form-data; name="file"; filename="resume.pdf"\r\n'
+    b'Content-Type: application/pdf\r\n\r\n' +
+    file_content + b'\r\n' +
+    b'--' + BOUNDARY.encode('utf-8') + b'--\r\n'
+)
+
+req = urllib.request.Request(
+    'https://ai-job-assistant-one.vercel.app/api/build-profile',
+    data=body,
+    headers={
+        'Content-Type': 'multipart/form-data; boundary=' + BOUNDARY,
+        'Authorization': 'Bearer secret_admin_token_123_abc_xyz'
+    }
+)
+try:
+    response = urllib.request.urlopen(req)
+    print('Success:', response.read().decode('utf-8'))
+except urllib.error.HTTPError as e:
+    print('HTTPError:', e.code)
+    print(e.read().decode('utf-8'))
