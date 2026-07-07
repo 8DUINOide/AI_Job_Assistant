@@ -118,12 +118,12 @@ def build_profile_endpoint():
         full_text = resume_text + "\n" + portfolio_text
         text_lower = full_text.lower()
 
-        # 1. Contact Info Extraction via Regex
-        email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', full_text)
+        # 1. Contact Info Extraction via Regex (tolerant of spaces from PDF parsing)
+        email_match = re.search(r'[a-zA-Z0-9._%+-]+\s*@\s*[a-zA-Z0-9.-]+\s*\.\s*[a-zA-Z]{2,}', full_text)
         phone_match = re.search(r'\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}', full_text)
         linkedin_match = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[\w-]+', full_text)
 
-        email = email_match.group(0) if email_match else ""
+        email = email_match.group(0).replace(' ', '').replace('\n', '') if email_match else ""
         phone = phone_match.group(0) if phone_match else ""
         linkedin_url = linkedin_match.group(0) if linkedin_match else ""
 
@@ -501,6 +501,20 @@ def normalize_profile(p):
             'graduation_year': e.get('graduationYear') or e.get('graduation_year', ''),
             'gpa': e.get('gpa', '')
         })
+        
+    projs = p.get('projects', [])
+    norm['projects'] = []
+    for proj in projs:
+        norm['projects'].append({
+            'title': proj.get('title', ''),
+            'role': proj.get('role', ''),
+            'dates': proj.get('dates', ''),
+            'description': proj.get('description', ''),
+            'link': proj.get('link', '')
+        })
+        
+    norm['certifications'] = p.get('certifications', [])
+    norm['awards'] = p.get('awards', [])
         
     return norm
 
