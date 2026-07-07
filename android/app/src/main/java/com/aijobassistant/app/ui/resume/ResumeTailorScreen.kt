@@ -29,17 +29,17 @@ fun ResumeTailorScreen(
     missingKeywords: List<String>,
     isAnalyzing: Boolean,
     isGenerating: Boolean,
-    tailoredData: Map<String, Any>?,
+    tailoredData: Map<String, Any?>?,
     coverLetterText: String?,
     initialJobDescription: String,
     onAnalyze: (String) -> Unit,
-    onGenerateResumePdf: (Map<String, Any>) -> Unit,
+    onGenerateResumePdf: (Map<String, Any?>) -> Unit,
     onGenerateCoverLetterPdf: (String) -> Unit,
     onAddKeyword: (String) -> Unit
 ) {
     var jobDescription by remember { mutableStateOf(initialJobDescription) }
     var activeTab by remember { mutableStateOf(0) }
-    var editableData by remember { mutableStateOf<Map<String, Any>?>(null) }
+    var editableData by remember { mutableStateOf<Map<String, Any?>?>(null) }
     var editableCoverLetter by remember { mutableStateOf(coverLetterText ?: "") }
 
     // Update editableData when tailoredData changes from API
@@ -94,7 +94,7 @@ fun ResumeTailorScreen(
                     placeholder = { Text("Paste the job description here...") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryBlue,
-                        unfocusedBorderColor = BorderLight,
+                        unfocusedBorderColor = BorderColor,
                         focusedContainerColor = SurfaceElevated.copy(alpha = 0.5f),
                         unfocusedContainerColor = SurfaceElevated.copy(alpha = 0.3f),
                     ),
@@ -119,37 +119,35 @@ fun ResumeTailorScreen(
                 }
             } else if (editableData != null) {
                 // Step 2: Edit Tailored Data
-                CustomTabRow(
-                    tabs = listOf("Resume Form", "Cover Letter", "Analysis"),
+                TabRow(
                     selectedTabIndex = activeTab,
-                    onTabSelected = { activeTab = it },
                     modifier = Modifier.padding(bottom = 16.dp)
-                )
+                ) {
+                    listOf("Resume Form", "Cover Letter", "Analysis").forEachIndexed { index, title ->
+                        Tab(
+                            selected = activeTab == index,
+                            onClick = { activeTab = index },
+                            text = { Text(title) }
+                        )
+                    }
+                }
 
                 Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                     if (activeTab == 0) {
                         // Editable Resume Form
-                        Text("Personal Info", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        val pInfo = (editableData?.get("personal_info") as? Map<String, String>) ?: emptyMap()
+                        val currentProfile = remember(editableData) {
+                            com.aijobassistant.app.model.UserProfile.fromMap(editableData ?: emptyMap())
+                        }
                         
-                        var name by remember { mutableStateOf(pInfo["name"] ?: "") }
-                        var email by remember { mutableStateOf(pInfo["email"] ?: "") }
-                        var phone by remember { mutableStateOf(pInfo["phone"] ?: "") }
-                        var link by remember { mutableStateOf(pInfo["link"] ?: "") }
-
-                        OutlinedTextField(value = name, onValueChange = { name = it; editableData = updateMap(editableData, "personal_info", "name", it) }, label = { Text("Name") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = email, onValueChange = { email = it; editableData = updateMap(editableData, "personal_info", "email", it) }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = phone, onValueChange = { phone = it; editableData = updateMap(editableData, "personal_info", "phone", it) }, label = { Text("Phone") }, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = link, onValueChange = { link = it; editableData = updateMap(editableData, "personal_info", "link", it) }, label = { Text("Link") }, modifier = Modifier.fillMaxWidth())
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Summary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        var summary by remember { mutableStateOf((editableData?.get("summary") as? String) ?: "") }
-                        OutlinedTextField(value = summary, onValueChange = { summary = it; editableData = updateTopLevel(editableData, "summary", it) }, modifier = Modifier.fillMaxWidth().height(120.dp))
+                        Text("Edit Tailored Resume", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                         
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Sections (Experience, Edu, etc.)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("We recommend making major edits in the master profile.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        com.aijobassistant.app.ui.resume.ResumeEditorForm(
+                            profile = currentProfile,
+                            onProfileChange = { newProfile -> 
+                                editableData = newProfile.toMap()
+                            },
+                            modifier = Modifier.fillMaxWidth().height(400.dp)
+                        )
                         
                         Spacer(modifier = Modifier.height(24.dp))
                         GradientButton(
@@ -178,7 +176,7 @@ fun ResumeTailorScreen(
                         // Analysis
                         matchRate?.let {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(progress = { it / 100f }, color = PrimaryBlue, modifier = Modifier.size(48.dp))
+                                CircularProgressIndicator(progress = it / 100f, color = PrimaryBlue, modifier = Modifier.size(48.dp))
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Text("Match Rate: $it%", style = MaterialTheme.typography.titleLarge)
                             }

@@ -20,7 +20,7 @@ data class ResumeTailorState(
     val matchRate: Int? = null,
     val keywordsToInclude: List<String> = emptyList(),
     val missingKeywords: List<String> = emptyList(),
-    val tailoredData: Map<String, Any>? = null,
+    val tailoredData: Map<String, Any?>? = null,
     val coverLetterText: String? = null,
     val isAnalyzing: Boolean = false,
     val isGenerating: Boolean = false,
@@ -36,18 +36,18 @@ class ResumeTailorViewModel : ViewModel() {
     fun analyzeResume(jobDescription: String, uid: String) {
         viewModelScope.launch {
             _state.update { it.copy(isAnalyzing = true, error = null) }
-            val result = repository.analyzeResume(jobDescription)
+            val result = repository.analyzeJobDescription(jobDescription)
             if (result.isSuccess) {
                 val data = result.getOrNull()
                 if (data != null) {
                     _state.update {
                         it.copy(
                             isAnalyzing = false,
-                            matchRate = (data["match_rate"] as? Number)?.toInt(),
-                            keywordsToInclude = (data["keywords_to_include"] as? List<*>)?.map { k -> k.toString() } ?: emptyList(),
-                            missingKeywords = (data["missing_keywords"] as? List<*>)?.map { k -> k.toString() } ?: emptyList(),
-                            tailoredData = data["tailored_data"] as? Map<String, Any>,
-                            coverLetterText = data["cover_letter_text"] as? String
+                            matchRate = (data["matchRate"] as? Number)?.toInt(),
+                            keywordsToInclude = (data["keywordsToInclude"] as? List<*>)?.map { k -> k.toString() } ?: emptyList(),
+                            missingKeywords = (data["missingKeywords"] as? List<*>)?.map { k -> k.toString() } ?: emptyList(),
+                            tailoredData = data["tailoredData"] as? Map<String, Any?>,
+                            coverLetterText = data["coverLetterText"] as? String
                         )
                     }
                 }
@@ -59,12 +59,12 @@ class ResumeTailorViewModel : ViewModel() {
         }
     }
 
-    fun generateResumePdf(context: Context, tailoredData: Map<String, Any>, userName: String) {
+    fun generateResumePdf(context: Context, tailoredData: Map<String, Any?>, userName: String) {
         viewModelScope.launch {
             _state.update { it.copy(isGenerating = true) }
-            val result = repository.generatePdf(tailoredData)
+            val result = repository.generateResumePdf(tailoredData)
             if (result.isSuccess) {
-                val bytes = result.getOrNull()
+                val bytes = result.getOrNull()?.bytes()
                 if (bytes != null) {
                     openPdf(context, bytes, "${userName}_Tailored_Resume.pdf")
                 }
@@ -80,7 +80,7 @@ class ResumeTailorViewModel : ViewModel() {
             _state.update { it.copy(isGenerating = true) }
             val result = repository.generateCoverLetterPdf(text)
             if (result.isSuccess) {
-                val bytes = result.getOrNull()
+                val bytes = result.getOrNull()?.bytes()
                 if (bytes != null) {
                     openPdf(context, bytes, "${userName}_Cover_Letter.pdf")
                 }

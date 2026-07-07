@@ -38,6 +38,7 @@ sealed class Screen(val route: String) {
     data object Resume : Screen("resume")
     data object Tracker : Screen("tracker")
     data object Profile : Screen("profile")
+    data object ResumeEditor : Screen("resume_editor")
 }
 
 /**
@@ -190,13 +191,30 @@ fun AppNavigation(
                 OnboardingScreen(
                     onComplete = { uri, url, roles ->
                         onCompleteOnboarding(uri, url, roles) {
-                            navController.navigate(Screen.Home.route) {
+                            navController.navigate(Screen.ResumeEditor.route) {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
                     },
                     isLoading = isAuthLoading,
                     errorMessage = authError
+                )
+            }
+
+            composable(Screen.ResumeEditor.route) {
+                val viewModel: com.aijobassistant.app.ui.resume.ResumeEditorViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                com.aijobassistant.app.ui.resume.ResumeEditorScreen(
+                    viewModel = viewModel,
+                    isTailored = false,
+                    onNavigateBack = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        } else {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
                 )
             }
 
@@ -466,27 +484,13 @@ fun AppNavigation(
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     profile = profile,
-                    onUpdateDesiredRoles = { newRoles ->
-                        onUpdateProfile(
-                            profile.copy(
-                                jobPreferences = profile.jobPreferences.copy(desiredRoles = newRoles)
-                            )
-                        )
+                    onUpdateDesiredRoles = { roles ->
+                        val updatedProfile = profile.copy(jobPreferences = profile.jobPreferences.copy(desiredRoles = roles))
+                        onUpdateProfile(updatedProfile)
                     },
-                    onSignOut = {
-                        onSignOut()
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    },
+                    onSignOut = onSignOut,
                     onRebuildProfile = {
                         navController.navigate(Screen.Onboarding.route) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onDeleteAccount = {
-                        onDeleteAccount()
-                        navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
                     }

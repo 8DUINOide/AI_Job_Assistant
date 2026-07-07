@@ -64,8 +64,29 @@ def extract_keywords(job_description, profile_skills):
 
 def get_tailored_profile_data(master_profile, job_description):
     """Uses NLP matching to tailor the master profile to the job description."""
-    jd_lower = job_description.lower()
+    import copy
+    import re
+    tailored = copy.deepcopy(master_profile)
     
+    jd_lower = job_description.lower()
+    all_skills = tailored.get("skills", [])
+    matched_skills = []
+    other_skills = []
+    
+    for skill in all_skills:
+        skill_lower = skill.lower()
+        if re.search(r'\b' + re.escape(skill_lower) + r'\b', jd_lower):
+            matched_skills.append(skill)
+        else:
+            other_skills.append(skill)
+            
+    final_skills = matched_skills + other_skills
+    tailored["skills"] = final_skills
+    
+    return tailored
+
+def convert_profile_to_pdf_data(master_profile):
+    """Converts a standard UserProfile dict into the structure required by generate_pdf_from_data."""
     # 1. Map personal info
     p_info = master_profile.get("personal_info", {})
     first_name = p_info.get("first_name", "")
@@ -167,21 +188,7 @@ def get_tailored_profile_data(master_profile, job_description):
         })
 
     # 5. Certifications, Awards, and Skills
-    all_skills = master_profile.get("skills", [])
-    matched_skills = []
-    other_skills = []
-    
-    for skill in all_skills:
-        # Check if skill exists as a whole word in JD
-        skill_lower = skill.lower()
-        if re.search(r'\b' + re.escape(skill_lower) + r'\b', jd_lower):
-            matched_skills.append(skill)
-        else:
-            other_skills.append(skill)
-            
-    # Combine matched skills first, then pad with other skills up to a reasonable amount (e.g. 15 skills)
-    final_skills = matched_skills + other_skills
-    final_skills = final_skills[:15] # Don't overwhelm the resume
+    final_skills = master_profile.get("skills", [])[:15] # Don't overwhelm the resume
     
     certs = master_profile.get("certifications", [])
     awards = master_profile.get("awards", [])
@@ -317,9 +324,9 @@ def generate_pdf_from_data(data):
     # Render Name
     story.append(Paragraph(name.upper(), name_style))
     
-    # Render Contact Info separated by pipe
+    # Render Contact Info separated by diamond (&#9830;) or bullet
     contact_parts = [p for p in [email, phone, location, link] if p]
-    contact_str = " &nbsp;|&nbsp; ".join(contact_parts)
+    contact_str = " &nbsp;&#9830;&nbsp; ".join(contact_parts)
     story.append(Paragraph(contact_str, contact_style))
     
     # Horizontal line

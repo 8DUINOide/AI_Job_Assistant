@@ -400,12 +400,12 @@ private fun PendingJobCard(
 ) {
     val searchStr = (application.location + " " + application.jobTitle).lowercase()
     val flagCode = when {
+        "\\\\b(philippines|manila|makati|taguig|quezon|pasig|alabang|bicol|mandaluyong|ortigas|cebu|ncr|muntinlupa|marikina|general trias|cavite|laguna|batangas|rizal|bulacan|pampanga|caloocan|valenzuela|navotas|malabon|san juan|pateros|paranaque|las pinas|antipolo)\\\\b".toRegex().containsMatchIn(searchStr) -> "ph"
         searchStr.contains("remote") || searchStr.contains("latam") || searchStr.contains("worldwide") -> "un"
         searchStr.contains("canada") || searchStr.contains("toronto") || searchStr.contains("vancouver") -> "ca"
         searchStr.contains("united kingdom") || "\\buk\\b".toRegex().containsMatchIn(searchStr) || searchStr.contains("london") -> "gb"
-        searchStr.contains("united states") || searchStr.contains("usa") || "\\b(us|ny|ca|tx|wa|fl|il|opt)\\b".toRegex().containsMatchIn(searchStr) -> "us"
+        searchStr.contains("united states") || "\\busa?\\b".toRegex().containsMatchIn(searchStr) || "\\b(ny|ca|tx|wa|fl|il|opt)\\b".toRegex().containsMatchIn(searchStr) -> "us"
         searchStr.contains("australia") || searchStr.contains("sydney") || searchStr.contains("melbourne") -> "au"
-        searchStr.contains("philippines") || searchStr.contains("manila") -> "ph"
         searchStr.contains("india") || searchStr.contains("bangalore") || searchStr.contains("mumbai") -> "in"
         searchStr.contains("germany") || searchStr.contains("berlin") -> "de"
         else -> ""
@@ -420,7 +420,8 @@ private fun PendingJobCard(
 
     Card(
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0x0DFFFFFF)),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
         modifier = Modifier.padding(bottom = 12.dp)
     ) {
         Box(
@@ -488,7 +489,7 @@ private fun PendingJobCard(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Date: ${application.dateApplied}",
+                            text = application.dateApplied,
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             color = TextMuted
                         )
@@ -547,7 +548,8 @@ private fun PendingJobCard(
 private fun RecentApplicationRow(application: Application) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBackgroundTranslucent)
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
     ) {
         Row(
             modifier = Modifier

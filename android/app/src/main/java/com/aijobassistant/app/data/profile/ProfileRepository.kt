@@ -125,7 +125,7 @@ class ProfileRepository {
                                 personalInfo = userProfile.personalInfo.copy(
                                     firstName = userProfile.personalInfo.firstName.ifBlank { authFirstName },
                                     lastName = userProfile.personalInfo.lastName.ifBlank { authLastName },
-                                    email = userProfile.personalInfo.email.ifBlank { authEmail }
+                                    email = userProfile.personalInfo.email // Don't use login email as fallback
                                 ),
                                 isFromResume = true
                             )

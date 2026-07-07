@@ -595,7 +595,10 @@
                             let locFlag = '';
                             const searchStr = ((log.location || '') + ' ' + (log.job_title || '')).toLowerCase();
                             
-                            if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) {
+                            if (searchStr.match(/\\b(philippines|manila|makati|taguig|quezon|pasig|alabang|bicol|mandaluyong|ortigas|cebu|ncr|muntinlupa|marikina|general trias|cavite|laguna|batangas|rizal|bulacan|pampanga|caloocan|valenzuela|navotas|malabon|san juan|pateros|paranaque|las pinas|antipolo)\\b/)) {
+                                locFlag = getFlagImg('ph', 'Philippines');
+                            }
+                            else if (searchStr.includes('remote') || searchStr.includes('latam') || searchStr.includes('worldwide')) {
                                 locFlag = getFlagImg('un', 'Remote/Global');
                             }
                             else if (searchStr.includes('canada') || searchStr.includes('toronto') || searchStr.includes('vancouver')) {
@@ -604,14 +607,11 @@
                             else if (searchStr.includes('united kingdom') || searchStr.match(/\buk\b/) || searchStr.includes('london')) {
                                 locFlag = getFlagImg('gb', 'UK');
                             }
-                            else if (searchStr.includes('united states') || searchStr.includes('usa') || searchStr.match(/\b(us|ny|ca|tx|wa|fl|il|opt)\b/)) {
+                            else if (searchStr.includes('united states') || searchStr.match(/\busa?\b/) || searchStr.match(/\b(ny|ca|tx|wa|fl|il|opt)\b/)) {
                                 locFlag = getFlagImg('us', 'US');
                             }
                             else if (searchStr.includes('australia') || searchStr.includes('sydney') || searchStr.includes('melbourne')) {
                                 locFlag = getFlagImg('au', 'Australia');
-                            }
-                            else if (searchStr.includes('philippines') || searchStr.includes('manila')) {
-                                locFlag = getFlagImg('ph', 'Philippines');
                             }
                             else if (searchStr.includes('india') || searchStr.includes('bangalore') || searchStr.includes('mumbai')) {
                                 locFlag = getFlagImg('in', 'India');

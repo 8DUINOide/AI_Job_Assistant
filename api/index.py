@@ -119,7 +119,7 @@ def build_profile_endpoint():
         text_lower = full_text.lower()
 
         # 1. Contact Info Extraction via Regex
-        email_match = re.search(r'[\w\.-]+@[\w\.-]+(?:\.\w+)?', full_text)
+        email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', full_text)
         phone_match = re.search(r'\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}', full_text)
         linkedin_match = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[\w-]+', full_text)
 
@@ -143,26 +143,33 @@ def build_profile_endpoint():
         found_skills = list(set([skill.title() for skill in COMMON_KEYWORDS if skill.lower() in text_lower]))
 
         # 4. Text Segmentation for Experience, Education, Summary
-        sections = {'experience': '', 'education': '', 'summary': ''}
+        sections = {'experience': '', 'education': '', 'summary': '', 'certifications': '', 'projects': '', 'skills': ''}
         current_section = None
         
         for line in resume_text.split('\n'):
-            line_clean = line.strip().upper()
+            line_clean = line.strip().upper().replace(":", "")
             if not line_clean:
                 continue
                 
-            if any(h == line_clean or line_clean.startswith(h) for h in ['WORK EXPERIENCE', 'EXPERIENCE', 'EMPLOYMENT HISTORY', 'WORK HISTORY', 'PROFESSIONAL EXPERIENCE']):
-                current_section = 'experience'
-                continue
-            elif any(h == line_clean or line_clean.startswith(h) for h in ['EDUCATION', 'ACADEMIC BACKGROUND', 'ACADEMICS']):
-                current_section = 'education'
-                continue
-            elif any(h == line_clean or line_clean.startswith(h) for h in ['SUMMARY', 'PROFILE', 'ABOUT ME', 'PROFESSIONAL SUMMARY']):
-                current_section = 'summary'
-                continue
-            elif any(h == line_clean or line_clean.startswith(h) for h in ['SKILLS', 'TECHNOLOGIES', 'PROJECTS', 'CERTIFICATIONS']):
-                current_section = 'other'
-                continue
+            if len(line_clean) < 40 and not line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')):
+                if any(h in line_clean for h in ['EXPERIENCE', 'EMPLOYMENT', 'WORK HISTORY', 'ACTIVITIES', 'INVOLVEMENT', 'LEADERSHIP']):
+                    current_section = 'experience'
+                    continue
+                elif any(h in line_clean for h in ['EDUCATION', 'ACADEMIC']):
+                    current_section = 'education'
+                    continue
+                elif any(h in line_clean for h in ['SUMMARY', 'PROFILE', 'ABOUT ME']):
+                    current_section = 'summary'
+                    continue
+                elif any(h in line_clean for h in ['CERTIFICAT', 'LICENSES', 'AWARD', 'COURSE']):
+                    current_section = 'certifications'
+                    continue
+                elif any(h in line_clean for h in ['PROJECT', 'PORTFOLIO']):
+                    current_section = 'projects'
+                    continue
+                elif any(h in line_clean for h in ['SKILL', 'TECHNOLOGIES', 'EXPERTISE', 'ADDITIONAL']):
+                    current_section = 'skills'
+                    continue
                 
             if current_section and current_section in sections:
                 sections[current_section] += line.strip() + "\n"
@@ -170,35 +177,232 @@ def build_profile_endpoint():
         # Build Experience Array
         experiences = []
         if sections['experience'].strip():
-            # Split by dates roughly or just chunk it
             exp_lines = [l for l in sections['experience'].split('\n') if l.strip()]
-            chunk_size = 5
-            for i in range(0, len(exp_lines), chunk_size):
-                chunk = exp_lines[i:i+chunk_size]
-                title = chunk[0] if chunk else "Experience"
-                desc = "\n".join(chunk[1:]) if len(chunk) > 1 else title
+            
+            import re
+            date_regex = re.compile(r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{4}|\b\d{4}\b).*?(?:-|to|–).*?(Present|Current|\b\d{4}\b|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{4})', re.IGNORECASE)
+            
+            date_indices = []
+            for idx, line in enumerate(exp_lines):
+                if date_regex.search(line):
+                    date_indices.append(idx)
+                    
+            for i, d_idx in enumerate(date_indices):
+                if i == 0:
+                    start_header = 0
+                else:
+                    prev_d_idx = date_indices[i-1]
+                    start_header = d_idx
+                    for _ in range(2):
+                        if start_header > prev_d_idx + 1:
+                            prev_line = exp_lines[start_header - 1]
+                            if prev_line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')) or len(prev_line) > 80:
+                                break
+                            start_header -= 1
+                    
+                    desc_lines = exp_lines[prev_d_idx+1 : start_header]
+                    if experiences:
+                        experiences[-1]['description'] = "\n".join(desc_lines)
+                        
+                header_lines = exp_lines[start_header : d_idx]
+                date_line = exp_lines[d_idx]
+                date_match = date_regex.search(date_line)
+                start_date = date_match.group(1).strip() if date_match.group(1) else ""
+                end_date = date_match.group(2).strip() if date_match.group(2) else ""
+                
+                date_text_before = date_line[:date_match.start()].strip()
+                if date_text_before:
+                    header_lines.append(date_text_before)
+                
+                company = header_lines[0] if len(header_lines) > 0 else "Unknown Company"
+                title = header_lines[1] if len(header_lines) > 1 else company
+                if len(header_lines) == 1:
+                    if " at " in company.lower():
+                        parts = re.split(r'\s+at\s+', company, flags=re.IGNORECASE)
+                        title, company = parts[0], parts[1]
+                    elif "," in company:
+                        title, company = company.split(",", 1)
+                
                 experiences.append({
-                    "title": title[:100],
-                    "company": "See Description",
-                    "start_date": "",
-                    "end_date": "",
-                    "description": desc,
+                    "title": title.strip()[:100],
+                    "company": company.strip()[:100],
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "description": "",
                     "skills_used": found_skills[:5]
                 })
+
+            if date_indices and experiences:
+                last_d_idx = date_indices[-1]
+                desc_lines = exp_lines[last_d_idx+1:]
+                experiences[-1]['description'] = "\n".join(desc_lines)
+                
+            if not experiences:
+                # Fallback if no dates found
+                chunk_size = 5
+                for i in range(0, len(exp_lines), chunk_size):
+                    chunk = exp_lines[i:i+chunk_size]
+                    title = chunk[0] if chunk else "Experience"
+                    desc = "\n".join(chunk[1:]) if len(chunk) > 1 else title
+                    experiences.append({
+                        "title": title[:100],
+                        "company": "See Description",
+                        "start_date": "",
+                        "end_date": "",
+                        "description": desc,
+                        "skills_used": found_skills[:5]
+                    })
 
         # Build Education Array
         educations = []
         if sections['education'].strip():
-            edu_text = sections['education'].strip()
-            educations.append({
-                "degree": edu_text[:100].replace('\n', ' - '),
-                "university": edu_text[100:200].replace('\n', ' ') if len(edu_text) > 100 else "",
-                "graduation_year": ""
-            })
+            edu_lines = [l for l in sections['education'].split('\n') if l.strip()]
+            import re
+            year_regex = re.compile(r'\b(19|20)\d{2}\b')
+            
+            blocks = []
+            current_block = []
+            for line in edu_lines:
+                line_lower = line.lower()
+                if any(kw in line_lower for kw in ['university', 'college', 'institute', 'polytechnic']):
+                    if len(current_block) >= 2:
+                        blocks.append(current_block)
+                        current_block = []
+                current_block.append(line)
+            if current_block:
+                blocks.append(current_block)
+                
+            for block in blocks:
+                current_uni_parts = []
+                current_degree_parts = []
+                current_year = ""
+                
+                for line in block:
+                    year_match = year_regex.search(line)
+                    if year_match and not current_year:
+                        current_year = year_match.group(0)
+                        
+                    line_lower = line.lower()
+                    if any(kw in line_lower for kw in ['university', 'college', 'institute', 'school', 'academy', 'polytechnic']):
+                        current_uni_parts.append(line)
+                    elif any(kw in line_lower for kw in ['degree', 'bachelor', 'master', 'phd', 'bs ', 'ba ', 'ms ', 'b.s.', 'm.s.', 'major', 'minor', 'gwa', 'gpa', 'laude']):
+                        current_degree_parts.append(line)
+                    else:
+                        if current_uni_parts and not current_degree_parts:
+                            current_degree_parts.append(line)
+                        elif not current_uni_parts:
+                            current_uni_parts.append(line)
+                        else:
+                            current_degree_parts.append(line)
+                
+                if not current_uni_parts and not current_degree_parts:
+                    if len(block) > 0:
+                        current_uni_parts = [block[0]]
+                    if len(block) > 1:
+                        current_degree_parts = block[1:]
+                elif not current_uni_parts and current_degree_parts:
+                    if len(current_degree_parts) > 1:
+                        current_uni_parts = [current_degree_parts.pop(0)]
+                elif not current_degree_parts and current_uni_parts:
+                    if len(current_uni_parts) > 1:
+                        current_degree_parts = current_uni_parts[1:]
+                        current_uni_parts = [current_uni_parts[0]]
+
+                university = " - ".join(current_uni_parts)
+                degree = " - ".join(current_degree_parts)
+                
+                if not university and degree:
+                    university = degree
+                    degree = ""
+
+                educations.append({
+                    "university": university.strip()[:150],
+                    "degree": degree.strip()[:300],
+                    "graduation_year": current_year
+                })
 
         summary = sections['summary'].strip()
         if not summary:
             summary = f"Professional with expertise in {', '.join(found_skills[:5])}."
+            
+        certifications = [l.strip() for l in sections['certifications'].split('\n') if l.strip()]
+        if not certifications:
+            import re
+            cert_match = re.search(r'(?i)(?:Certifications|Certificates|Licenses)\s*[:\-]?\s*(.+)', full_text)
+            if cert_match:
+                cert_text = cert_match.group(1)
+                cert_text = re.split(r'[\·\|]|Languages:', cert_text)[0].strip()
+                certifications = [c.strip() for c in re.split(r'[,;]', cert_text) if c.strip()]
+
+        projects = []
+        if sections.get('projects', '').strip():
+            proj_lines = [l for l in sections['projects'].split('\n') if l.strip()]
+            import re
+            date_regex_proj = re.compile(r'\b(19|20)\d{2}\b')
+            
+            date_indices = []
+            for idx, line in enumerate(proj_lines):
+                if date_regex_proj.search(line) and not line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')):
+                    date_indices.append(idx)
+                    
+            if len(date_indices) > 0:
+                for i, d_idx in enumerate(date_indices):
+                    if i == 0:
+                        start_header = 0
+                    else:
+                        prev_d_idx = date_indices[i-1]
+                        start_header = d_idx
+                        for _ in range(2):
+                            if start_header > prev_d_idx + 1:
+                                prev_line = proj_lines[start_header - 1]
+                                if prev_line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')) or len(prev_line) > 80:
+                                    break
+                                start_header -= 1
+                        
+                        desc_lines = proj_lines[prev_d_idx+1 : start_header]
+                        if projects:
+                            projects[-1]['description'] = "\n".join(desc_lines)
+                    
+                    date_line = proj_lines[d_idx]
+                    date_match = date_regex_proj.search(date_line)
+                    start_date = date_match.group(0).strip() if date_match else ""
+                    end_date = ""
+                    
+                    header_lines = proj_lines[start_header : d_idx]
+                    date_text_before = date_line[:date_match.start()].strip() if date_match else ""
+                    if date_text_before:
+                        header_lines.append(date_text_before)
+                        
+                    title = header_lines[0] if len(header_lines) > 0 else "Unknown Project"
+                    if len(header_lines) > 1:
+                        title = " - ".join(header_lines)
+                        
+                    projects.append({
+                        "title": title.strip()[:100],
+                        "dates": start_date,
+                        "role": "",
+                        "link": "",
+                        "description": ""
+                    })
+
+                if date_indices and projects:
+                    last_d_idx = date_indices[-1]
+                    desc_lines = proj_lines[last_d_idx+1:]
+                    projects[-1]['description'] = "\n".join(desc_lines)
+            else:
+                current_proj = []
+                for line in proj_lines:
+                    if not line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')) and any(l.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')) for l in current_proj):
+                        if current_proj:
+                            title = current_proj[0]
+                            desc = "\n".join(current_proj[1:]) if len(current_proj) > 1 else title
+                            projects.append({"title": title[:100], "dates": "", "role": "", "link": "", "description": desc})
+                            current_proj = []
+                    current_proj.append(line)
+                if current_proj:
+                    title = current_proj[0]
+                    desc = "\n".join(current_proj[1:]) if len(current_proj) > 1 else title
+                    projects.append({"title": title[:100], "dates": "", "role": "", "link": "", "description": desc})
 
         profile_data = {
             "personal_info": {
@@ -216,10 +420,12 @@ def build_profile_endpoint():
                 "locations": ["Remote"],
                 "salary_expectation": ""
             },
-            "summary": "Profile automatically extracted from uploaded resume.",
-            "experience": [],
-            "education": [],
-            "skills": found_skills
+            "summary": summary if summary else "Profile automatically extracted from uploaded resume.",
+            "experience": experiences,
+            "education": educations,
+            "skills": found_skills,
+            "certifications": certifications,
+            "projects": projects
         }
         
         # Also save to master_profile.json for the web dashboard
@@ -698,7 +904,9 @@ def generate_pdf():
         if not tailored_data:
             return jsonify({"success": False, "error": "Tailored data is required"}), 400
             
-        pdf_buffer = generate_pdf_from_data(tailored_data)
+        from resume_generator import convert_profile_to_pdf_data
+        pdf_data = convert_profile_to_pdf_data(tailored_data)
+        pdf_buffer = generate_pdf_from_data(pdf_data)
         
         return send_file(
             pdf_buffer,

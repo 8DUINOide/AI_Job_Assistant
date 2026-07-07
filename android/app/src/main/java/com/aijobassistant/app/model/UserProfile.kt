@@ -32,19 +32,22 @@ data class UserProfile(
 
     companion object {
         /** Create from Firestore document snapshot */
-        @Suppress("UNCHECKED_CAST")
         fun fromMap(map: Map<String, Any?>): UserProfile {
             return UserProfile(
-                personalInfo = PersonalInfo.fromMap(map["personalInfo"] as? Map<String, Any?> ?: emptyMap()),
-                jobPreferences = JobPreferences.fromMap(map["jobPreferences"] as? Map<String, Any?> ?: emptyMap()),
+                personalInfo = PersonalInfo.fromMap(
+                    (map["personalInfo"] as? Map<String, Any?>) ?: (map["personal_info"] as? Map<String, Any?>) ?: emptyMap()
+                ),
+                jobPreferences = JobPreferences.fromMap(
+                    (map["jobPreferences"] as? Map<String, Any?>) ?: (map["job_preferences"] as? Map<String, Any?>) ?: emptyMap()
+                ),
                 summary = map["summary"] as? String ?: "",
-                experience = (map["experience"] as? List<Map<String, Any?>>)?.map { Experience.fromMap(it) } ?: emptyList(),
-                education = (map["education"] as? List<Map<String, Any?>>)?.map { Education.fromMap(it) } ?: emptyList(),
-                projects = (map["projects"] as? List<Map<String, Any?>>)?.map { Project.fromMap(it) } ?: emptyList(),
-                skills = (map["skills"] as? List<String>) ?: emptyList(),
-                certifications = (map["certifications"] as? List<String>) ?: emptyList(),
-                awards = (map["awards"] as? List<String>) ?: emptyList(),
-                isFromResume = map["isFromResume"] as? Boolean ?: false
+                experience = (map["experience"] as? List<*>)?.mapNotNull { @Suppress("UNCHECKED_CAST") (it as? Map<String, Any?>) }?.map { Experience.fromMap(it) } ?: emptyList(),
+                education = (map["education"] as? List<*>)?.mapNotNull { @Suppress("UNCHECKED_CAST") (it as? Map<String, Any?>) }?.map { Education.fromMap(it) } ?: emptyList(),
+                projects = (map["projects"] as? List<*>)?.mapNotNull { @Suppress("UNCHECKED_CAST") (it as? Map<String, Any?>) }?.map { Project.fromMap(it) } ?: emptyList(),
+                skills = (map["skills"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                certifications = (map["certifications"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                awards = (map["awards"] as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                isFromResume = map["isFromResume"] as? Boolean ?: map["is_from_resume"] as? Boolean ?: false
             )
         }
     }
@@ -98,11 +101,10 @@ data class JobPreferences(
     )
 
     companion object {
-        @Suppress("UNCHECKED_CAST")
         fun fromMap(map: Map<String, Any?>): JobPreferences = JobPreferences(
-            desiredRoles = (map["desiredRoles"] as? List<String>) ?: (map["desired_roles"] as? List<String>) ?: emptyList(),
-            workType = (map["workType"] as? List<String>) ?: (map["work_type"] as? List<String>) ?: listOf("Remote"),
-            locations = (map["locations"] as? List<String>) ?: listOf("Remote"),
+            desiredRoles = ((map["desiredRoles"] as? List<*>) ?: (map["desired_roles"] as? List<*>))?.mapNotNull { it as? String } ?: emptyList(),
+            workType = ((map["workType"] as? List<*>) ?: (map["work_type"] as? List<*>))?.mapNotNull { it as? String } ?: listOf("Remote"),
+            locations = (map["locations"] as? List<*>)?.mapNotNull { it as? String } ?: listOf("Remote"),
             salaryExpectation = map["salaryExpectation"] as? String ?: map["salary_expectation"] as? String ?: ""
         )
     }
@@ -136,7 +138,7 @@ data class Experience(
             startDate = map["startDate"] as? String ?: map["start_date"] as? String ?: "",
             endDate = map["endDate"] as? String ?: map["end_date"] as? String ?: "",
             description = map["description"] as? String ?: "",
-            skillsUsed = (map["skillsUsed"] as? List<String>) ?: (map["skills_used"] as? List<String>) ?: emptyList()
+            skillsUsed = ((map["skillsUsed"] as? List<*>) ?: (map["skills_used"] as? List<*>))?.mapNotNull { it as? String } ?: emptyList()
         )
     }
 }
@@ -163,12 +165,14 @@ data class Education(
 
 data class Project(
     val title: String = "",
+    val dates: String = "",
     val role: String = "",
     val link: String = "",
     val description: String = ""
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "title" to title,
+        "dates" to dates,
         "role" to role,
         "link" to link,
         "description" to description
@@ -177,6 +181,7 @@ data class Project(
     companion object {
         fun fromMap(map: Map<String, Any?>): Project = Project(
             title = map["title"] as? String ?: "",
+            dates = map["dates"] as? String ?: "",
             role = map["role"] as? String ?: "",
             link = map["link"] as? String ?: "",
             description = map["description"] as? String ?: ""

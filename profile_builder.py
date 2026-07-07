@@ -95,7 +95,18 @@ def build_master_profile(resume_text, portfolio_text):
           "graduation_year": "..."
         }}
       ],
-      "skills": ["Skill 1", "Skill 2"]
+      "projects": [
+        {{
+          "title": "...",
+          "dates": "...",
+          "role": "...",
+          "link": "...",
+          "description": "..."
+        }}
+      ],
+      "skills": ["Skill 1", "Skill 2"],
+      "certifications": ["Cert 1", "Cert 2"],
+      "awards": ["Award 1", "Award 2"]
     }}
     """
     
@@ -113,10 +124,12 @@ def build_master_profile(resume_text, portfolio_text):
             
         profile_data = json.loads(response_text)
         
-        with open('master_profile.json', 'w') as f:
-            json.dump(profile_data, f, indent=2)
-            
-        print("Successfully generated and saved 'master_profile.json'!")
+        try:
+            with open('master_profile.json', 'w') as f:
+                json.dump(profile_data, f, indent=2)
+            print("Successfully generated and saved 'master_profile.json'!")
+        except Exception as file_err:
+            print("Could not save to file (read-only system):", file_err)
         print("Determined desired roles:", profile_data['job_preferences']['desired_roles'])
         
         return profile_data

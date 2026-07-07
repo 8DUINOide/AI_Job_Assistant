@@ -212,4 +212,16 @@ class JobsRepository {
             Result.failure(e)
         }
     }
+
+    /**
+     * Generate a Cover Letter PDF using Vercel API.
+     */
+    suspend fun generateCoverLetterPdf(text: String): Result<okhttp3.ResponseBody> {
+        return try {
+            val responseBody = api.generateCoverLetterPdf(com.aijobassistant.app.data.network.GenerateCoverLetterPdfRequest(cover_letter_text = text))
+            Result.success(responseBody)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
