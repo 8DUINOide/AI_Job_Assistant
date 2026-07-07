@@ -398,6 +398,7 @@ private fun PendingJobCard(
     onReject: () -> Unit,
     onDeny: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val searchStr = (application.location + " " + application.jobTitle).lowercase()
     val flagCode = when {
         "\\\\b(philippines|manila|makati|taguig|quezon|pasig|alabang|bicol|mandaluyong|ortigas|cebu|ncr|muntinlupa|marikina|general trias|cavite|laguna|batangas|rizal|bulacan|pampanga|caloocan|valenzuela|navotas|malabon|san juan|pateros|paranaque|las pinas|antipolo)\\\\b".toRegex().containsMatchIn(searchStr) -> "ph"
@@ -507,7 +508,16 @@ private fun PendingJobCard(
                                 text = "View Job",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = Color(0xFF3B82F6),
-                                modifier = Modifier.clickable { /* Handle link */ }
+                                modifier = Modifier.clickable {
+                                    if (sourceUrl.isNotEmpty()) {
+                                        try {
+                                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(sourceUrl))
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
