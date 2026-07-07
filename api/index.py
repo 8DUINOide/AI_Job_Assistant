@@ -132,10 +132,12 @@ def build_profile_endpoint():
                 portfolio_text = ""
         
         # --- Robust Gemini Parser ---
-        profile_data = build_master_profile(resume_text, portfolio_text)
-        
-        if not profile_data:
-            return jsonify({"success": False, "error": "Failed to extract profile using Gemini. Check API keys."}), 500
+        try:
+            profile_data = build_master_profile(resume_text, portfolio_text)
+            if not profile_data:
+                return jsonify({"success": False, "error": "Gemini returned None. Check API keys."}), 500
+        except Exception as gemini_err:
+            return jsonify({"success": False, "error": f"Gemini Error: {str(gemini_err)}"}), 500
         
         # Also save to master_profile.json for the web dashboard
         try:
