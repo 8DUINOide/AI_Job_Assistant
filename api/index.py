@@ -162,7 +162,7 @@ def build_profile_endpoint():
                 continue
                 
             if len(line_clean) < 40 and not line.strip().startswith(('-', '•', '●', '*', '▪', '»', '➢', '')):
-                if any(h in line_clean for h in ['EXPERIENCE', 'EMPLOYMENT', 'WORK HISTORY', 'ACTIVITIES', 'INVOLVEMENT', 'LEADERSHIP']):
+                if any(h in line_clean for h in ['EXPERIENCE', 'EMPLOYMENT', 'WORK HISTORY']):
                     current_section = 'experience'
                     continue
                 elif any(h in line_clean for h in ['EDUCATION', 'ACADEMIC']):
@@ -174,7 +174,7 @@ def build_profile_endpoint():
                 elif any(h in line_clean for h in ['CERTIFICAT', 'LICENSES', 'AWARD', 'COURSE']):
                     current_section = 'certifications'
                     continue
-                elif any(h in line_clean for h in ['PROJECT', 'PORTFOLIO']):
+                elif any(h in line_clean for h in ['PROJECT', 'PORTFOLIO', 'ACTIVITIES', 'INVOLVEMENT', 'LEADERSHIP']):
                     current_section = 'projects'
                     continue
                 elif any(h in line_clean for h in ['SKILL', 'TECHNOLOGIES', 'EXPERTISE', 'ADDITIONAL']):
