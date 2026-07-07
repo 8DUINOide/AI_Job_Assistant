@@ -1,9 +1,20 @@
 -- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:45:9-53:20
+	android:grantUriPermissions
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:49:13-47
+	android:authorities
+		INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:47:13-60
+	android:exported
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:48:13-37
+	android:name
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:46:13-62
 manifest
-ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-47:12
-INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-47:12
-INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-47:12
-INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-47:12
+ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-57:12
+INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-57:12
+INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-57:12
+INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:2:1-57:12
 MERGED from [androidx.navigation:navigation-common:2.8.5] C:\Users\msi36\.gradle\caches\transforms-3\0dfa67bca0ac4e0caefe598add2116c9\transformed\navigation-common-2.8.5\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.8.5] C:\Users\msi36\.gradle\caches\transforms-3\6c90187833f20bdfd21aaa4d5b9d5444\transformed\navigation-runtime-2.8.5\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-common-ktx:2.8.5] C:\Users\msi36\.gradle\caches\transforms-3\a9db3f5b5de1f675c91a5da6e8cf0dbd\transformed\navigation-common-ktx-2.8.5\AndroidManifest.xml:2:1-7:12
@@ -170,8 +181,8 @@ MERGED from [com.google.firebase:firebase-messaging:24.1.0] C:\Users\msi36\.grad
 	android:name
 		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:8:22-74
 application
-ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:10:5-45:19
-INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:10:5-45:19
+ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:10:5-55:19
+INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:10:5-55:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.6] C:\Users\msi36\.gradle\caches\transforms-3\48fd20d5d92cb26aad266e83757cb920\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.6] C:\Users\msi36\.gradle\caches\transforms-3\48fd20d5d92cb26aad266e83757cb920\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.7.6] C:\Users\msi36\.gradle\caches\transforms-3\c037c1dd103f717c659dafd29953e969\transformed\ui-test-manifest-1.7.6\AndroidManifest.xml:22:5-26:19
@@ -296,6 +307,12 @@ ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\Androi
 		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:43:13-39
 	android:name
 		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:42:13-89
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:50:13-52:54
+	android:resource
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:52:17-51
+	android:name
+		ADDED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml:51:17-67
 uses-sdk
 INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\msi36\Downloads\AI_Job_Assistant\android\app\src\main\AndroidManifest.xml

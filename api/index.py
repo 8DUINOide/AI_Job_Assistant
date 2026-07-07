@@ -139,16 +139,15 @@ def build_profile_endpoint():
             else:
                 first_name = name_parts[0] if name_parts else ""
                 
-        # 2.5 Location Extraction Heuristic (look in first 10 lines for City, ST or City, Country)
+        # 2.5 Location Extraction Heuristic (look in first 15 lines for City, Region format)
         location = ""
-        header_text = " ".join(lines[:10])
-        loc_match = re.search(r'([A-Z][a-zA-Z\s]+,\s*[A-Z]{2}(?:\s*\d{5})?)', header_text)
-        if loc_match:
-            location = loc_match.group(1).strip()
-        else:
-            loc_match2 = re.search(r'([A-Z][a-zA-Z\s]+,\s*(?:Philippines|UK|United Kingdom|USA|United States|Canada|Australia|India))', header_text, re.IGNORECASE)
-            if loc_match2:
-                location = loc_match2.group(1).strip()
+        for line in lines[:15]:
+            # A line is likely a location if it has a comma, is short, and isn't an email/link
+            if ',' in line and len(line) < 40 and '@' not in line and 'http' not in line:
+                # Also ensure it doesn't look like a date range or degree
+                if not any(x in line.lower() for x in ['university', 'college', 'school', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']):
+                    location = line.strip()
+                    break
 
         # 3. Skills Extraction
         found_skills = list(set([skill.title() for skill in COMMON_KEYWORDS if skill.lower() in text_lower]))
