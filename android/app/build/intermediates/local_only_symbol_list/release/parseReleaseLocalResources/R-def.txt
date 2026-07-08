@@ -24,3 +24,4 @@ string google_storage_bucket
 string project_id
 style Theme.AIJobAssistant
 style Theme.AIJobAssistant.Splash
+xml file_paths

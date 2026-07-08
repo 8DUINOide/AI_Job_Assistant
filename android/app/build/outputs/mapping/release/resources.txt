@@ -203,6 +203,7 @@ TypefaceCompatApi26Impl
 u
 v
 INVALID_TENANT_ID
+w
 x
 requestTimeMs
 ProgressBarRangeInfo
@@ -498,7 +499,6 @@ SharingStarted.Lazily
 CONTINUATION
 map.entries
 it.signingInfo
-_Cover_Letter.pdf
 unknown
 getRequestType
 android.widget.SeekBar
@@ -521,7 +521,6 @@ responseBodyStart
 Bevel
 DefaultDateTypeAdapter
 namedQuery
-manila
 Send
 android.intent.action.GET_CONTENT
 com.google.android.gms.common.interna...
@@ -668,8 +667,8 @@ it.type
 ERROR_INVALID_AUTHENTICATOR_RESPONSE
 android.net.Uri
 registration_id
-android.support.FILE_PROVIDER_PATHS
 %.4g
+android.support.FILE_PROVIDER_PATHS
 getTotpInfo
 baseEjectionTime
 androidx.activity.result.contract.ext...
@@ -722,7 +721,6 @@ gcm.n.default_vibrate_timings
 ACTION_HIDE_TOOLTIP
 finalizeMfaEnrollment
 scopes
-usa
 usb
 channelTracer
 nullValue
@@ -1064,8 +1062,8 @@ encoding
 users
 message_channel
 type.googleapis.com/google.crypto.tin...
-RECONNECTION_TIMED_OUT_DURING_UPDATE
 canada
+RECONNECTION_TIMED_OUT_DURING_UPDATE
 com.google.android.gms.auth.api.phone...
 NET_CAPABILITY_NOT_VPN
 http
@@ -1717,6 +1715,7 @@ GPLUS_NICKNAME
 filters_
 changes
 consumerIndex$volatile
+wa
 com.google.android.gms
 abortCreation
 LocalContext
@@ -1726,6 +1725,7 @@ frameworkReq.type
 FontsProvider
 FeatureCreator
 unregistered
+wt
 Auth.GOOGLE_SIGN_IN_API
 ContentValues
 android.support.customtabs.extra.EXTR...
@@ -2526,7 +2526,6 @@ U2F_V2
 serverClientId
 getPhoneMultiFactorInfoList
 IndexBackfiller
-_Tailored_Resume.pdf
 proxyDetector
 DELETE_NEXT_WORD
 OffsetTimeDigitized
@@ -3200,6 +3199,7 @@ DM_DEACTIVATED
 ACCOUNT_DISABLED
 INVALID_AUDIENCE
 cleanedAndPointers$volatile
+_size
 high
 RefreshToken
 argName
@@ -3657,7 +3657,6 @@ ConnectionResultCreator
 BV6800Pro
 getTokenRefactor__android_id_shift
 zero_party_api_get_privileged_fido_se...
-philippines
 sClassLoader
 NOT_FOUND
 android.content.extra.SIZE
@@ -3747,6 +3746,7 @@ NET_CAPABILITY_NOT_CONGESTED
 LOCAL
 maxTokens
 DOCUMENT
+_Resume.pdf
 scheduledExecutorService
 tenant
 hardware
@@ -6214,6 +6214,7 @@ android
 ratelimit_count
 ဉ
 onDeleteAccount
+rwt
 ImageManager
 VISIBLE
 CHIME_ANDROID_SDK
@@ -6944,6 +6945,7 @@ Marking string:in_progress:2131558447 used because it matches string pool consta
 Marking string:in_progress:2131558447 used because it matches string pool constant in_progress
 Marking attr:route:2130903080 used because it matches string pool constant route
 Marking attr:route:2130903080 used because it matches string pool constant route
+Marking xml:file_paths:2131755008 used because it matches string pool constant file
 Marking string:selected:2131558511 used because it matches string pool constant selected
 Marking string:selected:2131558511 used because it matches string pool constant selected
 Marking string:fcm_fallback_notification_channel_label:2131558441 used because it matches string pool constant fcm_fallback_notification_channel_label
@@ -7631,6 +7633,7 @@ Marking id:fragment_container_view_tag:2131230777 used because it matches string
 @com.aijobassistant.app:style/Widget_Compat_NotificationActionText : reachable=false
     @com.aijobassistant.app:color/androidx_core_secondary_text_default_material_light
     @com.aijobassistant.app:dimen/notification_action_text_size
+@com.aijobassistant.app:xml/file_paths : reachable=true
 @com.aijobassistant.app:xml/image_share_filepaths : reachable=false
 
 The root reachable resources are:
@@ -7903,6 +7906,7 @@ The root reachable resources are:
  style:Theme_AIJobAssistant_Splash:2131623954
  style:Theme_Hidden:2131623955
  style:Theme_PlayCore_Transparent:2131623956
+ xml:file_paths:2131755008
 Unused resources are: 
  color:browser_actions_bg_grey:2130968578
  color:browser_actions_divider_color:2130968579
@@ -8016,4 +8020,4 @@ Unused resources are:
  style:FloatingDialogTheme:2131623946
  style:FloatingDialogWindowTheme:2131623947
  style:Theme_SplashScreen_IconBackground:2131623959
- xml:image_share_filepaths:2131755008
+ xml:image_share_filepaths:2131755009

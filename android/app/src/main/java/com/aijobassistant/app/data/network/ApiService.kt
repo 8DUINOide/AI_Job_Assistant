@@ -51,7 +51,8 @@ data class GeneratePdfRequest(
 )
 
 data class GenerateCoverLetterPdfRequest(
-    val cover_letter_text: String
+    val cover_letter_text: String,
+    val profile: Map<String, Any?>? = null
 )
 
 data class BuildProfileResponse(

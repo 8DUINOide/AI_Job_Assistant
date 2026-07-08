@@ -657,7 +657,7 @@ def generate_cover_letter_pdf():
         if not cover_letter_text:
             return jsonify({"success": False, "error": "Cover letter text is required"}), 400
             
-        master_profile = load_profile()
+        master_profile = normalize_profile(data.get('profile')) or load_profile()
         from resume_generator import generate_cover_letter_pdf_from_text
         pdf_buffer = generate_cover_letter_pdf_from_text(cover_letter_text, master_profile)
         

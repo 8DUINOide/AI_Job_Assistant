@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.io.FileOutputStream
 
@@ -78,7 +79,24 @@ class ResumeTailorViewModel : ViewModel() {
     fun generateCoverLetterPdf(context: Context, text: String, userName: String) {
         viewModelScope.launch {
             _state.update { it.copy(isGenerating = true) }
-            val result = repository.generateCoverLetterPdf(text)
+            
+            // Fetch profile from Firestore to send with the request
+            var profileMap: Map<String, Any?>? = null
+            try {
+                val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) {
+                    val userDoc = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                        .collection("users").document(uid).collection("profile").document("master")
+                        .get().await()
+                    if (userDoc.exists() && userDoc.data != null) {
+                        profileMap = userDoc.data
+                    }
+                }
+            } catch (_: Exception) {
+                // Fall through — backend will use its default profile
+            }
+            
+            val result = repository.generateCoverLetterPdf(text, profileMap)
             if (result.isSuccess) {
                 val bytes = result.getOrNull()?.bytes()
                 if (bytes != null) {

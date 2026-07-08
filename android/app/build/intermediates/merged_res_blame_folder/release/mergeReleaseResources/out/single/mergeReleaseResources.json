@@ -28,12 +28,12 @@
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-1.15.0-29:\\layout-v21\\notification_action_tombstone.xml"
     },
     {
-        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-hdpi-v4_googleg_standard_color_18.png.flat",
-        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable-hdpi-v4\\googleg_standard_color_18.png"
-    },
-    {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-mdpi-v4_common_google_signin_btn_icon_light_normal_background.9.png.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable-mdpi-v4\\common_google_signin_btn_icon_light_normal_background.9.png"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-hdpi-v4_googleg_standard_color_18.png.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable-hdpi-v4\\googleg_standard_color_18.png"
     },
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\mipmap-xhdpi_ic_launcher.webp.flat",
@@ -76,12 +76,12 @@
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-1.15.0-29:\\drawable-mdpi-v4\\notification_bg_normal.9.png"
     },
     {
-        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_common_google_signin_btn_icon_dark_normal.xml.flat",
-        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable\\common_google_signin_btn_icon_dark_normal.xml"
-    },
-    {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\animator_fragment_fade_enter.xml.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-fragment-1.5.7-10:\\animator\\fragment_fade_enter.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_common_google_signin_btn_icon_dark_normal.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable\\common_google_signin_btn_icon_dark_normal.xml"
     },
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_ic_call_answer_video_low.xml.flat",
@@ -108,12 +108,12 @@
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-66:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
     },
     {
-        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_icon_background.xml.flat",
-        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-splashscreen-1.0.1-36:\\drawable\\icon_background.xml"
-    },
-    {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-mdpi-v4_notify_panel_notification_icon_bg.png.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-1.15.0-29:\\drawable-mdpi-v4\\notify_panel_notification_icon_bg.png"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_icon_background.xml.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-splashscreen-1.0.1-36:\\drawable\\icon_background.xml"
     },
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\font_outfit_regular.ttf.flat",
@@ -174,10 +174,6 @@
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\color_vector_tint_color.xml.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-ui-release-57:\\color\\vector_tint_color.xml"
-    },
-    {
-        "merged": "com.aijobassistant.app-release-65:/drawable_ic_jobai.jpg.flat",
-        "source": "com.aijobassistant.app-main-66:/drawable/ic_jobai.jpg"
     },
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-hdpi-v4_common_google_signin_btn_text_dark_normal_background.9.png.flat",
@@ -404,6 +400,10 @@
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-play-services-base-18.5.0-56:\\drawable-hdpi-v4\\common_full_open_on_phone.png"
     },
     {
+        "merged": "com.aijobassistant.app-release-65:/xml_file_paths.xml.flat",
+        "source": "com.aijobassistant.app-main-66:/xml/file_paths.xml"
+    },
+    {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\layout_ime_secondary_split_test_activity.xml.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-core-1.15.0-29:\\layout\\ime_secondary_split_test_activity.xml"
     },
@@ -482,6 +482,10 @@
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\animator_fragment_open_exit.xml.flat",
         "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-fragment-1.5.7-10:\\animator\\fragment_open_exit.xml"
+    },
+    {
+        "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable_ic_jobai.jpg.flat",
+        "source": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-main-66:\\drawable\\ic_jobai.jpg"
     },
     {
         "merged": "C:\\Users\\msi36\\.gradle\\daemon\\8.4\\com.aijobassistant.app-release-65:\\drawable-mdpi-v4_notification_bg_normal_pressed.9.png.flat",

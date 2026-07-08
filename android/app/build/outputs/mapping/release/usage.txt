@@ -28569,10 +28569,6 @@ androidx.core.content.ContextCompat:
 androidx.core.content.ContextKt
 androidx.core.content.FileProvider$Api21Impl:
     private void <init>()
-androidx.core.content.FileProvider$PathStrategy:
-    public abstract java.io.File getFileForUri(android.net.Uri)
-androidx.core.content.FileProvider$SimplePathStrategy:
-    public java.io.File getFileForUri(android.net.Uri)
 androidx.core.content.FileProvider:
     private static final java.lang.String ATTR_NAME
     private static final java.lang.String ATTR_PATH
@@ -28585,26 +28581,7 @@ androidx.core.content.FileProvider:
     private static final java.lang.String TAG_EXTERNAL_MEDIA
     private static final java.lang.String TAG_FILES_PATH
     private static final java.lang.String TAG_ROOT_PATH
-    private java.lang.String mAuthority
-    private androidx.core.content.FileProvider$PathStrategy mLocalPathStrategy
-    private final java.lang.Object mLock
-    private final int mResourceId
-    public void <init>()
-    protected void <init>(int)
-    public void attachInfo(android.content.Context,android.content.pm.ProviderInfo)
-    private static java.lang.Object[] copyOf(java.lang.Object[],int)
-    private static java.lang.String[] copyOf(java.lang.String[],int)
-    public int delete(android.net.Uri,java.lang.String,java.lang.String[])
-    private androidx.core.content.FileProvider$PathStrategy getLocalPathStrategy()
-    public java.lang.String getType(android.net.Uri)
-    public java.lang.String getTypeAnonymous(android.net.Uri)
     public static android.net.Uri getUriForFile(android.content.Context,java.lang.String,java.io.File,java.lang.String)
-    public android.net.Uri insert(android.net.Uri,android.content.ContentValues)
-    private static int modeToMode(java.lang.String)
-    public boolean onCreate()
-    public android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String)
-    public android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)
-    public int update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])
 androidx.core.content.IntentCompat$Api33Impl
 androidx.core.content.IntentCompat
 androidx.core.content.IntentSanitizer$1
@@ -33706,6 +33683,7 @@ com.aijobassistant.app.R$string:
     public static int project_id
     private void <init>()
 com.aijobassistant.app.R$style
+com.aijobassistant.app.R$xml
 com.aijobassistant.app.R
 com.aijobassistant.app.data.profile.ProfileRepository$deleteProfile$1
 com.aijobassistant.app.data.profile.ProfileRepository$observeProfile$1
@@ -68155,10 +68133,7 @@ androidx.core.content.FileProvider$Api21Impl
 androidx.core.content.FileProvider$PathStrategy
 androidx.core.content.FileProvider$SimplePathStrategy:
     public static void addRoot()
-    public static boolean belongsToRoot()
     public static android.net.Uri getUriForFile()
-androidx.core.content.FileProvider:
-    public static final java.lang.String[] COLUMNS
 androidx.core.content.LocusIdCompat
 androidx.core.content.PermissionChecker
 androidx.core.content.res.CamColor:
@@ -68289,6 +68264,7 @@ androidx.core.graphics.TypefaceCompatUtil:
     public static java.lang.String readString(java.io.ByteArrayInputStream,int)
     public static void readUInt16(java.io.ByteArrayInputStream)
     public static void readUInt8(java.io.ByteArrayInputStream)
+    public static void requireNonNull(java.lang.Object,java.lang.String)
     public static void setTint(android.graphics.drawable.Drawable,int)
     public static void setTintList(android.graphics.drawable.Drawable,android.content.res.ColorStateList)
     public static void setTintMode(android.graphics.drawable.Drawable,android.graphics.PorterDuff$Mode)
@@ -70636,7 +70612,6 @@ coil.ImageLoader$Builder$$InternalSyntheticLambda$10$9d88cd00f4e639ce07f37a2e879
     private static java.lang.Object invoke$com$aijobassistant$app$ui$home$HomeScreenKt$$InternalSyntheticLambda$6$7558a25190aaf7d55c8cf37ec4bbb34a8c05f3044a34e8f0a0607a2611272f6c$0()
     private static java.lang.Object invoke$com$aijobassistant$app$ui$home$HomeScreenKt$$InternalSyntheticLambda$6$7558a25190aaf7d55c8cf37ec4bbb34a8c05f3044a34e8f0a0607a2611272f6c$1()
     private static java.lang.Object invoke$com$aijobassistant$app$ui$home$HomeScreenKt$$InternalSyntheticLambda$6$7558a25190aaf7d55c8cf37ec4bbb34a8c05f3044a34e8f0a0607a2611272f6c$2()
-    private static java.lang.Object invoke$com$aijobassistant$app$ui$home$HomeScreenKt$PendingJobCard$1$$InternalSyntheticLambda$9$dd251b7a504fe9488eb28b9bd5220ca7080242c9f0f8a4455e16ded470135031$0()
     private static java.lang.Object invoke$com$aijobassistant$app$ui$profile$ProfileScreenKt$$InternalSyntheticLambda$6$660e151a6758536677d3bbdd0ecdcd86e9eeac18b5f037789d3fd38c088e8387$1()
     private static java.lang.Object invoke$com$aijobassistant$app$ui$profile$ProfileScreenKt$$InternalSyntheticLambda$6$660e151a6758536677d3bbdd0ecdcd86e9eeac18b5f037789d3fd38c088e8387$2()
     private static java.lang.Object invoke$com$aijobassistant$app$ui$profile$ProfileScreenKt$$InternalSyntheticLambda$6$660e151a6758536677d3bbdd0ecdcd86e9eeac18b5f037789d3fd38c088e8387$3()
@@ -71674,9 +71649,7 @@ com.aijobassistant.app.ui.home.HomeScreenKt$HomeScreen$9$4$$InternalSyntheticLam
 com.aijobassistant.app.ui.home.HomeScreenKt$HomeScreen$9$4
 com.aijobassistant.app.ui.home.HomeScreenKt$PendingJobCard$1$$InternalSyntheticLambda$9$dd251b7a504fe9488eb28b9bd5220ca7080242c9f0f8a4455e16ded470135031$0
 com.aijobassistant.app.ui.home.HomeScreenKt$PendingJobCard$1:
-    public static synthetic kotlin.Unit $r8$lambda$KnKrrTNbyqB5TgpCSbLeBIQwlAA()
     public final void invoke(androidx.compose.foundation.layout.ColumnScope,androidx.compose.runtime.Composer,int)
-    public static final kotlin.Unit invoke$lambda$9$lambda$8$lambda$7$lambda$5$lambda$4$lambda$3$lambda$2()
 com.aijobassistant.app.ui.home.HomeScreenKt$QuickActionCard$2$1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.aijobassistant.app.ui.home.HomeScreenKt$QuickActionCard$2:
