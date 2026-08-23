@@ -1002,9 +1002,12 @@
                             } else {
                                 // Experience / Projects
                                 formHtml += `
-                                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                                        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 4px;">${item.title}</div>
-                                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px;">${item.subtitle} | ${item.date}</div>
+                                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;">
+                                        <input type="text" id="edit_sec_${sIdx}_item_${iIdx}_title" value="${item.title.replace(/"/g, '&quot;')}" style="font-weight: 600; font-size: 0.95rem; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); width: 100%;">
+                                        <div style="display: flex; gap: 8px;">
+                                            <input type="text" id="edit_sec_${sIdx}_item_${iIdx}_subtitle" value="${(item.subtitle||'').replace(/"/g, '&quot;')}" placeholder="Subtitle/Role" style="flex: 2; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 0.85rem;">
+                                            <input type="text" id="edit_sec_${sIdx}_item_${iIdx}_date" value="${(item.date||'').replace(/"/g, '&quot;')}" placeholder="Date" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 0.85rem;">
+                                        </div>
                                         <label style="color: var(--text-muted); font-size: 0.85rem;">Bullet Points (One per line)</label>
                                         <textarea id="edit_sec_${sIdx}_item_${iIdx}_bullets" rows="4" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.9rem; resize: vertical;">${item.bullets.join('\\n')}</textarea>
                                     </div>
@@ -1049,7 +1052,15 @@
             if (dataToSend.sections) {
                 dataToSend.sections.forEach((section, sIdx) => {
                     section.items.forEach((item, iIdx) => {
+                        const titleEl = document.getElementById(`edit_sec_${sIdx}_item_${iIdx}_title`);
+                        const subtitleEl = document.getElementById(`edit_sec_${sIdx}_item_${iIdx}_subtitle`);
+                        const dateEl = document.getElementById(`edit_sec_${sIdx}_item_${iIdx}_date`);
                         const bulletsEl = document.getElementById(`edit_sec_${sIdx}_item_${iIdx}_bullets`);
+                        
+                        if (titleEl) item.title = titleEl.value;
+                        if (subtitleEl) item.subtitle = subtitleEl.value;
+                        if (dateEl) item.date = dateEl.value;
+                        
                         if (bulletsEl) {
                             // Split by newline and remove empty lines
                             item.bullets = bulletsEl.value.split('\\n').filter(b => b.trim() !== '');

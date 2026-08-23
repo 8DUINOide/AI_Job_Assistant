@@ -63,6 +63,12 @@
       "description": "End-to-End Development: A comprehensive archive of my technical journey, covering backend infrastructure, IoT integration, and full-stack deployment. Visual Documentation: A responsive hub designed to translate complex engineering challenges into clear, professional project outcomes. Demonstrated Expertise: Real-world proof of my ability to architect, deploy, and maintain high-performance software solutions."
     },
     {
+      "title": "JobAi: AI Job-Hunting Assistant",
+      "role": "Full-Stack & Mobile Developer | Python, Gemini AI, Firebase, Android",
+      "link": "https://appbuildersph.com/apps/jobai",
+      "description": "Automated Web Scraping & Matching: Built an autonomous engine in Python to aggregate job postings across multiple job boards, matching user profiles with relevant career opportunities. AI Resume Tailoring: Integrated Gemini AI to analyze job descriptions in real time, dynamically optimizing and tailoring resume details to maximize application relevance. Full-Stack & Push System: Developed a native Android application powered by a Firebase backend, implementing application tracking workflows and real-time push notifications."
+    },
+    {
       "title": "Expense Tracking System Backend",
       "role": "Full-stack Developer",
       "link": "",

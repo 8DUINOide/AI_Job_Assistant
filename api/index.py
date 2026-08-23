@@ -600,7 +600,9 @@ def analyze_resume():
         keywords_to_include, missing_keywords, matched_skills = extract_keywords(job_description, profile_skills)
         
         # 3. Base Tailored Data
-        tailored_data = get_tailored_profile_data(master_profile, job_description)
+        raw_tailored = get_tailored_profile_data(master_profile, job_description)
+        from resume_generator import convert_profile_to_pdf_data
+        tailored_data = convert_profile_to_pdf_data(raw_tailored)
         
         # 4. Cover Letter Text
         from resume_generator import generate_cover_letter_text
@@ -629,9 +631,8 @@ def generate_pdf():
         if not tailored_data:
             return jsonify({"success": False, "error": "Tailored data is required"}), 400
             
-        from resume_generator import convert_profile_to_pdf_data
-        pdf_data = convert_profile_to_pdf_data(tailored_data)
-        pdf_buffer = generate_pdf_from_data(pdf_data)
+        # tailored_data is already converted to the pdf_data structure by the frontend
+        pdf_buffer = generate_pdf_from_data(tailored_data)
         
         first_name = tailored_data.get("personal_info", {}).get("first_name", "Applicant")
         last_name = tailored_data.get("personal_info", {}).get("last_name", "")
@@ -675,6 +676,20 @@ def generate_cover_letter_pdf():
         print("Error generating cover letter PDF:", e)
         return jsonify({"success": False, "error": str(e)}), 500
 
+class VercelPathFixMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        query_string = environ.get('QUERY_STRING', '')
+        if '__vercel_path=' in query_string:
+            from urllib.parse import parse_qs
+            qs = parse_qs(query_string)
+            if '__vercel_path' in qs:
+                environ['PATH_INFO'] = '/api/' + qs['__vercel_path'][0]
+        return self.app(environ, start_response)
+
+app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
 application = app
 
 if __name__ == '__main__':
