@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Agent Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -17,7 +18,22 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.2);
         }
+        
+        body.light-mode {
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: rgba(0, 0, 0, 0.1);
+            --primary: #6d28d9;
+            --primary-hover: #5b21b6;
+            --input-bg: #ffffff;
+        }
+
+        body.light-mode .blob-1 { background: rgba(139, 92, 246, 0.15); }
+        body.light-mode .blob-2 { background: rgba(56, 189, 248, 0.15); }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         
@@ -50,11 +66,67 @@
             max-width: 1200px;
             margin: 0 auto 2rem auto;
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
         }
 
         h1 { font-size: 2.2rem; font-weight: 700; background: linear-gradient(to right, #a855f7, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Light mode overrides for hardcoded dark colors */
+        body.light-mode h2 { color: var(--text-main); }
+        body.light-mode .glass-card { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        body.light-mode h1 { background: linear-gradient(to right, #7c3aed, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .pagination button {
+            width: auto;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            margin: 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pagination button:hover { background: rgba(139, 92, 246, 0.2); color: var(--text-main); }
+        .pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination .page-info { color: var(--text-muted); font-size: 0.85rem; margin: 0 8px; }
 
         .dashboard-grid {
             max-width: 1200px;
@@ -278,9 +350,12 @@
     <div class="blob blob-2"></div>
 
     <header>
-        <h1>Agent Command Center</h1>
-        <div style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Autonomous Job Application System</div>
-        <button id="logoutBtn" style="width: auto; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #f87171; padding: 6px 12px; font-size: 0.8rem; margin-top: 10px;">Logout</button>
+        <div>
+            <h1>Agent Command Center</h1>
+            <div style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">Autonomous Job Application System</div>
+            <button id="logoutBtn" style="width: auto; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #f87171; padding: 6px 12px; font-size: 0.8rem; margin-top: 10px;">Logout</button>
+        </div>
+        <button id="themeToggle" class="theme-toggle" title="Toggle Light/Dark Mode"><i class="fas fa-sun"></i></button>
     </header>
 
     <div class="dashboard-grid">
@@ -324,12 +399,12 @@
             <div class="glass-card" id="resumeTailorCard">
                 <h2>📄 Resume Tailor</h2>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Paste a Job Description to generate a custom-tailored PDF resume based on your Master Profile.</p>
-                <textarea id="jobDescriptionText" rows="6" placeholder="Paste the job description here..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
+                <textarea id="jobDescriptionText" rows="6" placeholder="Paste the job description here..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg, rgba(0,0,0,0.2)); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
                 <button id="analyzeResumeBtn" style="margin-top: 1rem; background: linear-gradient(to right, #3b82f6, #8b5cf6);">✨ Analyze & Tailor Resume</button>
 
                 <div id="resumeAnalysisContainer" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="color: #fff; font-size: 1.1rem;">Analysis Results</h3>
+                        <h3 style="color: var(--text-main); font-size: 1.1rem;">Analysis Results</h3>
                         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success); padding: 5px 12px; border-radius: 20px; font-weight: bold;">
                             Match Rate: <span id="matchRateValue">0</span>%
                         </div>
@@ -345,16 +420,16 @@
                         <div id="missingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                     </div>
                     
-                    <h3 style="color: #fff; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Optimized Resume</h3>
+                    <h3 style="color: var(--text-main); font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Optimized Resume</h3>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Everything below has been tailored to the job description. Give it a final look and edit the text/skills if you'd like before generating.</p>
                     
                     <div id="tailoredFormEditor" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px;">
                         <!-- Dynamically populated fields -->
                     </div>
                     
-                    <h3 style="color: #fff; font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Cover Letter</h3>
+                    <h3 style="color: var(--text-main); font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem;">Your Cover Letter</h3>
                     <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;">
-                        <textarea id="coverLetterEditor" rows="12" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
+                        <textarea id="coverLetterEditor" rows="12" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg, rgba(0,0,0,0.2)); color: var(--text-main); font-size: 0.9rem; resize: vertical;"></textarea>
                     </div>
                     
                     <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
@@ -376,6 +451,7 @@
                 <div id="pendingJobsList" style="display: flex; flex-direction: column; gap: 10px;">
                     <!-- Pending jobs injected here -->
                 </div>
+                <div id="pendingPagination" class="pagination"></div>
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
@@ -417,6 +493,7 @@
                     </tbody>
                 </table>
             </div>
+            <div id="logsPagination" class="pagination"></div>
         </div>
     </div>
 
@@ -581,14 +658,22 @@
                     
                     const pendingContainer = document.getElementById('pendingApprovalsContainer');
                     const pendingList = document.getElementById('pendingJobsList');
+                    const pendingPagination = document.getElementById('pendingPagination');
                     if (pendingLogs.length > 0) {
                         pendingContainer.style.display = 'block';
-                        pendingList.innerHTML = pendingLogs.map(log => {
+                        
+                        const ITEMS_PER_PAGE = 5;
+                        let currentPendingPage = 1;
+                        const totalPages = Math.ceil(pendingLogs.length / ITEMS_PER_PAGE);
+                        
+                        function renderPendingJobCard(log) {
                             let sourceLogo = '';
-                            if (log.job_link && log.job_link.includes('indeed.com')) {
-                                sourceLogo = '<img src="https://www.indeed.com/favicon.ico" width="16" height="16" alt="Indeed" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
-                            } else if (log.job_link && log.job_link.includes('linkedin.com')) {
-                                sourceLogo = '<img src="https://www.linkedin.com/favicon.ico" width="16" height="16" alt="LinkedIn" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;">';
+                            if (log.job_link) {
+                                try {
+                                    const url = new URL(log.job_link);
+                                    let domain = url.hostname;
+                                    sourceLogo = `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" width="16" height="16" alt="" style="vertical-align: middle; margin-right: 4px; border-radius: 2px;" onerror="this.style.display='none'">`;
+                                } catch(e) {}
                             }
                             
                             const getFlagImg = (code, alt) => `<img src="https://flagcdn.com/20x15/${code}.png" alt="${alt}" style="vertical-align: text-bottom; margin-right: 6px; border-radius: 2px;">`;
@@ -624,11 +709,11 @@
                             <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 16px; padding-right: 40px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 12px;">
                                 <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Denied')" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; padding: 4px; margin: 0; width: auto; font-weight: bold; font-size: 1.1rem; color: var(--text-muted); cursor: pointer;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'" title="Dismiss / Denied">✕</button>
                                 <div style="flex: 1; min-width: 250px;">
-                                    <div style="font-weight: 600; font-size: 1.1rem; color: #fff; margin-bottom: 4px;">${locFlag} ${log.job_title}</div>
+                                    <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-main); margin-bottom: 4px;">${locFlag} ${log.job_title}</div>
                                     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px;">
                                         ${log.company} ${log.location ? '• ' + log.location : ''}
                                     </div>
-                                    <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 10px;">
+                                    <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">
                                         <strong>Tech Stack:</strong> ${log.tech_stack || 'N/A'}
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 15px; font-size: 0.85rem;">
@@ -643,7 +728,32 @@
                                     <button onclick="updateStatus('${log.company.replace(/'/g, "\\'")}', '${log.job_title.replace(/'/g, "\\'")}', 'Rejected')" style="background: var(--danger); padding: 8px 16px; margin: 0; width: auto; font-weight: 500;">Rejected</button>
                                 </div>
                             </div>
-                        `}).join('');
+                        `;
+                        }
+                        
+                        function renderPendingPage(page) {
+                            currentPendingPage = page;
+                            const start = (page - 1) * ITEMS_PER_PAGE;
+                            const end = start + ITEMS_PER_PAGE;
+                            const pageItems = pendingLogs.slice(start, end);
+                            pendingList.innerHTML = pageItems.map(renderPendingJobCard).join('');
+                            
+                            // Render pagination controls
+                            if (totalPages > 1) {
+                                let paginationHtml = `<button ${page === 1 ? 'disabled' : ''} onclick="window._renderPendingPage(${page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+                                for (let i = 1; i <= totalPages; i++) {
+                                    paginationHtml += `<button class="${i === page ? 'active' : ''}" onclick="window._renderPendingPage(${i})">${i}</button>`;
+                                }
+                                paginationHtml += `<span class="page-info">${start + 1}-${Math.min(end, pendingLogs.length)} of ${pendingLogs.length}</span>`;
+                                paginationHtml += `<button ${page === totalPages ? 'disabled' : ''} onclick="window._renderPendingPage(${page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+                                pendingPagination.innerHTML = paginationHtml;
+                            } else {
+                                pendingPagination.innerHTML = '';
+                            }
+                        }
+                        
+                        window._renderPendingPage = renderPendingPage;
+                        renderPendingPage(1);
                     } else {
                         pendingContainer.style.display = 'none';
                     }
@@ -655,18 +765,52 @@
                         <span style="color: var(--warning);">Denied: ${denied}</span>
                         ${other > 0 ? `<span style="color: var(--text-muted);">Other: ${other}</span>` : ''}
                     `;
+                    const LOGS_PER_PAGE = 10;
+                    let currentLogsPage = 1;
+                    const totalLogsPages = Math.ceil(historyLogs.length / LOGS_PER_PAGE);
+                    const logsPagination = document.getElementById('logsPagination');
                     
-                    logsBody.innerHTML = historyLogs.map((log, i) => `
-                        <tr>
-                            <td style="color: var(--text-muted); font-size: 0.8rem;">${i + 1}</td>
-                            <td>${log.date_applied}</td>
-                            <td style="font-weight: 600;">${log.company}</td>
-                            <td>${log.job_title}</td>
-                            <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.tech_stack}">${log.tech_stack || '-'}</td>
-                            <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('denied') ? 'var(--warning)' : ((log.status || '').toLowerCase().match(/rejected|did not proceed/) ? 'var(--danger)' : 'var(--text-muted)'))};">${log.status || 'Unknown'}</span></td>
-                            <td>${log.job_link ? `<a href="${log.job_link}" target="_blank">View</a>` : '-'}</td>
-                        </tr>
-                    `).join('');
+                    function renderLogsPage(page) {
+                        currentLogsPage = page;
+                        const start = (page - 1) * LOGS_PER_PAGE;
+                        const end = start + LOGS_PER_PAGE;
+                        const pageItems = historyLogs.slice(start, end);
+                        
+                        logsBody.innerHTML = pageItems.map((log, i) => `
+                            <tr>
+                                <td style="color: var(--text-muted); font-size: 0.8rem;">${start + i + 1}</td>
+                                <td>${log.date_applied}</td>
+                                <td style="font-weight: 600;">${log.company}</td>
+                                <td>${log.job_title}</td>
+                                <td style="color: var(--text-muted); font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.tech_stack}">${log.tech_stack || '-'}</td>
+                                <td><span style="color: ${(log.status || '').toLowerCase().includes('applied') ? 'var(--success)' : ((log.status || '').toLowerCase().includes('denied') ? 'var(--warning)' : ((log.status || '').toLowerCase().match(/rejected|did not proceed/) ? 'var(--danger)' : 'var(--text-muted)'))}">${log.status || 'Unknown'}</span></td>
+                                <td>${log.job_link ? `<a href="${log.job_link}" target="_blank">View</a>` : '-'}</td>
+                            </tr>
+                        `).join('');
+                        
+                        // Render pagination
+                        if (totalLogsPages > 1) {
+                            let html = `<button ${page === 1 ? 'disabled' : ''} onclick="window._renderLogsPage(${page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+                            
+                            // Smart page number display
+                            for (let i = 1; i <= totalLogsPages; i++) {
+                                if (i === 1 || i === totalLogsPages || (i >= page - 1 && i <= page + 1)) {
+                                    html += `<button class="${i === page ? 'active' : ''}" onclick="window._renderLogsPage(${i})">${i}</button>`;
+                                } else if (i === page - 2 || i === page + 2) {
+                                    html += `<span class="page-info">…</span>`;
+                                }
+                            }
+                            
+                            html += `<span class="page-info">${start + 1}-${Math.min(end, historyLogs.length)} of ${historyLogs.length}</span>`;
+                            html += `<button ${page === totalLogsPages ? 'disabled' : ''} onclick="window._renderLogsPage(${page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+                            logsPagination.innerHTML = html;
+                        } else {
+                            logsPagination.innerHTML = '';
+                        }
+                    }
+                    
+                    window._renderLogsPage = renderLogsPage;
+                    renderLogsPage(1);
                 }
             } catch (e) {
                 console.error("Error fetching logs:", e);
@@ -1146,6 +1290,22 @@
                 generateCoverLetterBtn.disabled = false;
                 generateCoverLetterBtn.textContent = "✉️ Generate Cover Letter PDF";
             }
+        });
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('themeToggle');
+        function updateToggleIcon(isLight) {
+            themeToggle.innerHTML = isLight ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            updateToggleIcon(true);
+        }
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            updateToggleIcon(isLight);
         });
 
         // Init
